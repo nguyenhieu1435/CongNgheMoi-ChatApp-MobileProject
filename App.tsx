@@ -8,6 +8,7 @@ import "./i18n/i18n.config"
 import { Provider } from 'react-redux';
 import { store } from './redux_toolkit/store';
 import { useTranslation } from 'react-i18next';
+import OpenScreen from './components/openScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -21,7 +22,8 @@ export default function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='OpenScreen'>
+          <Stack.Screen name='OpenScreen' component={OpenScreen}/>
           <Stack.Screen name="InitialScreen" component={InitialScreen} />
         </Stack.Navigator>
       </NavigationContainer>
