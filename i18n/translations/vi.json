@@ -1,4 +1,15 @@
 {
     "initialScreenLogin": "Đăng nhập",
-    "initialScreenRegister": "Đăng ký"
+    "initialScreenRegister": "Đăng ký",
+    "initialScreenSlider1.title": "Gọi video ổn định",
+    "initialScreenSlider1.description": "Trò chuyện thật đã với hình ảnh sắc nét, tiếng chất, âm chuẩn dưới mọi điều kiện mạng",
+    "initialScreenSlider2.title": "Chat nhóm tiện lợi",
+    "initialScreenSlider2.description": "Cùng trao đổi, giữ liên lạc với gia đình, bạn bè và đồng nghiệp mọi lúc mọi nơi",
+    "initialScreenSlider3.title": "Gửi ảnh nhanh chóng",
+    "initialScreenSlider3.description": "Chia sẻ hình ảnh chất lượng cao với bạn bè và người thân nhanh chóng và dễ dàng",
+    "initialScreenSlider4.title": "Nhật ký bạn bè",
+    "initialScreenSlider4.description": "Nơi cập nhật hoạt động mới nhất của những người bạn quan tâm",
+    "initialScreenSlider5.title": "",
+    "initialScreenSlider5.description": ""
+
 }

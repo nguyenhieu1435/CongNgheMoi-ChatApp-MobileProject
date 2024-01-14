@@ -1,4 +1,14 @@
 {
     "initialScreenLogin": "Login",
-    "initialScreenRegister": "Register"
+    "initialScreenRegister": "Register",
+    "initialScreenSlider1.title": "Smooth video call",
+    "initialScreenSlider1.description": "Perform video calls with high-quanlity over all type of networks",
+    "initialScreenSlider2.title": "Convenient group chat",
+    "initialScreenSlider2.description": "Stay connected with your team, family and friends anytime, anywhere",
+    "initialScreenSlider3.title": "Quick photo sharing",
+    "initialScreenSlider3.description": "Share photos in high quanlity with everyone easily",
+    "initialScreenSlider4.title": "Social timeline",
+    "initialScreenSlider4.description": "Share updated with latest activities of people you care about",
+    "initialScreenSlider5.title": "",
+    "initialScreenSlider5.description": ""
 }

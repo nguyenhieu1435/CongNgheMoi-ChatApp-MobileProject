@@ -34,4 +34,5 @@ export default StyleSheet.create({
 
     lightBackgroundIconActive: {backgroundColor: "#f7f7ff"},
     
+    primaryColor: {color: "#7269EF"}
 })

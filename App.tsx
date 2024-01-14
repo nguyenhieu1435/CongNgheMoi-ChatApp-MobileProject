@@ -9,6 +9,8 @@ import { Provider } from 'react-redux';
 import { store } from './redux_toolkit/store';
 import { useTranslation } from 'react-i18next';
 import OpenScreen from './components/openScreen';
+import Login from './components/login';
+import Register from './components/register';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,6 +27,8 @@ export default function App() {
         <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='OpenScreen'>
           <Stack.Screen name='OpenScreen' component={OpenScreen}/>
           <Stack.Screen name="InitialScreen" component={InitialScreen} />
+          <Stack.Screen name='Login' component={Login}/>
+          <Stack.Screen name='Register' component={Register}/>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
