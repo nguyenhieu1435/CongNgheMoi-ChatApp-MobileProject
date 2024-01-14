@@ -7,17 +7,22 @@ import InitialScreen from './components/initialScreen';
 import "./i18n/i18n.config"
 import { Provider } from 'react-redux';
 import { store } from './redux_toolkit/store';
+import { useTranslation } from 'react-i18next';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  // change the language follow up settings saved in the device
+  // const {t, i18n} = useTranslation();
+  // useEffect, i18n.changeLanguage('en')
+
 
   return (
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen name="Home" component={InitialScreen} />
+          <Stack.Screen name="InitialScreen" component={InitialScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
