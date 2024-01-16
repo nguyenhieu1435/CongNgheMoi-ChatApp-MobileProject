@@ -10,7 +10,8 @@ import { store } from './redux_toolkit/store';
 import { useTranslation } from 'react-i18next';
 import OpenScreen from './components/openScreen';
 import Login from './components/login';
-import Register from './components/register';
+import { StepOneRegister, StepTwoRegister, StepThreeRegister} from './components/register';
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,7 +29,9 @@ export default function App() {
           <Stack.Screen name='OpenScreen' component={OpenScreen}/>
           <Stack.Screen name="InitialScreen" component={InitialScreen} />
           <Stack.Screen name='Login' component={Login}/>
-          <Stack.Screen name='Register' component={Register}/>
+          <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
+          <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
+          <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

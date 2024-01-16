@@ -173,7 +173,7 @@ export default function InitialScreen({navigation} : Props) {
                             <Text style={styles.btnTextLogin}>{t("initialScreenLogin")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.btnRegister}
-                            onPress={()=> navigation.navigate("Register")}
+                            onPress={()=> navigation.navigate("StepOneRegister")}
                         >
                             <Text style={styles.btnTextRegister}>{t("initialScreenRegister")}</Text>
                         </TouchableOpacity>

@@ -2,7 +2,8 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
     container:{
-        position: "relative"
+        position: "relative",
+        flex: 1
     },
     logoText:{
         backgroundColor: "transparent",

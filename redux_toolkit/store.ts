@@ -6,3 +6,4 @@ export const store = configureStore({
         theme: themeReducer
     }
 })
+export type IRootState = ReturnType<typeof store.getState>
