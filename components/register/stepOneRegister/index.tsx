@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Linking } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Linking, StatusBar } from 'react-native'
 import { useForm, Controller } from "react-hook-form";
 import { FontAwesome } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
@@ -71,6 +71,7 @@ export default function StepOneRegister({navigation} : Props) {
   <View style={[styles.wrapperAll
     , theme === lightMode ? commonStyles.lightPrimaryBackground : commonStyles.darkPrimaryBackground]}
   >
+      <StatusBar/>
       <View style={[styles.navigationTabBox]}>
           <TouchableOpacity style={styles.btnReturnInitialPage}
             onPress={()=> navigation.goBack()}

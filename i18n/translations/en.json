@@ -39,5 +39,17 @@
     "registerVerifyCodeResend": "Resend code",
     "next": "Next",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "registerChooseDateAndGenderTitle": "Date of birth and gender",
+    "registerChooseDateAndGenderDesc": "Fill in your date of birth and gender to receive relevant content",
+    "registerGenderTitle": "Gender",
+    "registerGenderMale": "Male",
+    "registerGenderFemale": "Female",
+    "registerDateOfBirthTitle": "Date of birth",
+    "registerAvatarTitle": "Avatar",
+    "registerChooseAvatarDesc": "Choose an avatar to make your account more attractive",
+    "registerChooseImageFromDirectoryDesc": "You can edit photos with many interesting options and color filters",
+    "registerChooseImageNow": "Choose image",
+    "registerChooseImageFromLibrary": "Choose photo from gallery",
+    "registerTakePhotoFromCamera": "Take photos from the camera"
 }

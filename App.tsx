@@ -11,7 +11,9 @@ import { useTranslation } from 'react-i18next';
 import OpenScreen from './components/openScreen';
 import Login from './components/login';
 import { StepOneRegister, StepTwoRegister, StepThreeRegister} from './components/register';
-
+import StepFourRegister from './components/register/stepFourRegister';
+import StepFiveRegister from './components/register/stepFiveRegister';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -24,16 +26,20 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='OpenScreen'>
-          <Stack.Screen name='OpenScreen' component={OpenScreen}/>
-          <Stack.Screen name="InitialScreen" component={InitialScreen} />
-          <Stack.Screen name='Login' component={Login}/>
-          <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
-          <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
-          <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
-        </Stack.Navigator>
-      </NavigationContainer>
+      <ActionSheetProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='StepFiveRegister'>
+            <Stack.Screen name='OpenScreen' component={OpenScreen}/>
+            <Stack.Screen name="InitialScreen" component={InitialScreen} />
+            <Stack.Screen name='Login' component={Login}/>
+            <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
+            <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
+            <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
+            <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
+            <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ActionSheetProvider>
     </Provider>
   );
 }

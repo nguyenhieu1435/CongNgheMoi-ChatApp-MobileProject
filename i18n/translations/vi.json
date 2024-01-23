@@ -39,6 +39,19 @@
     "registerVerifyCodeResend": "Gửi lại mã",
     "next": "Tiếp tục",
     "cancel": "Hủy",
-    "confirm": "Xác nhận"
+    "confirm": "Xác nhận",
+    "registerChooseDateAndGenderTitle": "Ngày sinh và giới tính",
+    "registerChooseDateAndGenderDesc": "Điền ngày sinh và giới tính để nhận nội dung phù hợp",
+    "registerGenderTitle": "Giới tính",
+    "registerGenderMale": "Nam",
+    "registerGenderFemale": "Nữ",
+    "registerDateOfBirthTitle": "Ngày sinh",
+    "registerAvatarTitle": "Ảnh đại diện",
+    "registerChooseAvatarDesc": "Cập nhật ảnh đẹp nhất",
+    "registerChooseImageFromDirectoryDesc": "Bạn có thể chỉnh sửa ảnh với nhiều tùy chọn và bộc lọc màu thú vị",
+    "registerChooseImageNow": "Chọn ảnh ngay",
+    "registerChooseImageFromLibrary": "Chọn ảnh từ thư viện",
+    "registerTakePhotoFromCamera": "Chụp ảnh từ camera"
+
 
 }
