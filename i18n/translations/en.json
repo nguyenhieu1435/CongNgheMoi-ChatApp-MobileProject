@@ -1,4 +1,9 @@
 {
+    "tabbarProfile": "Profile",
+    "tabbarChat": "Chat",
+    "tabbarContact": "Contact",
+    "tabbarStory": "Feeds",
+    "tabbarSettings": "Settings",
     "initialScreenLogin": "Login",
     "initialScreenRegister": "Register",
     "initialScreenSlider1.title": "Smooth video call",
@@ -51,5 +56,6 @@
     "registerChooseImageFromDirectoryDesc": "You can edit photos with many interesting options and color filters",
     "registerChooseImageNow": "Choose image",
     "registerChooseImageFromLibrary": "Choose photo from gallery",
-    "registerTakePhotoFromCamera": "Take photos from the camera"
+    "registerTakePhotoFromCamera": "Take photos from the camera",
+    "tabbarLogoutText": "Đăng xuất"
 }

@@ -1,4 +1,9 @@
 {
+    "tabbarProfile": "Cá nhân",
+    "tabbarChat": "Tin nhắn",
+    "tabbarContact": "Danh bạ",
+    "tabbarStory": "Bảng tin",
+    "tabbarSettings": "Cài đặt",
     "initialScreenLogin": "Đăng nhập",
     "initialScreenRegister": "Đăng ký",
     "initialScreenSlider1.title": "Gọi video ổn định",
@@ -51,7 +56,8 @@
     "registerChooseImageFromDirectoryDesc": "Bạn có thể chỉnh sửa ảnh với nhiều tùy chọn và bộc lọc màu thú vị",
     "registerChooseImageNow": "Chọn ảnh ngay",
     "registerChooseImageFromLibrary": "Chọn ảnh từ thư viện",
-    "registerTakePhotoFromCamera": "Chụp ảnh từ camera"
+    "registerTakePhotoFromCamera": "Chụp ảnh từ camera",
+    "tabbarLogoutText": "Đăng xuất"
 
 
 }

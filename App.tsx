@@ -14,6 +14,7 @@ import { StepOneRegister, StepTwoRegister, StepThreeRegister} from './components
 import StepFourRegister from './components/register/stepFourRegister';
 import StepFiveRegister from './components/register/stepFiveRegister';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import PrimaryBottomTab from './components/primaryBottomTab';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,7 +29,9 @@ export default function App() {
     <Provider store={store}>
       <ActionSheetProvider>
         <NavigationContainer>
-          <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='StepFiveRegister'>
+          <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
+          
+          >
             <Stack.Screen name='OpenScreen' component={OpenScreen}/>
             <Stack.Screen name="InitialScreen" component={InitialScreen} />
             <Stack.Screen name='Login' component={Login}/>
@@ -37,6 +40,7 @@ export default function App() {
             <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
             <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
             <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
+            <Stack.Screen name='PrimaryBottomTab' component={PrimaryBottomTab}/>
           </Stack.Navigator>
         </NavigationContainer>
       </ActionSheetProvider>
