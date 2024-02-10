@@ -57,7 +57,9 @@
     "registerChooseImageNow": "Chọn ảnh ngay",
     "registerChooseImageFromLibrary": "Chọn ảnh từ thư viện",
     "registerTakePhotoFromCamera": "Chụp ảnh từ camera",
-    "tabbarLogoutText": "Đăng xuất"
-
+    "tabbarLogoutText": "Đăng xuất",
+    "chatListTitle": "Tin nhắn",
+    "chatListSearchPlaceholder": "Tìm kiếm tin nhắn hoặc người dùng",
+    "chatListRecentTitle": "Gần đây"
 
 }

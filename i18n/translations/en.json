@@ -57,5 +57,10 @@
     "registerChooseImageNow": "Choose image",
     "registerChooseImageFromLibrary": "Choose photo from gallery",
     "registerTakePhotoFromCamera": "Take photos from the camera",
-    "tabbarLogoutText": "Đăng xuất"
+    "tabbarLogoutText": "Log out",
+    "chatListTitle": "Chats",
+    "chatListSearchPlaceholder": "Search messages or users",
+    "chatListRecentTitle": "Recent"
+
+
 }

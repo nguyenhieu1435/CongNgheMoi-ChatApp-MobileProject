@@ -12,7 +12,7 @@ export default StyleSheet.create({
 
     darkTertiaryBackground: {backgroundColor: "#36404A"},
 
-    lightTertiaryBackground: {backgroundColor: "#FFFFFF"},
+    lightTertiaryBackground: {backgroundColor: "#e6ebf5"},
 
     darkPrimaryText: {color: "#FFFFFF"},
 

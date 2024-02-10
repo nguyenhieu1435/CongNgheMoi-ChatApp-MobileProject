@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
     chatListContainer: {
         flex: 1,
         padding: 10,
+        paddingBottom: 0
     },
     chatListHeader: {
         padding: 10,
@@ -75,6 +76,7 @@ export const styles = StyleSheet.create({
     chatListHistoryBox: {
         padding: 10,
         flexGrow: 1,
+        paddingBottom: 0
     },
     chatListHistoryTitle:{
         fontSize: 17,
@@ -82,7 +84,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 10
     },
     chatListHistoryScroll:{
-     
+        flex: 1,
     },
     chatListHistoryItem: {
         flexDirection: "row",
@@ -111,7 +113,7 @@ export const styles = StyleSheet.create({
         marginBottom: 3,
     },
     chatListHistoryMsgNumber: {
-        fontSize: 13,
+        fontSize: 12,
         textAlign: "center",
         color: commonStyles.redPrimaryColor.color,
         backgroundColor: commonStyles.redPrimaryBackground.backgroundColor,
