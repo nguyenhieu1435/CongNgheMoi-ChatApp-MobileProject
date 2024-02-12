@@ -14,6 +14,11 @@ export default StyleSheet.create({
 
     lightTertiaryBackground: {backgroundColor: "#e6ebf5"},
 
+    darkFourBackground: {backgroundColor: "#313a43"},
+
+    lightFourBackground: {backgroundColor: "#ffffff"},
+
+
     darkPrimaryText: {color: "#FFFFFF"},
 
     lightPrimaryText: {color: "#343a40"},
@@ -47,5 +52,11 @@ export default StyleSheet.create({
     },
     redPrimaryBackground: {
         backgroundColor: "rgba(239,71,111,.18)"
+    },
+    chatNavbarBorderBottomColorLight: {
+        color: "#f0eff5"
+    },
+    chatNavbarBorderBottomColorDark: {
+        color: "#36404a"
     }
 })

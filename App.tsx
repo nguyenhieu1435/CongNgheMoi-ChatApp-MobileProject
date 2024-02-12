@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import InitialScreen from './components/initialScreen';
 import "./i18n/i18n.config"
 import { Provider } from 'react-redux';
@@ -15,6 +15,8 @@ import StepFourRegister from './components/register/stepFourRegister';
 import StepFiveRegister from './components/register/stepFiveRegister';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import PrimaryBottomTab from './components/primaryBottomTab';
+import ChatDetail from './components/chatDetail';
+import { EventProvider } from 'react-native-outside-press';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,23 +29,43 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <ActionSheetProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
-          
-          >
-            <Stack.Screen name='OpenScreen' component={OpenScreen}/>
-            <Stack.Screen name="InitialScreen" component={InitialScreen} />
-            <Stack.Screen name='Login' component={Login}/>
-            <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
-            <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
-            <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
-            <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
-            <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
-            <Stack.Screen name='PrimaryBottomTab' component={PrimaryBottomTab}/>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </ActionSheetProvider>
+      <EventProvider style={{ flex: 1 }}>
+        <ActionSheetProvider>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
+            
+            >
+              <Stack.Screen name='OpenScreen' component={OpenScreen}/>
+              <Stack.Screen name="InitialScreen" component={InitialScreen} />
+              <Stack.Screen name='Login' component={Login}/>
+              <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
+              <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
+              <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
+              <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
+              <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
+              <Stack.Screen name='PrimaryBottomTab' component={PrimaryBottomTab}/>
+              <Stack.Screen name='ChatDetail' component={ChatDetail}
+                options={{
+                  cardStyleInterpolator: ({ current, layouts }) => {
+                    return {
+                      cardStyle: {
+                        transform: [
+                          {
+                            translateX: current.progress.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [layouts.screen.width, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    };
+                  },
+                }}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ActionSheetProvider>
+      </EventProvider>
     </Provider>
   );
 }

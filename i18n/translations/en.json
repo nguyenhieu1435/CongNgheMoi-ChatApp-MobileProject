@@ -60,7 +60,15 @@
     "tabbarLogoutText": "Log out",
     "chatListTitle": "Chats",
     "chatListSearchPlaceholder": "Search messages or users",
-    "chatListRecentTitle": "Recent"
-
+    "chatListRecentTitle": "Recent",
+    "chatDetailSearchPlaceholder": "Search...",
+    "chatDetailSendTextPlaceholder": "Enter Message...",
+    "chatDetaildMoreViewProfileTitle": "View profile",
+    "chatDetailMoreMuteTitle": "Muted",
+    "chatDetailMoreDeleteTitle": "Delete",
+    "chatDetailMessageCopyAction": "Copy",
+    "chatDetailMessageDeleteAction": "Delete",
+    "chatDetailMessageForwardAction": "Forward",
+    "chatDetailMessageSaveAction": "Save"
 
 }

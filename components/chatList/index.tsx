@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, TextInput, Image, Dimensions } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, TextInput, Image, Dimensions, TouchableOpacity } from 'react-native'
 import { styles } from './styles';
 import { useSelector } from 'react-redux';
 import { IRootState } from '../../redux_toolkit/store';
@@ -455,7 +455,9 @@ export default function ChatList({navigation} : Props) {
                         ]}
                         showsVerticalScrollIndicator={false}
                     >
-                        <View
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
+                            activeOpacity={1}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -523,7 +525,7 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                         <View
                             style={[styles.chatListHistoryItem]}
                         >

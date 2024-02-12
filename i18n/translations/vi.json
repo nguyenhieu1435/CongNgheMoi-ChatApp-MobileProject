@@ -60,6 +60,15 @@
     "tabbarLogoutText": "Đăng xuất",
     "chatListTitle": "Tin nhắn",
     "chatListSearchPlaceholder": "Tìm kiếm tin nhắn hoặc người dùng",
-    "chatListRecentTitle": "Gần đây"
+    "chatListRecentTitle": "Gần đây",
+    "chatDetailSearchPlaceholder": "Tìm kiếm...",
+    "chatDetailSendTextPlaceholder": "Nhập tin nhắn...",
+    "chatDetaildMoreViewProfileTitle": "Xem trang cá nhân",
+    "chatDetailMoreMuteTitle": "Tắt thông báo",
+    "chatDetailMoreDeleteTitle": "Xóa cuộc trò chuyện",
+    "chatDetailMessageCopyAction": "Sao chép",
+    "chatDetailMessageDeleteAction": "Xóa",
+    "chatDetailMessageForwardAction": "Chuyển tiếp",
+    "chatDetailMessageSaveAction": "Lưu"
 
 }
