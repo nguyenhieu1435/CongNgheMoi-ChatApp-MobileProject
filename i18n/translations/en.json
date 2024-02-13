@@ -69,6 +69,14 @@
     "chatDetailMessageCopyAction": "Copy",
     "chatDetailMessageDeleteAction": "Delete",
     "chatDetailMessageForwardAction": "Forward",
-    "chatDetailMessageSaveAction": "Save"
+    "chatDetailMessageSaveAction": "Save",
+    "chatProfileAboutTitle": "About",
+    "chatProfileAboutName": "Name",
+    "chatProfileAboutEmail": "Email",
+    "chatProfileAboutTime": "Time",
+    "chatProfileAboutLocation": "Location",
+    "chatProfileAttachedFiles": "AttachedFiles",
+    "chatProfileAttachedMembers": "Members",
+    "personalTitle": "My Profile"
 
 }

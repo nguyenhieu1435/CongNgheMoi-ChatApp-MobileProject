@@ -17,6 +17,8 @@ import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import PrimaryBottomTab from './components/primaryBottomTab';
 import ChatDetail from './components/chatDetail';
 import { EventProvider } from 'react-native-outside-press';
+import Personal from './components/personal';
+import ChatProfile from './components/chatProfile';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,6 +46,7 @@ export default function App() {
               <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
               <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
               <Stack.Screen name='PrimaryBottomTab' component={PrimaryBottomTab}/>
+              <Stack.Screen name='ChatProfile' component={ChatProfile}/>
               <Stack.Screen name='ChatDetail' component={ChatDetail}
                 options={{
                   cardStyleInterpolator: ({ current, layouts }) => {

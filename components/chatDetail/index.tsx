@@ -322,6 +322,9 @@ export default function ChatDetail({navigation} : Props) {
                                     ]}
                                 >
                                     <TouchableOpacity
+                                        onPress={()=>{
+                                            navigation.navigate("ChatProfile")
+                                        }}
                                         style={[
                                             styles.chatDetailNavbarBaseActionMoreItem
                                         ]}

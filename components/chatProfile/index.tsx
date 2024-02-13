@@ -1,18 +1,22 @@
-import { View, Text, Image, StatusBar, SafeAreaView, TouchableOpacity, ScrollView, Platform, UIManager, LayoutAnimation } from 'react-native'
-import { styles } from './styles'
+import { View, Text, StatusBar, SafeAreaView, LayoutAnimation, Platform, TouchableOpacity, Image, UIManager } from 'react-native'
 import { useSelector } from 'react-redux'
 import { IRootState } from '../../redux_toolkit/store'
 import { useTranslation } from 'react-i18next'
-import commonStyles from '../../CommonStyles/commonStyles'
+import { styles } from './styles'
+import { ScrollView } from 'react-native-gesture-handler'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
+import commonStyles from '../../CommonStyles/commonStyles'
 import { useState } from 'react'
-import OutsidePressHandler from 'react-native-outside-press'
 
-export default function Personal() {
-    const theme = useSelector((state: IRootState) => state.theme.theme)
+interface ChatProfileProps {
+  navigation: any
+}
+
+export default function ChatProfile(props : ChatProfileProps) {
+    const {navigation} = props
+    const theme = useSelector<IRootState>(state => state.theme.theme)
     const {t} = useTranslation();
     const [indexTabSelected, setIndexTabSelected] = useState(0)
-    const [showPersonalPopup, setShowPersonalPopup] = useState(false)
 
     if(Platform.OS === 'android') {
       UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -29,9 +33,9 @@ export default function Personal() {
     }
 
     return (
-        <View
+      <View
         style={[
-          styles.personalWrapper,
+          styles.chatProfileWrapper,
           theme === lightMode
           ?
           commonStyles.lightPrimaryBackground
@@ -48,100 +52,32 @@ export default function Personal() {
         >
           <View
             style={[
-                styles.personalHeaderWrapper
+              styles.chatProfileBoxClose
             ]}
           >
-            <Text
-                style={[
-                    styles.personalHeaderWrapperTitle,
-                    theme === lightMode
-                    ?
-                    commonStyles.lightPrimaryText
-                    :
-                    commonStyles.darkPrimaryText
-                ]}
-            >{t("personalTitle")}</Text>
-            <OutsidePressHandler
-                onOutsidePress={()=> {
-                    setShowPersonalPopup(false)
-                }}
-                style={{
-                    position: "relative",
-                    zIndex: 10
-                }}
+            <TouchableOpacity
+              onPress={()=> navigation.goBack()}
             >
-                <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={()=> setShowPersonalPopup(!showPersonalPopup)}
-                >
-                    <Image
-                        source={require("../../assets/more-vertical-line-icon.png")}
-                        style={[
-                            styles.personalHeaderWrapperMore,
-                            {
-                                tintColor: theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText.color
-                                :
-                                commonStyles.darkPrimaryText.color
-                            }
-                        ]}
-                    />
-                </TouchableOpacity>
-                {
-                    showPersonalPopup
-                    &&
-                    <View
-                        style={[
-                            styles.personalHeaderMorePopup,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightTertiaryBackground
-                            :
-                            commonStyles.darkTertiaryBackground,
-                            {
-                                shadowColor: '#0F223A',
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.12,
-                                shadowRadius: 4,
-                                elevation: 4, 
-                            }
-                        ]}
-                    >
-                        <TouchableOpacity>
-                            <Text
-                                style={[
-                                    styles.personalHeaderMorePopupItemText,
-                                    theme == lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText
-                                    :
-                                    commonStyles.darkPrimaryText
-                                ]}
-                            >Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text
-                                style={[
-                                    styles.personalHeaderMorePopupItemText,
-                                    theme == lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText
-                                    :
-                                    commonStyles.darkPrimaryText
-                                ]}
-                            >Action</Text>
-                        </TouchableOpacity>
-                    </View>
+              <Image
+                source={require("../../assets/close-line-icon.png")}
+                style={[{
+                  width: 22,
+                  height: 22,
+                  padding: 5
+                }]}
+                tintColor={
+                  theme == lightMode
+                  ?
+                  commonStyles.lightSecondaryText.color
+                  :
+                  commonStyles.darkSecondaryText.color
                 }
-            </OutsidePressHandler>
+              />
+            </TouchableOpacity>
           </View>
           <View
             style={[
-              styles.personalHeaderBox,
+              styles.chatProfileHeaderBox,
               {
                 borderBottomColor:
                 theme === lightMode
@@ -155,12 +91,12 @@ export default function Personal() {
             <Image
               source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
               style={[
-                styles.personalAvatarImage
+                styles.chatProfileAvatarImage
               ]}
             />
             <Text
               style={[
-                styles.personalUsernameText,
+                styles.chatProfileUsernameText,
                 theme === lightMode
                 ?
                 commonStyles.lightPrimaryText
@@ -170,12 +106,12 @@ export default function Personal() {
             >Doris Brown</Text>
             <View
               style={[
-                styles.personalActivityBox
+                styles.chatProfileActivityBox
               ]}
             >
               <View
                 style={[
-                  styles.personalActivityIcon,
+                  styles.chatProfileActivityIcon,
                   {
                     backgroundColor: commonStyles.activeOnlineColor.color
                   }
@@ -184,7 +120,7 @@ export default function Personal() {
               </View>
               <Text
                 style={[
-                  styles.personalActivityText,
+                  styles.chatProfileActivityText,
                   theme === lightMode
                   ?
                   commonStyles.lightSecondaryText
@@ -196,12 +132,12 @@ export default function Personal() {
           </View>
           <ScrollView
             style={[
-              styles.personalScrollBox
+              styles.chatProfileScrollBox
             ]}
           >
             <Text
               style={[
-                styles.personalDescriptionText,
+                styles.chatProfileDescriptionText,
                 theme === lightMode
                 ?
                 commonStyles.lightSecondaryText
@@ -229,19 +165,19 @@ export default function Personal() {
                 onPress={()=> handleClickTab(0)}
                 style={
                   [
-                    styles.personalToggleDetailBox
+                    styles.chatProfileToggleDetailBox
                   ]
                 }
               >
                 <View
                   style={[
-                    styles.personalToggleDetailLeft
+                    styles.chatProfileToggleDetailLeft
                   ]}
                 >
                   <Image
                     source={require("../../assets/user-chatlist-bottom-tab.png")}
                     style={[
-                      styles.personalColabsibleIconLeft,
+                      styles.chatProfileColabsibleIconLeft,
                       {
                         tintColor: theme === lightMode
                         ?
@@ -253,7 +189,7 @@ export default function Personal() {
                   />
                   <Text
                     style={[
-                      styles.personalColabsibleText,
+                      styles.chatProfileColabsibleText,
                       theme === lightMode
                       ?
                       commonStyles.lightPrimaryText
@@ -271,7 +207,7 @@ export default function Personal() {
                     require("../../assets/arrow-down-s-line-icon.png")
                   }
                   style={[
-                    styles.personalColabsibleIconRight,
+                    styles.chatProfileColabsibleIconRight,
                     {
                       tintColor: theme === lightMode
                       ?
@@ -288,12 +224,12 @@ export default function Personal() {
                 <View>
                   <View
                     style={[
-                      styles.personalAboutItemBox
+                      styles.chatProfileAboutItemBox
                     ]}
                   >
                     <Text
                       style={[
-                        styles.personalAboutItemTitle,
+                        styles.chatProfileAboutItemTitle,
                         theme === lightMode
                         ?
                         commonStyles.lightSecondaryText
@@ -305,7 +241,7 @@ export default function Personal() {
                     </Text>
                     <Text
                       style={[
-                        styles.personalAboutItemValue,
+                        styles.chatProfileAboutItemValue,
                         theme === lightMode
                         ?
                         commonStyles.lightPrimaryText
@@ -318,12 +254,12 @@ export default function Personal() {
                   </View>
                   <View
                     style={[
-                      styles.personalAboutItemBox
+                      styles.chatProfileAboutItemBox
                     ]}
                   >
                     <Text
                       style={[
-                        styles.personalAboutItemTitle,
+                        styles.chatProfileAboutItemTitle,
                         theme === lightMode
                         ?
                         commonStyles.lightSecondaryText
@@ -335,7 +271,7 @@ export default function Personal() {
                     </Text>
                     <Text
                       style={[
-                        styles.personalAboutItemValue,
+                        styles.chatProfileAboutItemValue,
                         theme === lightMode
                         ?
                         commonStyles.lightPrimaryText
@@ -348,12 +284,12 @@ export default function Personal() {
                   </View>
                   <View
                     style={[
-                      styles.personalAboutItemBox
+                      styles.chatProfileAboutItemBox
                     ]}
                   >
                     <Text
                       style={[
-                        styles.personalAboutItemTitle,
+                        styles.chatProfileAboutItemTitle,
                         theme === lightMode
                         ?
                         commonStyles.lightSecondaryText
@@ -365,7 +301,7 @@ export default function Personal() {
                     </Text>
                     <Text
                       style={[
-                        styles.personalAboutItemValue,
+                        styles.chatProfileAboutItemValue,
                         theme === lightMode
                         ?
                         commonStyles.lightPrimaryText
@@ -378,12 +314,12 @@ export default function Personal() {
                   </View>
                   <View
                     style={[
-                      styles.personalAboutItemBox
+                      styles.chatProfileAboutItemBox
                     ]}
                   >
                     <Text
                       style={[
-                        styles.personalAboutItemTitle,
+                        styles.chatProfileAboutItemTitle,
                         theme === lightMode
                         ?
                         commonStyles.lightSecondaryText
@@ -395,7 +331,7 @@ export default function Personal() {
                     </Text>
                     <Text
                       style={[
-                        styles.personalAboutItemValue,
+                        styles.chatProfileAboutItemValue,
                         theme === lightMode
                         ?
                         commonStyles.lightPrimaryText
@@ -426,19 +362,19 @@ export default function Personal() {
                 onPress={()=> handleClickTab(1)}
                 style={
                   [
-                    styles.personalToggleDetailBox
+                    styles.chatProfileToggleDetailBox
                   ]
                 }
               >
                 <View
                   style={[
-                    styles.personalToggleDetailLeft
+                    styles.chatProfileToggleDetailLeft
                   ]}
                 >
                   <Image
                     source={require("../../assets/attachment-line-icon.png")}
                     style={[
-                      styles.personalColabsibleIconLeft,
+                      styles.chatProfileColabsibleIconLeft,
                       {
                         tintColor: theme === lightMode
                         ?
@@ -450,7 +386,7 @@ export default function Personal() {
                   />
                   <Text
                     style={[
-                      styles.personalColabsibleText,
+                      styles.chatProfileColabsibleText,
                       theme === lightMode
                       ?
                       commonStyles.lightPrimaryText
@@ -468,7 +404,7 @@ export default function Personal() {
                     require("../../assets/arrow-down-s-line-icon.png")
                   }
                   style={[
-                    styles.personalColabsibleIconRight,
+                    styles.chatProfileColabsibleIconRight,
                     {
                       tintColor: theme === lightMode
                       ?
@@ -484,12 +420,12 @@ export default function Personal() {
                 &&
                 <View
                   style={[
-                    styles.personalFilesList
+                    styles.chatProfileFilesList
                   ]}
                 >
                   <View
                     style={[
-                      styles.personalFilesItem,
+                      styles.chatProfileFilesItem,
                       {
                         borderColor: theme === lightMode
                         ?
@@ -501,7 +437,7 @@ export default function Personal() {
                   >
                     <View
                       style={[
-                        styles.personalFilesItemImgBox,
+                        styles.chatProfileFilesItemImgBox,
                         {
                           backgroundColor: theme === lightMode
                           ?
@@ -522,12 +458,12 @@ export default function Personal() {
                     </View>
                     <View
                       style={[
-                        styles.personalFilesItemInfoBox
+                        styles.chatProfileFilesItemInfoBox
                       ]}
                     >
                       <Text
                         style={[
-                          styles.personalFilesItemFileName,
+                          styles.chatProfileFilesItemFileName,
                           theme === lightMode
                           ?
                           commonStyles.lightPrimaryText
@@ -537,7 +473,7 @@ export default function Personal() {
                       >Admin-A.zip</Text>
                       <Text
                         style={[
-                          styles.personalFilesItemFileSize,
+                          styles.chatProfileFilesItemFileSize,
                           theme === lightMode
                           ?
                           commonStyles.lightSecondaryText
@@ -550,7 +486,7 @@ export default function Personal() {
                       <Image
                         source={require("../../assets/download-2-line-icon.png")}
                         style={[
-                          styles.personalSecondIcon,
+                          styles.chatProfileSecondIcon,
                           {
                             tintColor: theme === lightMode
                             ?
@@ -565,7 +501,7 @@ export default function Personal() {
                       <Image
                         source={require("../../assets/more-fill-icon.png")}
                         style={[
-                          styles.personalSecondIcon,
+                          styles.chatProfileSecondIcon,
                           {
                             tintColor: theme === lightMode
                             ?
@@ -579,7 +515,7 @@ export default function Personal() {
                   </View>
                   <View
                     style={[
-                      styles.personalFilesItem,
+                      styles.chatProfileFilesItem,
                       {
                         borderColor: theme === lightMode
                         ?
@@ -591,7 +527,7 @@ export default function Personal() {
                   >
                     <View
                       style={[
-                        styles.personalFilesItemImgBox,
+                        styles.chatProfileFilesItemImgBox,
                         {
                           backgroundColor: theme === lightMode
                           ?
@@ -612,12 +548,12 @@ export default function Personal() {
                     </View>
                     <View
                       style={[
-                        styles.personalFilesItemInfoBox
+                        styles.chatProfileFilesItemInfoBox
                       ]}
                     >
                       <Text
                         style={[
-                          styles.personalFilesItemFileName,
+                          styles.chatProfileFilesItemFileName,
                           theme === lightMode
                           ?
                           commonStyles.lightPrimaryText
@@ -627,7 +563,7 @@ export default function Personal() {
                       >Admin-A.zip</Text>
                       <Text
                         style={[
-                          styles.personalFilesItemFileSize,
+                          styles.chatProfileFilesItemFileSize,
                           theme === lightMode
                           ?
                           commonStyles.lightSecondaryText
@@ -640,7 +576,7 @@ export default function Personal() {
                       <Image
                         source={require("../../assets/download-2-line-icon.png")}
                         style={[
-                          styles.personalSecondIcon,
+                          styles.chatProfileSecondIcon,
                           {
                             tintColor: theme === lightMode
                             ?
@@ -655,7 +591,7 @@ export default function Personal() {
                       <Image
                         source={require("../../assets/more-fill-icon.png")}
                         style={[
-                          styles.personalSecondIcon,
+                          styles.chatProfileSecondIcon,
                           {
                             tintColor: theme === lightMode
                             ?
@@ -670,7 +606,153 @@ export default function Personal() {
                 </View>
               }
             </View>
-           
+            <View
+              style={[
+                styles.chatDetailCollapsibleBox,
+                {
+                  borderColor: theme === lightMode
+                  ?
+                  commonStyles.chatNavbarBorderBottomColorLight.color
+                  :
+                  commonStyles.chatNavbarBorderBottomColorDark.color
+                }
+              ]}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={()=> handleClickTab(2)}
+                style={
+                  [
+                    styles.chatProfileToggleDetailBox
+                  ]
+                }
+              >
+                <View
+                  style={[
+                    styles.chatProfileToggleDetailLeft
+                  ]}
+                >
+                  <Image
+                    source={require("../../assets/group-line-icon.png")}
+                    style={[
+                      styles.chatProfileColabsibleIconLeft,
+                      {
+                        tintColor: theme === lightMode
+                        ?
+                        commonStyles.lightPrimaryText.color
+                        :
+                        commonStyles.darkPrimaryText.color
+                      }
+                    ]}
+                  />
+                  <Text
+                    style={[
+                      styles.chatProfileColabsibleText,
+                      theme === lightMode
+                      ?
+                      commonStyles.lightPrimaryText
+                      :
+                      commonStyles.darkPrimaryText
+                    ]}
+                  >{t("chatProfileAttachedMembers")}</Text>
+                </View>
+                <Image
+                  source={
+                    indexTabSelected === 2
+                    ?
+                    require("../../assets/arrow-up-s-line-icon.png")
+                    :
+                    require("../../assets/arrow-down-s-line-icon.png")
+                  }
+                  style={[
+                    styles.chatProfileColabsibleIconRight,
+                    {
+                      tintColor: theme === lightMode
+                      ?
+                      commonStyles.lightPrimaryText.color
+                      :
+                      commonStyles.darkPrimaryText.color
+                    }
+                  ]}
+                />
+              </TouchableOpacity>
+              {
+                indexTabSelected == 2
+                &&
+                <View
+                  style={[
+                    styles.chatProfileMemberList
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.chatProfileMemberItem
+                    ]}
+                  >
+                    <Image
+                      source={{uri:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0-kPnVziTcIJEMOtUOGpqcrUTXGv6-OU_GCzo3kvNNw&s"}}
+                      style={[
+                        styles.chatProfileMemberAvatar
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.chatProfileMemberName,
+                        theme === lightMode
+                        ?
+                        commonStyles.lightPrimaryText
+                        :
+                        commonStyles.darkPrimaryText
+                      ]}
+                    >
+                      Doris Brown
+                    </Text>
+                    <Text
+                      style={[
+                        styles.chatProfileMemberRole,
+                        theme === lightMode
+                        ?
+                        commonStyles.lightSecondaryText
+                        :
+                        commonStyles.darkSecondaryText,
+                        {
+                          backgroundColor: commonStyles.redPrimaryBackground.backgroundColor,
+                          color: commonStyles.redPrimaryColor.color
+                        
+                        }
+                      ]}
+                    >
+                      Admin
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.chatProfileMemberItem
+                    ]}
+                  >
+                    <Image
+                      source={{uri:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0-kPnVziTcIJEMOtUOGpqcrUTXGv6-OU_GCzo3kvNNw&s"}}
+                      style={[
+                        styles.chatProfileMemberAvatar
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.chatProfileMemberName,
+                        theme === lightMode
+                        ?
+                        commonStyles.lightPrimaryText
+                        :
+                        commonStyles.darkPrimaryText
+                      ]}
+                    >
+                      Doris Brown
+                    </Text>
+                    
+                  </View>
+                </View>
+              }
+            </View>
           </ScrollView>
         </SafeAreaView>
       </View>

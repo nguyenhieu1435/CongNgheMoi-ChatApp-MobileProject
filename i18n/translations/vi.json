@@ -69,6 +69,15 @@
     "chatDetailMessageCopyAction": "Sao chép",
     "chatDetailMessageDeleteAction": "Xóa",
     "chatDetailMessageForwardAction": "Chuyển tiếp",
-    "chatDetailMessageSaveAction": "Lưu"
+    "chatDetailMessageSaveAction": "Lưu",
+    "chatProfileAboutTitle": "Giới thiệu",
+    "chatProfileAboutName": "Tên",
+    "chatProfileAboutEmail": "Email",
+    "chatProfileAboutTime": "Tham gia từ",
+    "chatProfileAboutLocation": "Địa điểm",
+    "chatProfileAttachedFiles": "Tệp đính kèm",
+    "chatProfileAttachedMembers": "Thành viên",
+    "personalTitle": "Cá nhân"
+
 
 }

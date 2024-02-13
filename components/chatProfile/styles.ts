@@ -1,83 +1,55 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-    personalHeaderWrapper:{
-        flexDirection: "row",
-        paddingHorizontal: 10,
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 30
-    },
-    personalHeaderMorePopup:{
-        position: "absolute",
-        right: 0,
-        width: 130,
-        top: "100%",
-        borderRadius: 6,
-        paddingVertical: 10,
-        paddingHorizontal: 15
-    },
-    personalHeaderMorePopupItemText:{
-        paddingVertical: 5,
-        fontSize: 15,
-    },
-    personalHeaderWrapperMore:{
-        width: 20,
-        height: 20,
-    },
-    personalHeaderWrapperTitle:{
-        fontSize: 22,
-        fontWeight: "bold"
-    },
-    personalWrapper:{
+    chatProfileWrapper:{
         flex: 1,
     },
-    personalBoxClose:{
+    chatProfileBoxClose:{
         flexDirection: 'row',
         justifyContent: 'flex-end',
         marginBottom: 20,
         paddingHorizontal: 10
     },
-    personalHeaderBox:{
+    chatProfileHeaderBox:{
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         borderBottomWidth: 1,
         paddingHorizontal: 10
     },
-    personalAvatarImage:{
+    chatProfileAvatarImage:{
         width: 95,
         height: 95,
         borderRadius: 100,
         marginBottom: 10,
     },
-    personalUsernameText:{
+    chatProfileUsernameText:{
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 10
     },
-    personalActivityBox:{
+    chatProfileActivityBox:{
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 10,
         gap: 10,
     },
-    personalActivityText:{
+    chatProfileActivityText:{
         fontSize: 15,
 
     },
-    personalActivityIcon:{
+    chatProfileActivityIcon:{
         width: 8,
         height: 8,
         borderRadius: 50,
 
     },
-    personalScrollBox:{
+    chatProfileScrollBox:{
         flexGrow: 1,
         padding: 10,
     },
-    personalDescriptionText:{
+    chatProfileDescriptionText:{
         fontSize: 15,
         lineHeight: 20,
     },
@@ -87,49 +59,49 @@ export const styles = StyleSheet.create({
         borderRadius: 4,
         marginTop: 10,
     },
-    personalToggleDetailBox:{
+    chatProfileToggleDetailBox:{
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 10,
     },
-    personalToggleDetailLeft:{
+    chatProfileToggleDetailLeft:{
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
         gap: 6,
     },
-    personalColabsibleIconLeft:{
+    chatProfileColabsibleIconLeft:{
         width: 18,
         height: 18,
         resizeMode: "contain",
     },
-    personalColabsibleText:{
+    chatProfileColabsibleText:{
         fontSize: 15,
         fontWeight: "500"
     },
-    personalColabsibleIconRight:{
+    chatProfileColabsibleIconRight:{
         width: 18,
         height: 18,
         resizeMode: "contain",
     },
-    personalAboutItemBox:{
+    chatProfileAboutItemBox:{
         flexDirection: "column",
         paddingBottom: 5,
         marginBottom: 10
     },
-    personalAboutItemTitle:{
+    chatProfileAboutItemTitle:{
         fontSize: 15,
         marginBottom: 2,
     },
-    personalAboutItemValue:{
+    chatProfileAboutItemValue:{
         fontSize: 15,
         fontWeight: "500"
     },
-    personalFilesList:{
+    chatProfileFilesList:{
         flexDirection: "column"
     },
-    personalFilesItem:{
+    chatProfileFilesItem:{
         flexDirection: "row",
         alignItems: "center",
         padding: 10,
@@ -138,49 +110,49 @@ export const styles = StyleSheet.create({
         marginBottom: 8,
         gap: 10,
     },
-    personalFilesItemImgBox:{
+    chatProfileFilesItemImgBox:{
         width: 48,
         height: 48,
         borderRadius: 4,
         alignItems: "center",
         justifyContent: "center",
     },
-    personalFilesItemInfoBox:{
+    chatProfileFilesItemInfoBox:{
         flexGrow: 1,
     },
-    personalFilesItemFileName:{
+    chatProfileFilesItemFileName:{
         fontSize: 15,
         fontWeight: "500"
     },
-    personalFilesItemFileSize:{
+    chatProfileFilesItemFileSize:{
         fontSize: 14,
         fontWeight: "500"
     },
-    personalSecondIcon:{
+    chatProfileSecondIcon:{
         width: 20,
         height: 20,
         resizeMode: "contain",
     },
-    personalMemberList:{
+    chatProfileMemberList:{
         flexDirection: "column",
         marginBottom: 10,
     },
-    personalMemberItem:{
+    chatProfileMemberItem:{
         flexDirection: "row",
         alignItems: "center",
         marginVertical: 10,
         gap: 10,
     },
-    personalMemberAvatar:{
+    chatProfileMemberAvatar:{
         width: 40,
         height: 40,
         borderRadius: 100,
     },
-    personalMemberName:{
+    chatProfileMemberName:{
         fontSize: 15,
         fontWeight: "500"
     },
-    personalMemberRole:{
+    chatProfileMemberRole:{
         fontSize: 12,
         fontWeight: "500",
         paddingVertical: 4,
