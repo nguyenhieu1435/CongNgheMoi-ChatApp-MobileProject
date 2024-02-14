@@ -14,7 +14,6 @@ export const styles = StyleSheet.create({
         padding: 10,
     },
     chatListTitleName: {
-        marginBottom: 20, 
         fontSize: 21,
         fontWeight: "500",
     },
@@ -121,6 +120,72 @@ export const styles = StyleSheet.create({
         borderRadius: 8,
         paddingVertical: 1,
     },
+    chatListHeaderMain:{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    chatListHeaderIconBox:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10
+    },
+    chatListHeaderImgIcon:{
+        width: 30,
+        height: 30,
+        borderRadius: 50,
+    },
+    chatListHeaderPopUpRightContainer:{
+        position: "relative",
+        zIndex: 20,
+    },
+    chatListHeaderPopUpRight:{
+        position: "absolute",
+        right: 0,
+        top: "130%",
+        padding: 10,
+        borderRadius: 6,
+        zIndex: 20,
+        width: 200,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
 
+        elevation: 5,
+    },
+    chatListHeaderPopUpRightText:{
+        fontSize: 15,
+        paddingVertical: 5,
+        marginBottom: 4,
+    },
+    chatListHeaderPopUpRightTriangle:{
+        position: "absolute",
+        top: -8,
+        right: 5,
+        width: 0,
+        height: 0,
+        borderLeftWidth: 10,
+        borderLeftColor: "transparent",
+        borderRightWidth: 10,
+        borderRightColor: "transparent",
+        borderBottomWidth: 10,
+    },
+    chatListHeaderPopUpRightBtn:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 15,
+    },
+    chatListHeaderPopUpRightIcon:{
+        width: 20,
+        height: 20,
+    },
+    chatListModalScanQR:{
+        flex: 1,
+    }
     
 })

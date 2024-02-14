@@ -19,6 +19,7 @@ import ChatDetail from './components/chatDetail';
 import { EventProvider } from 'react-native-outside-press';
 import Personal from './components/personal';
 import ChatProfile from './components/chatProfile';
+import AddFriend from './components/addFriend';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -34,7 +35,7 @@ export default function App() {
       <EventProvider style={{ flex: 1 }}>
         <ActionSheetProvider>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='AddFriend'
             
             >
               <Stack.Screen name='OpenScreen' component={OpenScreen}/>
@@ -47,6 +48,7 @@ export default function App() {
               <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>
               <Stack.Screen name='PrimaryBottomTab' component={PrimaryBottomTab}/>
               <Stack.Screen name='ChatProfile' component={ChatProfile}/>
+              <Stack.Screen name='AddFriend' component={AddFriend}/>
               <Stack.Screen name='ChatDetail' component={ChatDetail}
                 options={{
                   cardStyleInterpolator: ({ current, layouts }) => {

@@ -15,8 +15,8 @@ import { useForm, Controller, set } from "react-hook-form";
 import * as yup from 'yup'
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
 import { ICountryList, countrys, ICountryItem } from '../../../data/countrys';
+import ModalShowCountryCode from '../../modalShowCountryCode';
 
 
 interface Props {
@@ -33,8 +33,6 @@ interface IFormData2{
 export default function StepTwoRegister({navigation, route} : Props) {
   const {t} = useTranslation();
   const theme = useSelector((state : IRootState) => state.theme?.theme)
-  const [countryData, setCountryData] = useState<ICountryList[]>(countrys);
-  const [search, setSearch] = useState("");
   const [currentCountry, setCurrentCountry] = useState<ICountryItem>({
     code: "VN",
     dial_code: "+84",
@@ -65,11 +63,11 @@ export default function StepTwoRegister({navigation, route} : Props) {
     }
   });
 
-  useEffect(()=>{
-    if (!search.trim()){
-      setCountryData(countrys);
-    }
-  }, [search])
+  // useEffect(()=>{
+  //   if (!search.trim()){
+  //     setCountryData(countrys);
+  //   }
+  // }, [search])
 
   const handleSubmitForm = (data : IFormData2)=>{
   
@@ -99,51 +97,51 @@ export default function StepTwoRegister({navigation, route} : Props) {
     }
   }
 
-  const renderItemSectionList = (item : ICountryItem, index : number)=>{
-    return (  
-      <TouchableOpacity key={index}
-        onPress={()=> {
-          setCurrentCountry(item);
-          setVisibleModal(false);
-        }}
-      >
-        <View style={[styles.itemCountryBox, styles.itemSeperatorCom]}>
+  // const renderItemSectionList = (item : ICountryItem, index : number)=>{
+  //   return (  
+  //     <TouchableOpacity key={index}
+  //       onPress={()=> {
+  //         setCurrentCountry(item);
+  //         setVisibleModal(false);
+  //       }}
+  //     >
+  //       <View style={[styles.itemCountryBox, styles.itemSeperatorCom]}>
 
-          <Text style={[styles.countryName
-              , theme === lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText
-            ]}>
-              {item.name}
-          </Text>
+  //         <Text style={[styles.countryName
+  //             , theme === lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText
+  //           ]}>
+  //             {item.name}
+  //         </Text>
 
-          <Text style={[styles.countryDialCode
-              , theme === lightMode ? commonStyles.lightSecondaryText : commonStyles.darkSecondaryText
-            ]}>
-              {item.dial_code}
-          </Text>
+  //         <Text style={[styles.countryDialCode
+  //             , theme === lightMode ? commonStyles.lightSecondaryText : commonStyles.darkSecondaryText
+  //           ]}>
+  //             {item.dial_code}
+  //         </Text>
 
-        </View>
-      </TouchableOpacity>
-    )
-  }
+  //       </View>
+  //     </TouchableOpacity>
+  //   )
+  // }
 
-  const handleFilterCountry = ()=>{
-    let result : ICountryList[] = [];
-    countryData.forEach((item)=>{
-      let country : ICountryList = {
-        title: item.title,
-        data: []
-      }
-      item.data.forEach((item2)=>{
-        if (item2.name.toLowerCase().includes(search.toLowerCase()) && item.title !== ""){
-          country.data.push(item2);
-        }
-      })
-      if (country.data.length > 0){
-        result.push(country);
-      }
-    })
-    return result;
-  }
+  // const handleFilterCountry = ()=>{
+  //   let result : ICountryList[] = [];
+  //   countryData.forEach((item)=>{
+  //     let country : ICountryList = {
+  //       title: item.title,
+  //       data: []
+  //     }
+  //     item.data.forEach((item2)=>{
+  //       if (item2.name.toLowerCase().includes(search.toLowerCase()) && item.title !== ""){
+  //         country.data.push(item2);
+  //       }
+  //     })
+  //     if (country.data.length > 0){
+  //       result.push(country);
+  //     }
+  //   })
+  //   return result;
+  // }
 
   return (
     <View style={[styles.wrapperAll
@@ -296,7 +294,13 @@ export default function StepTwoRegister({navigation, route} : Props) {
           </View>
         </View>
       </View>
-      <Modal presentationStyle="fullScreen"
+      <ModalShowCountryCode
+        currentCountry={currentCountry}
+        setCurrentCountry={setCurrentCountry}
+        visibleModal={visibleModal}
+        setVisibleModal={setVisibleModal}
+      />
+      {/* <Modal presentationStyle="fullScreen"
         animationType='slide'
         visible={visibleModal}
       >
@@ -308,10 +312,14 @@ export default function StepTwoRegister({navigation, route} : Props) {
             <View
               style={[styles.boxChooseTheCountryCode]}
             >
-              <AntDesign name="close" size={22}
-                style={[styles.iconCloseModal]}
-                color={commonStyles.darkPrimaryText.color}
-              />
+              <TouchableOpacity
+                onPress={()=> setVisibleModal(false)}
+              >
+                <AntDesign name="close" size={22} 
+                  style={[styles.iconCloseModal]}
+                  color={commonStyles.darkPrimaryText.color}
+                />
+              </TouchableOpacity>
               <Text style={[styles.chooseTheCountryCode, commonStyles.darkPrimaryText]}>
                 {t("registerPhoneChooseCountry")}
               </Text>
@@ -365,7 +373,7 @@ export default function StepTwoRegister({navigation, route} : Props) {
             />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   )
 }

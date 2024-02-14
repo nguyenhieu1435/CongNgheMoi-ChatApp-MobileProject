@@ -1,4 +1,5 @@
-import { View, Text, StatusBar, SafeAreaView, TextInput, Image, Dimensions, TouchableOpacity } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, TextInput, Image
+    , Dimensions, TouchableOpacity, Modal } from 'react-native'
 import { styles } from './styles';
 import { useSelector } from 'react-redux';
 import { IRootState } from '../../redux_toolkit/store';
@@ -8,7 +9,9 @@ import commonStyles from '../../CommonStyles/commonStyles';
 import { EvilIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useState } from 'react';
+import OutsidePressHandler from 'react-native-outside-press';
 const {TypingAnimation} = require('react-native-typing-animation');
+import { Camera, requestCameraPermissionsAsync } from 'expo-camera';
 
 type Props = {
     navigation: any
@@ -19,7 +22,24 @@ export default function ChatList({navigation} : Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme)
     const {t} = useTranslation();
     const [textSearch, setTextSearch] = useState("");
-    
+    const [showHeaderMoreActionPopup, setShowHeaderMoreActionPopup] = useState(false);
+    const [showModalScanQRCode, setShowModalScanQRCode] = useState(false)
+    const [hasCameraPermission, setHasCameraPermission] = useState<null | boolean>(null);
+    const [startCamera, setStartCamera] = useState(false);  
+
+    async function handleToggleModalScanQRCode(){
+        if (showModalScanQRCode){
+            setShowModalScanQRCode(false);
+        } else {
+            setShowModalScanQRCode(true);
+            if (!hasCameraPermission){
+                const {status} = await Camera.requestCameraPermissionsAsync();
+                setHasCameraPermission(status === 'granted');
+                setStartCamera(status === 'granted');
+            }
+
+        }
+    }
 
     return (
         <View
@@ -34,13 +54,274 @@ export default function ChatList({navigation} : Props) {
                 <View
                     style={[styles.chatListHeader]}
                 >
-                    <Text
-                        style={[styles.chatListTitleName,
-                            theme === lightMode
-                            ? commonStyles.lightPrimaryText
-                            : commonStyles.darkPrimaryText
+                   <View
+                        style={[
+                            styles.chatListHeaderMain
                         ]}
-                    >{t("chatListTitle")}</Text>
+                    >
+                        <Text
+                            style={[styles.chatListTitleName,
+                                theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText
+                            ]}
+                        >{t("chatListTitle")}</Text>
+                        <View
+                            style={[
+                                styles.chatListHeaderIconBox
+                            ]}
+                        >
+                            <TouchableOpacity
+                                onPress={handleToggleModalScanQRCode}
+                            >
+                                <Image
+                                    source={require("../../assets/qr-code-line-icon.png")}
+                                    style={[
+                                        styles.chatListHeaderImgIcon,
+                                        {
+                                            tintColor: theme === lightMode
+                                            ?
+                                            commonStyles.lightIconColor.color
+                                            :
+                                            commonStyles.darkIconColor.color
+                                        }
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                            <OutsidePressHandler
+                                onOutsidePress={()=> setShowHeaderMoreActionPopup(false)}
+                                style={
+                                    [
+                                        styles.chatListHeaderPopUpRightContainer,
+                                    
+                                    ]
+                                }
+                            >
+                                <TouchableOpacity
+                                    onPress={() => setShowHeaderMoreActionPopup(!showHeaderMoreActionPopup)}
+                                >
+                                    <Image
+                                        source={require("../../assets/add-fill-icon.png")}
+                                        style={[
+                                            styles.chatListHeaderImgIcon,
+                                            {
+                                                tintColor: theme === lightMode
+                                                ?
+                                                commonStyles.lightIconColor.color
+                                                :
+                                                commonStyles.darkIconColor.color
+                                            }
+                                        ]}
+                                    />
+                                </TouchableOpacity>
+                                {
+                                    showHeaderMoreActionPopup
+                                    &&
+                                    <View
+                                        style={[
+                                            styles.chatListHeaderPopUpRight,
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightTertiaryBackground
+                                            :
+                                            commonStyles.darkTertiaryBackground
+                                            
+                                        ]}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.chatListHeaderPopUpRightTriangle,
+                                                {
+                                                    borderBottomColor: theme === lightMode
+                                                    ?
+                                                    commonStyles.lightTertiaryBackground.backgroundColor
+                                                    :
+                                                    commonStyles.darkTertiaryBackground.backgroundColor
+                                                }
+                                            ]}
+                                        >
+
+                                        </View>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/user-add-line.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListAddFriendTitle")}</Text>
+
+                                        </TouchableOpacity>
+                                        <TouchableOpacity   
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/add-group-icon.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListCreateGroupTitle")}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/cloud-line-icon.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListMyCloudTitle")}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/calendar-2-line-icon.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListMyCloudCalender")}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/vidicon-line-icon.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListCreateGroupCall")}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatListHeaderPopUpRightBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightIcon,
+                                                    {
+                                                        tintColor: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
+                                                ]}
+                                                source={require("../../assets/computer-line-icon.png")}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatListHeaderPopUpRightText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{t("chatListLoginDevices")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                }
+                            </OutsidePressHandler>
+                        </View>
+                    </View>
                     <View
                         style={[styles.chatListBoxSearch,
                             theme === lightMode
@@ -1393,6 +1674,19 @@ export default function ChatList({navigation} : Props) {
                     </ScrollView>
                 </View>
             </SafeAreaView>
+            <Modal visible={showModalScanQRCode}
+
+            >
+                {
+                    startCamera
+                    &&
+                    <Camera
+                        style={{flex: 1,}}
+                    >
+
+                    </Camera>
+                }
+            </Modal>
         </View>
     )
 }

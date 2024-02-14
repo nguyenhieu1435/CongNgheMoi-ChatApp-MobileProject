@@ -332,7 +332,7 @@ export const styles = StyleSheet.create({
         height: 1,
     },
     imageInChatHistory:{
-        width: 220,
+        width: "100%",
         height: 140,
         borderRadius: 6,
         borderWidth: 1,
@@ -350,7 +350,8 @@ export const styles = StyleSheet.create({
         tintColor: commonStyles.darkPrimaryText.color
     },
     chatDetailMessageFromOpponentImageItem:{
-        marginTop: 6
+        marginTop: 6,
+        position: "relative",
     },
     chatDetailMessageFromOpponentImageBox:{
         flexDirection: "column"

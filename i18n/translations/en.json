@@ -61,6 +61,12 @@
     "chatListTitle": "Chats",
     "chatListSearchPlaceholder": "Search messages or users",
     "chatListRecentTitle": "Recent",
+    "chatListAddFriendTitle": "Add friend",
+    "chatListCreateGroupTitle": "Create group",
+    "chatListMyCloudTitle": "My Cloud",
+    "chatListMyCloudCalender": "Calender",
+    "chatListCreateGroupCall": "Create group call",
+    "chatListLoginDevices": "Login devices",
     "chatDetailSearchPlaceholder": "Search...",
     "chatDetailSendTextPlaceholder": "Enter Message...",
     "chatDetaildMoreViewProfileTitle": "View profile",
@@ -77,6 +83,11 @@
     "chatProfileAboutLocation": "Location",
     "chatProfileAttachedFiles": "AttachedFiles",
     "chatProfileAttachedMembers": "Members",
-    "personalTitle": "My Profile"
+    "personalTitle": "My Profile",
+    "addFriendDescMyQr": "Scan my QR code to add me",
+    "addFriendInputSearchPlaceholder": "Input phone number",
+    "addFriendScanQrTitle": "Scan QR code",
+    "addFriendContactsInDevice": "Contacts in device",
+    "addFriendFriendMyKnow": "Friends I may know"
 
 }

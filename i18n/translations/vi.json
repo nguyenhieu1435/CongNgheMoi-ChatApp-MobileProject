@@ -61,6 +61,12 @@
     "chatListTitle": "Tin nhắn",
     "chatListSearchPlaceholder": "Tìm kiếm tin nhắn hoặc người dùng",
     "chatListRecentTitle": "Gần đây",
+    "chatListAddFriendTitle": "Thêm bạn",
+    "chatListCreateGroupTitle": "Tạo nhóm",
+    "chatListMyCloudTitle": "Cloud của tôi",
+    "chatListMyCloudCalender": "Lịch",
+    "chatListCreateGroupCall": "Tạo cuộc gọi nhóm",
+    "chatListLoginDevices": "Thiết bị đăng nhập",
     "chatDetailSearchPlaceholder": "Tìm kiếm...",
     "chatDetailSendTextPlaceholder": "Nhập tin nhắn...",
     "chatDetaildMoreViewProfileTitle": "Xem trang cá nhân",
@@ -77,7 +83,12 @@
     "chatProfileAboutLocation": "Địa điểm",
     "chatProfileAttachedFiles": "Tệp đính kèm",
     "chatProfileAttachedMembers": "Thành viên",
-    "personalTitle": "Cá nhân"
+    "personalTitle": "Cá nhân",
+    "addFriendDescMyQr": "Quét mã để kết bạn với tôi",
+    "addFriendInputSearchPlaceholder": "Nhập số điện thoại",
+    "addFriendScanQrTitle": "Quét mã QR",
+    "addFriendContactsInDevice": "Danh bạ máy",
+    "addFriendFriendMyKnow": "Bạn bè có thể quen"
 
 
 }
