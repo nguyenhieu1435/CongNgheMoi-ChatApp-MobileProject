@@ -616,6 +616,13 @@ export default function ChatDetail({navigation} : Props) {
                                             <Text
                                                     style={[
                                                         styles.chatDetailMessageFromOpponentInfoText,
+                                                        {
+                                                            color: theme === lightMode
+                                                            ?
+                                                            commonStyles.lightPrimaryText.color
+                                                            :
+                                                            commonStyles.darkPrimaryText.color
+                                                        }
                                                     
                                                     ]}
                                             >
@@ -756,6 +763,13 @@ export default function ChatDetail({navigation} : Props) {
                                             <Text
                                                     style={[
                                                         styles.chatDetailMessageFromOpponentInfoText,
+                                                        {
+                                                            color: theme === lightMode
+                                                            ?
+                                                            commonStyles.lightPrimaryText.color
+                                                            :
+                                                            commonStyles.darkPrimaryText.color
+                                                        }
                                                     
                                                     ]}
                                             >
@@ -902,6 +916,7 @@ export default function ChatDetail({navigation} : Props) {
                                             <Text
                                                 style={[
                                                     styles.chatDetailMessageFromOpponentInfoText,
+
                                                     
                                                 ]}
                                             >
@@ -1141,6 +1156,13 @@ export default function ChatDetail({navigation} : Props) {
                                             <Text
                                                 style={[
                                                     styles.chatDetailMessageFromOpponentInfoText,
+                                                    {
+                                                        color: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
                                                     
                                                 ]}
                                             >
@@ -1369,6 +1391,13 @@ export default function ChatDetail({navigation} : Props) {
                                             <Text
                                                 style={[
                                                     styles.chatDetailMessageFromOpponentInfoText,
+                                                    {
+                                                        color: theme === lightMode
+                                                        ?
+                                                        commonStyles.lightPrimaryText.color
+                                                        :
+                                                        commonStyles.darkPrimaryText.color
+                                                    }
                                                     
                                                 ]}
                                             >
@@ -1567,10 +1596,6 @@ export default function ChatDetail({navigation} : Props) {
                                             </Text>
                                             <TypingAnimation
                                                 dotColor={
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightPrimaryText.color
-                                                    :
                                                     commonStyles.darkPrimaryText.color
                                                 }
                                                 dotAmplitude={2}
