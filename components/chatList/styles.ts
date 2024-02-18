@@ -145,20 +145,11 @@ export const styles = StyleSheet.create({
     chatListHeaderPopUpRight:{
         position: "absolute",
         right: 0,
-        top: "130%",
+        top: "120%",
         padding: 10,
         borderRadius: 6,
         zIndex: 20,
         width: 200,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-
-        elevation: 5,
     },
     chatListHeaderPopUpRightText:{
         fontSize: 15,
@@ -176,6 +167,7 @@ export const styles = StyleSheet.create({
         borderRightWidth: 10,
         borderRightColor: "transparent",
         borderBottomWidth: 10,
+        zIndex: 10
     },
     chatListHeaderPopUpRightBtn:{
         flexDirection: "row",

@@ -104,5 +104,20 @@
     "searchDetailMatchedResult": "kết quả phù hợp",
     "searchDetailContactTabFriend": "Bạn bè",
     "searchDetailContactTabGroup": "Nhóm",
-    "searchDetailContactTabUnknownPeopleContacted": "Người lạ đã liên hệ"
+    "searchDetailContactTabUnknownPeopleContacted": "Người lạ đã liên hệ",
+    "searchDetailContactAddFriendInvitation": "Lời mời kết bạn",
+    "searchDetailContactMachineContact": "Danh bạ máy",
+    "searchDetailContactMachineContactDesc": "Người dùng có sử dụng ứng dụng",
+    "searchDetailContactBirthdaySchedule": "Lịch sinh nhật",
+    "searchDetailContactBirthdayScheduleDesc": "Theo dõi sinh nhật của bạn bè",
+    "searchDetailContactAllType": "Tất cả",
+    "searchDetailContactNewAccess": "Mới truy cập",
+    "searchDetailCreateNewGroup": "Tạo nhóm mới",
+    "searchDetailGroupsAreJoining": "Nhóm đang tham gia",
+    "searchDetailGroupFilterLastAccess": "Hoạt động cuối",
+    "searchDetailGroupFilterGroupNameSort": "Tên nhóm",
+    "searchDetailGroupFilterManagedByMe": "Nhóm quản lý",
+    "searchDetailFriendActionShare": "Chia sẻ",
+    "searchDetailFriendActionBlock": "Chặn",
+    "searchDetailFriendActionRemove": "Hủy kết bạn"
 }

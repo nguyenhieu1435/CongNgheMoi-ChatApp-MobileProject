@@ -128,26 +128,45 @@ export default function ChatList({navigation} : Props) {
                                             styles.chatListHeaderPopUpRight,
                                             theme === lightMode
                                             ?
-                                            commonStyles.lightTertiaryBackground
+                                            commonStyles.lightFourBackground
                                             :
-                                            commonStyles.darkTertiaryBackground
-                                            
+                                            commonStyles.darkFourBackground,
+                                            {
+                                                shadowColor: '#0F223A',
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.12,
+                                                shadowRadius: 4,
+                                                elevation: 4, 
+                                            },
+                                                
                                         ]}
                                     >
-                                        <View
+                                        {/* <View
                                             style={[
                                                 styles.chatListHeaderPopUpRightTriangle,
                                                 {
                                                     borderBottomColor: theme === lightMode
                                                     ?
-                                                    commonStyles.lightTertiaryBackground.backgroundColor
+                                                    commonStyles.lightFourBackground.backgroundColor
                                                     :
-                                                    commonStyles.darkTertiaryBackground.backgroundColor
+                                                    commonStyles.darkFourBackground.backgroundColor,
+                                                    shadowColor: '#0F223A',
+                                                    shadowOffset: {
+                                                        width: 0,
+                                                        height: 2,
+                                                    },
+                                                    shadowOpacity: 0.12,
+                                                    shadowRadius: 4,
+                                                    elevation: 4, 
                                                 }
+                                                
                                             ]}
                                         >
 
-                                        </View>
+                                        </View> */}
                                         <TouchableOpacity
                                             style={[
                                                 styles.chatListHeaderPopUpRightBtn

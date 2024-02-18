@@ -103,5 +103,18 @@
     "searchDetailMatchedResult": "matched result",
     "searchDetailContactTabFriend": "Friend",
     "searchDetailContactTabGroup": "Group",
-    "searchDetailContactTabUnknownPeopleContacted": "Unknown people contacted"
+    "searchDetailContactTabUnknownPeopleContacted": "Unknown people contacted",
+    "searchDetailContactAddFriendInvitation": "Add friend invitation",
+    "searchDetailContactMachineContact": "Machine contact",
+    "searchDetailContactBirthdaySchedule": "Birthday schedule",
+    "searchDetailContactAllType": "All",
+    "searchDetailContactNewAccess": "New access",
+    "searchDetailCreateNewGroup": "Create new group",
+    "searchDetailGroupsAreJoining": "Groups are joining",
+    "searchDetailGroupFilterLastAccess": "Last access",
+    "searchDetailGroupFilterGroupNameSort": "Group name",
+    "searchDetailGroupFilterManagedByMe": "Managed by me",
+    "searchDetailFriendActionShare": "Share",
+    "searchDetailFriendActionBlock": "Block",
+    "searchDetailFriendActionRemove": "Remove"
 }
