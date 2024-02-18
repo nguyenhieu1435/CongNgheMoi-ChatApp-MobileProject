@@ -88,7 +88,21 @@
     "addFriendInputSearchPlaceholder": "Nhập số điện thoại",
     "addFriendScanQrTitle": "Quét mã QR",
     "addFriendContactsInDevice": "Danh bạ máy",
-    "addFriendFriendMyKnow": "Bạn bè có thể quen"
-
-
+    "addFriendFriendMyKnow": "Bạn bè có thể quen",
+    "addFriendFriendMyKnowDesc": "Tìm kiếm bạn bè dựa trên danh bạ và bạn bè chung",
+    "searchDetailPopupContactFound": "Liên hệ đã tìm",
+    "searchDetailKeywordSearched": "Từ khóa đã tìm",
+    "searchDetailEditSearchHistory": "Chỉnh sửa lịch sử tìm kiếm",
+    "searchDetailAllTitle": "Tất cả",
+    "searchDetailContactTitle": "Liên hệ",
+    "searchDetailMessageTitle": "Tin nhắn",
+    "searchDetailSeeMore": "Xem thêm",
+    "searchDetailGroupTitle": "Nhóm",
+    "searchDetailUknownPeopleContacted": "Người lạ đã liên hệ",
+    "searchDetailAddFriendText": "Kết bạn",
+    "searchDetailMemberTitle": "Thành viên: ",
+    "searchDetailMatchedResult": "kết quả phù hợp",
+    "searchDetailContactTabFriend": "Bạn bè",
+    "searchDetailContactTabGroup": "Nhóm",
+    "searchDetailContactTabUnknownPeopleContacted": "Người lạ đã liên hệ"
 }

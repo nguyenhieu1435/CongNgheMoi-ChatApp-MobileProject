@@ -35,7 +35,7 @@ export default function App() {
       <EventProvider style={{ flex: 1 }}>
         <ActionSheetProvider>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='AddFriend'
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
             
             >
               <Stack.Screen name='OpenScreen' component={OpenScreen}/>

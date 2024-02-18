@@ -88,6 +88,20 @@
     "addFriendInputSearchPlaceholder": "Input phone number",
     "addFriendScanQrTitle": "Scan QR code",
     "addFriendContactsInDevice": "Contacts in device",
-    "addFriendFriendMyKnow": "Friends I may know"
-
+    "addFriendFriendMyKnow": "Friends I may know",
+    "searchDetailPopupContactFound": "Contact found",
+    "searchDetailKeywordSearched": "Keyword searched",
+    "searchDetailEditSearchHistory": "Edit search history",
+    "searchDetailAllTitle": "All",
+    "searchDetailContactTitle": "Contact",
+    "searchDetailMessageTitle": "Message",
+    "searchDetailSeeMore": "See more",
+    "searchDetailGroupTitle": "Group",
+    "searchDetailUknownPeopleContacted": "Unknown people contacted",
+    "searchDetailAddFriendText": "Add friend",
+    "searchDetailMemberTitle": "Member: ",
+    "searchDetailMatchedResult": "matched result",
+    "searchDetailContactTabFriend": "Friend",
+    "searchDetailContactTabGroup": "Group",
+    "searchDetailContactTabUnknownPeopleContacted": "Unknown people contacted"
 }

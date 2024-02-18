@@ -40,6 +40,9 @@ export default StyleSheet.create({
     lightBackgroundIconActive: {backgroundColor: "#f7f7ff"},
     
     primaryColor: {color: "#7269EF"},
+    primaryColorBackground: {
+        backgroundColor: "rgba(114, 105, 239, 0.3)"
+    },
 
     activeOnlineColor: {
         color: "#06d6a0"

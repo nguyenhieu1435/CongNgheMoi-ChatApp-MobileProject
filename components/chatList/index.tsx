@@ -8,10 +8,12 @@ import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import commonStyles from '../../CommonStyles/commonStyles';
 import { EvilIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import OutsidePressHandler from 'react-native-outside-press';
 const {TypingAnimation} = require('react-native-typing-animation');
 import { Camera, requestCameraPermissionsAsync } from 'expo-camera';
+import SearchDetailPopup from '../searchDetailPopup';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = {
     navigation: any
@@ -19,6 +21,7 @@ type Props = {
 const WIDTH = Dimensions.get("window").width;
 
 export default function ChatList({navigation} : Props) {
+
     const theme = useSelector((state: IRootState) => state.theme.theme)
     const {t} = useTranslation();
     const [textSearch, setTextSearch] = useState("");
@@ -26,6 +29,9 @@ export default function ChatList({navigation} : Props) {
     const [showModalScanQRCode, setShowModalScanQRCode] = useState(false)
     const [hasCameraPermission, setHasCameraPermission] = useState<null | boolean>(null);
     const [startCamera, setStartCamera] = useState(false);  
+    const [heightPopup, setHeightPopup] = useState(0);
+    const refTextInputSearch = useRef<TextInput>(null);
+    const [isOutsideTextInput, setIsOutsideTextInput] = useState(false);
 
     async function handleToggleModalScanQRCode(){
         if (showModalScanQRCode){
@@ -322,42 +328,53 @@ export default function ChatList({navigation} : Props) {
                             </OutsidePressHandler>
                         </View>
                     </View>
-                    <View
-                        style={[styles.chatListBoxSearch,
-                            theme === lightMode
-                            ? commonStyles.lightSecondaryBackground
-                            : commonStyles.darkSecondaryBackground
-                        ]}
+                    <OutsidePressHandler
+                        onOutsidePress={() => setIsOutsideTextInput(true)}
                     >
-                        <EvilIcons name="search" size={26} color={
-                            theme === lightMode
-                            ?
-                            commonStyles.lightIconColor.color
-                            :
-                            commonStyles.darkIconColor.color
-                            }
-                            style={[styles.iconSearchMsgAndUser]}
-                        />
-                        <TextInput
-                            placeholder={t("chatListSearchPlaceholder")}
-                            style={[styles.textInputSearchMsgOrUser,
+                        <View
+                            style={[styles.chatListBoxSearch,
                                 theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText
-                                :
-                                commonStyles.darkTertiaryText
+                                ? commonStyles.lightSecondaryBackground
+                                : commonStyles.darkSecondaryBackground
                             ]}
-                            placeholderTextColor={
+                            onTouchStart={() => setIsOutsideTextInput(false)}
+                        >
+                            <EvilIcons name="search" size={26} color={
                                 theme === lightMode
                                 ?
                                 commonStyles.lightIconColor.color
-                                : 
+                                :
                                 commonStyles.darkIconColor.color
-                            }
-                            value={textSearch}
-                            onChangeText={setTextSearch}
-                        />
-                    </View>
+                                }
+                                style={[styles.iconSearchMsgAndUser]}
+                            />
+                            <TextInput
+                                ref={refTextInputSearch}
+                                onPressIn={(evt) => {
+                                    refTextInputSearch.current?.measure((fx, fy, width, height, px, py) => {
+                                        !heightPopup && setHeightPopup(py + (height/2))
+                                    })
+                                }}
+                                placeholder={t("chatListSearchPlaceholder")}
+                                style={[styles.textInputSearchMsgOrUser,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightTertiaryText
+                                    :
+                                    commonStyles.darkTertiaryText
+                                ]}
+                                placeholderTextColor={
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightIconColor.color
+                                    : 
+                                    commonStyles.darkIconColor.color
+                                }
+                                value={textSearch}
+                                onChangeText={setTextSearch}
+                            />
+                        </View>
+                    </OutsidePressHandler>
                     <ScrollView
                         horizontal={true}
                         pagingEnabled={true}
@@ -1687,6 +1704,11 @@ export default function ChatList({navigation} : Props) {
                     </Camera>
                 }
             </Modal>
+            <SearchDetailPopup textSearch={textSearch} setTextSearch={setTextSearch}
+                isPressOutsideTextInput={isOutsideTextInput}
+                heightFromHeaderToInput={heightPopup}
+                setHeightFromHeaderToInput={setHeightPopup}
+            />
         </View>
     )
 }

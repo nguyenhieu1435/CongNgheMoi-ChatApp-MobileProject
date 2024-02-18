@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Pressable, Animated } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Pressable, Animated, Dimensions, Platform, NativeModules } from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ChatList from '../chatList';
 import Contacts from '../contacts';
@@ -10,11 +10,13 @@ import { IRootState } from '../../redux_toolkit/store';
 import { useEffect, useRef, useState } from 'react';
 import commonStyles from '../../CommonStyles/commonStyles';
 import { lightMode } from '../../redux_toolkit/slices/theme.slice';
-import { Popable, Popover } from 'react-native-popable';
 import Settings from '../settings';
 import { styles } from './styles';
+import { StatusBar } from 'expo-status-bar';
+
 
 const Tab = createBottomTabNavigator();
+const { width, height } = Dimensions.get("window")
 
 interface Props {
     navigation: any
@@ -24,32 +26,47 @@ interface Props {
 export default function PrimaryBottomTab({navigation} : Props) {
     const {t} = useTranslation();
     const theme = useSelector((state: IRootState) => state.theme.theme);
- 
+    const { StatusBarManager } = NativeModules;
+    const [statusBarHeight, setStatusBarHeight] = useState(0);
+
+    useEffect(() => {
+        setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT)
+    }, [])
 
     return (
-        <Tab.Navigator
-        tabBar={(props) => <TabBarCustomize  props={props} theme={theme} navigation={navigation}/>}
-        initialRouteName='ChatList'
-            screenOptions={{headerShown: false,
-                tabBarStyle:{
-                    height: 65,
-                    backgroundColor: theme === lightMode ? commonStyles.lightPrimaryBackground.backgroundColor : commonStyles.darkTertiaryBackground.backgroundColor,
-                },
-                tabBarShowLabel: false,           
+        <View
+            style={{
+                width,
+                height: height - statusBarHeight,
             }}
         >
-            <Tab.Screen name="Personal" component={Personal}     
-            />
-            <Tab.Screen name="ChatList" component={ChatList} 
-            />
-            <Tab.Screen name="Diary" component={Diarys} 
-            />
-            <Tab.Screen name="Contacts" component={Contacts} 
-            />
-            <Tab.Screen name="Settings" component={Settings}
-            />
-           
-        </Tab.Navigator>
+            
+            <Tab.Navigator
+                tabBar={(props) => <TabBarCustomize  props={props} theme={theme} navigation={navigation}/>
+                    
+            }
+            initialRouteName='ChatList'
+                screenOptions={{headerShown: false,
+                    tabBarStyle:{
+                        height: 65,
+                        backgroundColor: theme === lightMode ? commonStyles.lightPrimaryBackground.backgroundColor : commonStyles.darkTertiaryBackground.backgroundColor,
+                    },
+                    tabBarShowLabel: false,           
+                }}
+            >
+                <Tab.Screen name="Personal" component={Personal}     
+                />
+                <Tab.Screen name="ChatList" options={{tabBarHideOnKeyboard: true}} component={ChatList} 
+                />
+                <Tab.Screen name="Diary" component={Diarys} 
+                />
+                <Tab.Screen name="Contacts" component={Contacts} 
+                />
+                <Tab.Screen name="Settings" component={Settings}
+                />
+            
+            </Tab.Navigator>
+        </View>
     )
 }
 interface TabBarCustomizeProps {

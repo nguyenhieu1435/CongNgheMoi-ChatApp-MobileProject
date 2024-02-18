@@ -3,18 +3,20 @@ import commonStyles from "../../CommonStyles/commonStyles";
 
 export const styles = StyleSheet.create({
     chatListWrapper: {
-        flex: 1
+        flex: 1,
+        position: "relative"
     },
     chatListContainer: {
         flex: 1,
         padding: 10,
-        paddingBottom: 0
+        paddingBottom: 0,
+        position: "relative",
     },
     chatListHeader: {
         padding: 10,
     },
     chatListTitleName: {
-        fontSize: 21,
+        fontSize: 24,
         fontWeight: "500",
     },
     chatListBoxSearch: {
@@ -186,6 +188,20 @@ export const styles = StyleSheet.create({
     },
     chatListModalScanQR:{
         flex: 1,
+    },
+
+
+
+    detailSearchPopUpWrapper:{
+        position: "absolute",
+        right: 0,
+        left: 0,
+        flex: 1,
+        top: 0,
+        bottom:0,
+        marginTop: 93 + 10 + 15,
+        backgroundColor: "red",
+        zIndex: 20
     }
     
 })
