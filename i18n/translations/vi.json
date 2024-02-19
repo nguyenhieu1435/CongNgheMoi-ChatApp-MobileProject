@@ -119,5 +119,22 @@
     "searchDetailGroupFilterManagedByMe": "Nhóm quản lý",
     "searchDetailFriendActionShare": "Chia sẻ",
     "searchDetailFriendActionBlock": "Chặn",
-    "searchDetailFriendActionRemove": "Hủy kết bạn"
+    "searchDetailFriendActionRemove": "Hủy kết bạn",
+    "addFriendInvitationSentTitle": "Đã gửi",
+    "addFriendInvitationReceivedTitle": "Đã nhận",
+    "addFriendInvitationMayBeYouKnow": "Có thể bạn quen",
+    "addFriendInvitationSeeMore": "Xem thêm",
+    "addFriendInvitationSeeLess": "Thu gọn",
+    "addFriendInvitationAccept": "Chấp nhận",
+    "addFriendInvitationDecline": "Từ chối",
+    "addFriendInvitationAdd": "Thêm",
+    "addFriendInvitationSentAddFriend": "Kết bạn",
+    "addFriendInvitationSentUndo": "Thu hồi",
+    "addFriendInvitationSettingTitle": "Quản lý nguồn tìm kiếm và kết bạn",
+    "addFriendInvitationSettingFindByPhonePermissionDesc": "Cho phép người khác tìm kiếm và kết bạn qua số điện thoại", 
+    "addFriendInvitationSettingAllowUnknownPeopleAddFriend": "Cho phép người lạ kết bạn",
+    "addFriendInvitationSettingAllowUnknownPeopleAddFriendDesc": "Người lạ có thể gửi lời mời kết bạn qua những nguồn này",
+    "addFriendInvitationSetting": "Mã QR của tôi",
+    "addFriendInvitationCommonGroup": "Nhóm chung",
+    "addFriendInvitationAddFriendSuggestions": "Gợi ý \"Có thể bạn quen\""
 }

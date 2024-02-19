@@ -116,5 +116,22 @@
     "searchDetailGroupFilterManagedByMe": "Managed by me",
     "searchDetailFriendActionShare": "Share",
     "searchDetailFriendActionBlock": "Block",
-    "searchDetailFriendActionRemove": "Remove"
+    "searchDetailFriendActionRemove": "Remove",
+    "addFriendInvitationSentTitle": "Sent",
+    "addFriendInvitationReceivedTitle": "Received",
+    "addFriendInvitationMayBeYouKnow": "You may know",
+    "addFriendInvitationSeeMore": "See more",
+    "addFriendInvitationSeeLess": "See less",
+    "addFriendInvitationAccept": "Accept",
+    "addFriendInvitationDecline": "Decline",
+    "addFriendInvitationAdd": "Add",
+    "addFriendInvitationSentAddFriend": "Add friend",
+    "addFriendInvitationSentCancel": "Undo",
+    "addFriendInvitationSettingTitle": "Manage friend invitation",
+    "addFriendInvitationSettingFindByPhonePermissionDesc": "Allow unknown people to find you by phone number", 
+    "addFriendInvitationSettingAllowUnknownPeopleAddFriend": "Allow unknown people to add friend",
+    "addFriendInvitationSettingAllowUnknownPeopleAddFriendDesc": "Allow unknown people to add friend by follow sources",
+    "addFriendInvitationSetting": "My QR code",
+    "addFriendInvitationCommonGroup": "Common group",
+    "addFriendInvitationAddFriendSuggestions": "Suggest \"May be you known\""
 }

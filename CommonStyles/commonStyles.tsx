@@ -58,6 +58,7 @@ export default StyleSheet.create({
     },
     chatNavbarBorderBottomColorLight: {
         color: "#f0eff5"
+        // #f0eff5
     },
     chatNavbarBorderBottomColorDark: {
         color: "#36404a"

@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { TFunction } from 'i18next';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { set } from 'react-hook-form';
+import { useNavigation } from '@react-navigation/native';
 
 interface ContactsProps {
     navigation: any
@@ -235,6 +236,7 @@ export default function Contacts({navigation} : ContactsProps) {
                                 flexShrink: 1,
                                 paddingVertical: 10,
                             }}
+                            navigation={navigation}
                         />
                         :
                         <GroupScrollBox
@@ -255,14 +257,15 @@ export default function Contacts({navigation} : ContactsProps) {
 interface FriendScrollBoxProps {
     translation: TFunction<"translation", undefined>,
     theme: string,
-    style: object
+    style: object,
+    navigation: any
 }
 const FriendFilter  = {
     ALL: "ALL",
     NEW_ACCESS: "NEW_ACCESS"
 }
 
-function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps){
+function FriendScrollBox({translation : t, theme, style, navigation} : FriendScrollBoxProps){
     const [friendFilterSelected, setFriendFilterSelected] = useState<string>(FriendFilter.ALL)
     const [indexPopupSelected, setIndexPopupSelected] = useState<number>(-1)
     const refLocationYPopupSelected = useRef<number>(0)
@@ -716,6 +719,7 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                     style={[
                         styles.contactDetailFriendAnotherActionBtn
                     ]}
+                    onPress={()=> navigation.navigate("AddFriendInvitation")}
                 >
                     <View
                         style={[

@@ -20,6 +20,8 @@ import { EventProvider } from 'react-native-outside-press';
 import Personal from './components/personal';
 import ChatProfile from './components/chatProfile';
 import AddFriend from './components/addFriend';
+import AddFriendInvitation from './components/addFriendInvitation';
+import AddFriendInvitationSetting from './components/addFriendInvitationSetting';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,7 +37,7 @@ export default function App() {
       <EventProvider style={{ flex: 1 }}>
         <ActionSheetProvider>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='AddFriendInvitationSetting'
             
             >
               <Stack.Screen name='OpenScreen' component={OpenScreen}/>
@@ -67,6 +69,8 @@ export default function App() {
                   },
                 }}
               />
+              <Stack.Screen name='AddFriendInvitation' component={AddFriendInvitation}/>
+              <Stack.Screen name='AddFriendInvitationSetting' component={AddFriendInvitationSetting}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>
