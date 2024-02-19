@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, TextInput, SectionList } from 'react-native';
+import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, TextInput, SectionList, ImageBackground } from 'react-native';
 import { styles } from './styles';
 import { useSelector } from 'react-redux';
 import { IRootState } from '../../redux_toolkit/store';
@@ -10,7 +10,8 @@ import { EvilIcons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TFunction } from 'i18next';
-import { ref } from 'yup';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { set } from 'react-hook-form';
 
 interface ContactsProps {
     navigation: any
@@ -270,10 +271,12 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
             title: "A",
             data: [
                 {
+                    userId: 1,
                     name: "Au Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 },
                 {
+                    userId: 2,
                     name: "Au Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 }
@@ -282,15 +285,18 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
         {
             title: "B",
             data: [
-                {
+                {   
+                    userId: 3,
                     name: "Bau Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 },
                 {
+                    userId: 4,
                     name: "Bau Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 },
                 {
+                    userId: 5,
                     name: "Bau Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 }
@@ -303,6 +309,13 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
             <TouchableOpacity
                 style={[
                     styles.contactDetailFriendItemBox,
+                    {
+                        zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                        ?
+                        200
+                        :
+                        0
+                    }
                     
                 ]}
             >
@@ -325,7 +338,14 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                 >{item?.name}</Text>
                 <View
                     style={[
-                        styles.contactDetailFriendItemActionsBox
+                        styles.contactDetailFriendItemActionsBox,
+                        {
+                            zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                            ?
+                            200
+                            :
+                            1
+                        }
                     ]}
                 >
                     <TouchableOpacity>
@@ -358,18 +378,183 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                             ]}
                         />
                     </TouchableOpacity>
-                    <OutsidePressHandler
+
+                    <Tooltip
+                        isVisible={indexPopupSelected === Number.parseInt((index + "" + item?.userId))}
+                        placement='top'
+                        backgroundColor='transparent'
+                        content={
+                            <OutsidePressHandler
+                                onOutsidePress={() => {
+                                    setIndexPopupSelected(-1)
+                                    refLocationYPopupSelected.current = 0
+                                }}
+                                style={[
+                                    styles.contactDetailFriendItemActionPopup,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightFourBackground
+                                    :
+                                    commonStyles.darkFourBackground,
+                                    {
+                                        shadowColor: '#0F223A',
+                                        shadowOffset: {
+                                            width: 0,
+                                            height: 2,
+                                        },
+                                        shadowOpacity: 0.12,
+                                        shadowRadius: 4,
+                                        elevation: 4,
+                                    },
+                                    {
+                                        zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                                        ?
+                                        200
+                                        :
+                                        1
+                                    }
+                                ]}
+                            >
+                                <TouchableOpacity
+                                    style={[
+                                        styles.contactDetailFriendActionPopupBtnItem
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.contactDetailFriendActionPopupBtnItemText,
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightPrimaryText
+                                            :
+                                            commonStyles.darkPrimaryText
+                                        ]}
+                                    >{t("searchDetailFriendActionShare")}</Text>
+                                    <Image
+                                        source={require("../../assets/share-line-icon.png")}
+                                        style={[
+                                            styles.contactDetailFriendItemActionBtnImage,
+                                            {
+                                                tintColor: theme === lightMode
+                                                ?
+                                                commonStyles.lightIconColor.color
+                                                :
+                                                commonStyles.darkIconColor.color
+                                            }
+                                        ]}
+                                    />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.contactDetailFriendActionPopupBtnItem
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.contactDetailFriendActionPopupBtnItemText,
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightPrimaryText
+                                            :
+                                            commonStyles.darkPrimaryText
+                                        ]}
+                                    >{t("searchDetailFriendActionBlock")}</Text>
+                                    <Image
+                                        source={require("../../assets/indeterminate-circle-line-block-icon.png")}
+                                        style={[
+                                            styles.contactDetailFriendItemActionBtnImage,
+                                            {
+                                                tintColor: theme === lightMode
+                                                ?
+                                                commonStyles.lightIconColor.color
+                                                :
+                                                commonStyles.darkIconColor.color,
+                                                transform: [{rotate: "45deg"}]
+                                            }
+                                        ]}
+                                    />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.contactDetailFriendActionPopupBtnItem
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.contactDetailFriendActionPopupBtnItemText,
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightPrimaryText
+                                            :
+                                            commonStyles.darkPrimaryText
+                                        ]}
+                                    >{t("searchDetailFriendActionRemove")}</Text>
+                                    <Image
+                                        source={require("../../assets/delete-bin-line-icon.png")}
+                                        style={[
+                                            styles.contactDetailFriendItemActionBtnImage,
+                                            {
+                                                tintColor: theme === lightMode
+                                                ?
+                                                commonStyles.lightIconColor.color
+                                                :
+                                                commonStyles.darkIconColor.color
+                                            }
+                                        ]}
+                                    />
+                                </TouchableOpacity>
+                            </OutsidePressHandler>
+                        }
+                        onClose={()=> {}}
+                    >
+                        <TouchableOpacity
+                                onPress={(evt)=>{
+                                    setIndexPopupSelected(Number.parseInt((index + "" + item?.userId)))
+                                    refLocationYPopupSelected.current = evt.nativeEvent.pageY
+                                }}
+                            
+                            >
+                                <Image
+                                    source={require("../../assets/more-vertical-line-icon.png")}
+                                    style={[
+                                        styles.contactDetailFriendItemActionIcon,
+                                        {
+                                            tintColor: theme === lightMode
+                                            ?
+                                            commonStyles.lightIconColor.color
+                                            :
+                                            commonStyles.darkIconColor.color
+                                        }
+                                    ]}
+                                />
+                        </TouchableOpacity>
+                    </Tooltip>
+
+                    
+
+                    {/* <OutsidePressHandler
                         onOutsidePress={() => {
+                            console.log("outside", Number.parseInt((index + "" + item?.userId)))
                             setIndexPopupSelected(-1)
                             refLocationYPopupSelected.current = 0
                         }}
                         style={[
                             styles.contactDetailFriendItemActionPopupWrapper,
+                            {
+                                zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                                ?
+                                200
+                                :
+                                1
+                            }
                         ]}
                     >
+                        
                         <TouchableOpacity
                             onPress={(evt)=>{
-                                setIndexPopupSelected(index)
+                                setIndexPopupSelected(Number.parseInt((index + "" + item?.userId)))
                                 refLocationYPopupSelected.current = evt.nativeEvent.pageY
                             }}
                         
@@ -389,7 +574,7 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                             />
                         </TouchableOpacity>
                         {
-                            indexPopupSelected === index
+                            indexPopupSelected === Number.parseInt((index + "" + item?.userId))
                             &&
                             <View
                                 style={[
@@ -407,9 +592,15 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                                         },
                                         shadowOpacity: 0.12,
                                         shadowRadius: 4,
-                                        elevation: 4, 
+                                        elevation: 4,
                                     },
-                                    
+                                    {
+                                        zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                                        ?
+                                        200
+                                        :
+                                        1
+                                    }
                                 ]}
                             >
                                 <TouchableOpacity
@@ -503,8 +694,8 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                                     />
                                 </TouchableOpacity>
                             </View>
-                        }
-                    </OutsidePressHandler>
+                        } 
+                    </OutsidePressHandler> */}
                 </View>
             </TouchableOpacity>
         )
@@ -513,7 +704,7 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
     return (
         <ScrollView
             style={[
-                style
+                style,
             ]}
         >
             <View
@@ -1010,7 +1201,7 @@ function FriendScrollBox({translation : t, theme, style} : FriendScrollBoxProps)
                 </View>
                 <SectionList
                     style={{
-                        paddingHorizontal: 20
+                        paddingHorizontal: 20,
                     }}
                     sections={sectionData}
                     keyExtractor={(item, index) => "" + index}

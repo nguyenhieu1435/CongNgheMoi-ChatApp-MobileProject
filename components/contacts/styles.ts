@@ -124,6 +124,7 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         gap: 10,
         paddingVertical: 10,
+        zIndex: 1,
     },
     contactDetailFriendItemAvatar:{
         width: 50,
@@ -140,25 +141,27 @@ export const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 18,
+        zIndex: 1,
     },
     contactDetailFriendItemActionIcon:{
         width: 24,
         height: 24,
-        resizeMode: "contain"
+        resizeMode: "contain",
     },
     contactDetailFriendItemActionPopupWrapper:{
         position: "relative",
-        zIndex: 400,
+        zIndex: 19,
     },
     contactDetailFriendItemActionPopup:{
-        position: "absolute",
-        right: 10,
-        bottom: "70%",
+        // position: "absolute",
+        // right: 10,
+        // bottom: "70%",
         width: 160,
         paddingVertical: 10,
         paddingHorizontal: 15,
-        zIndex: 399,
+        zIndex: 20,
         borderRadius: 4,
+        
     },
     contactDetailFriendActionPopupBtnItem:{
         flexDirection: "row",
