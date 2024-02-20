@@ -184,5 +184,21 @@ export const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: "500",
         textAlign: "center"
+    },
+    addFriendInvitationEmptyList:{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    addFriendInvitationEmptyListImage:{
+        width: 80,
+        height: 80,
+        resizeMode: "contain",
+        marginTop: 80,
+        marginBottom: 30
+    },
+    addFriendInvitationEmptyListText:{
+        fontSize: 17,
+        
     }
 })

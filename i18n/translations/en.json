@@ -119,6 +119,8 @@
     "searchDetailFriendActionRemove": "Remove",
     "addFriendInvitationSentTitle": "Sent",
     "addFriendInvitationReceivedTitle": "Received",
+    "addFriendInvitationReceivedEmpty": "Not received any friend invitation yet",
+    "addFriendInvitationSentEmpty": "Not sent any friend invitation yet",
     "addFriendInvitationMayBeYouKnow": "You may know",
     "addFriendInvitationSeeMore": "See more",
     "addFriendInvitationSeeLess": "See less",

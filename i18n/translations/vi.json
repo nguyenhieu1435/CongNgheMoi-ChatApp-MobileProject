@@ -122,6 +122,8 @@
     "searchDetailFriendActionRemove": "Hủy kết bạn",
     "addFriendInvitationSentTitle": "Đã gửi",
     "addFriendInvitationReceivedTitle": "Đã nhận",
+    "addFriendInvitationReceivedEmpty": "Chưa có lời mời kết bạn nào",
+    "addFriendInvitationSentEmpty": "Chưa gửi lời mời kết bạn nào",
     "addFriendInvitationMayBeYouKnow": "Có thể bạn quen",
     "addFriendInvitationSeeMore": "Xem thêm",
     "addFriendInvitationSeeLess": "Thu gọn",

@@ -53,6 +53,7 @@ export default function AddFriendInvitationSetting({navigation}: IAddFriendInvit
                     ]}
                 >
                     <TouchableOpacity   
+                        onPress={() => navigation.goBack()}
                         style={[
                             styles.addFriendSettingHeaderBackButton
                         ]}

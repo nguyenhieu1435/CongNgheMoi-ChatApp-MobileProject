@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, ScrollView } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, ScrollView, SectionList, FlatList } from 'react-native'
 import { useSelector } from 'react-redux'
 import { IRootState } from '../../redux_toolkit/store'
 import { useTranslation } from 'react-i18next'
@@ -210,7 +210,134 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
         }
     ]
 
+    function renderSectionItem({item, index}: {item: any, index: number}) {
+        return (
+            <View key={index}
+                    style={[
+                        styles.addFriendInvitationReceivedItemSection
+                    ]}
+                >
+                    <Image
+                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                        style={[
+                            styles.addFriendInvitationAvatarImage,
+                        ]}
+                    />
+                    <View
+                        style={[
+                            styles.addFriendInvitationReceivedItemMainContent
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.addFriendInvitationReceivedItemRealName,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
+                            ]}
+                        >John Doe</Text>
+                        <Text
+                            style={[
+                                styles.addFriendInvitationReceivedItemAddDate,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightTertiaryText
+                                :
+                                commonStyles.darkTertiaryText
+                            ]}
+                        >02/12/2023</Text>
+                        <View
+                            style={[
+                                styles.addFriendInvitationReceivedItemMessageBox,
+                                {
+                                    borderColor:
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText.color
+                                    :
+                                    commonStyles.darkSecondaryText.color
+                                }
+                            ]}
+                        >
+                            <ReadMore
+                                numberOfLines={2}
+                                seeMoreText={t("addFriendInvitationSeeMore")}
+                                seeLessText={t("addFriendInvitationSeeLess")}
+                                style={[
+                                    styles.addFriendInvitationReceivedMessage
+                                ]}
+                                seeMoreStyle={{
+                                    fontWeight: "500",
+                                    
+                                    color:
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText.color
+                                    :
+                                    commonStyles.darkSecondaryText.color
+                                }}
+                                seeLessStyle={{
+                                    fontWeight: "500",
+                                    color:
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText.color
+                                    :
+                                    commonStyles.darkSecondaryText.color
+                                }}
+                            >
+                                Chào bạn, mình muốn kết bạn với bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?
+                            </ReadMore>
+                        </View>
+                        <View
+                            style={[
+                                styles.addFriendInvitationReceivedItemActionBox
+                            ]}
+                        >
+                            <TouchableOpacity
+                                style={[
+                                    styles.addFriendInvitationReceivedItemActionItem,
+                                    {
+                                        backgroundColor:
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.chatNavbarBorderBottomColorLight.color
+                                        :
+                                        commonStyles.chatNavbarBorderBottomColorDark.color
+                                    }
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.addFriendInvitationReceivedItemActionItemText,
+                                        
+                                    ]}
+                                >{t("addFriendInvitationDecline")}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    styles.addFriendInvitationReceivedItemActionItem,
+                                    commonStyles.primaryColorBackground
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.addFriendInvitationReceivedItemActionItemText,
+                                        commonStyles.primaryColor
+                                    ]}
+                                >{t("addFriendInvitationAccept")}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+            </View>
+        )
+    }
+
     return (
+        sectionData && sectionData.length > 0
+        ?
         <View
             style={[
             ]}
@@ -220,366 +347,12 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
                     styles.addFriendInvitationReceivedListSection
                 ]}
             >
-                <View
-                    style={[
-                        styles.addFriendInvitationReceivedItemSection
-                    ]}
-                >
-                    <Image
-                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                        style={[
-                            styles.addFriendInvitationAvatarImage,
-                        ]}
-                    />
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedItemMainContent
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemRealName,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
-                            ]}
-                        >John Doe</Text>
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemAddDate,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText
-                                :
-                                commonStyles.darkTertiaryText
-                            ]}
-                        >02/12/2023</Text>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemMessageBox,
-                                {
-                                    borderColor:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
-                            ]}
-                        >
-                            <ReadMore
-                                numberOfLines={2}
-                                seeMoreText={t("addFriendInvitationSeeMore")}
-                                seeLessText={t("addFriendInvitationSeeLess")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMessage
-                                ]}
-                                seeMoreStyle={{
-                                    fontWeight: "500",
-                                    
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                                seeLessStyle={{
-                                    fontWeight: "500",
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                            >
-                                Chào bạn, mình muốn kết bạn với bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?
-                            </ReadMore>
-                        </View>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemActionBox
-                            ]}
-                        >
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    {
-                                        backgroundColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.chatNavbarBorderBottomColorLight.color
-                                        :
-                                        commonStyles.chatNavbarBorderBottomColorDark.color
-                                    }
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        
-                                    ]}
-                                >{t("addFriendInvitationDecline")}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    commonStyles.primaryColorBackground
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        commonStyles.primaryColor
-                                    ]}
-                                >{t("addFriendInvitationAccept")}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-                <View
-                    style={[
-                        styles.addFriendInvitationReceivedItemSection
-                    ]}
-                >
-                    <Image
-                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                        style={[
-                            styles.addFriendInvitationAvatarImage,
-                        ]}
-                    />
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedItemMainContent
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemRealName,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
-                            ]}
-                        >John Doe</Text>
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemAddDate,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText
-                                :
-                                commonStyles.darkTertiaryText
-                            ]}
-                        >02/12/2023</Text>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemMessageBox,
-                                {
-                                    borderColor:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
-                            ]}
-                        >
-                            <ReadMore
-                                numberOfLines={2}
-                                seeMoreText={t("addFriendInvitationSeeMore")}
-                                seeLessText={t("addFriendInvitationSeeLess")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMessage
-                                ]}
-                                seeMoreStyle={{
-                                    fontWeight: "500",
-                                    
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                                seeLessStyle={{
-                                    fontWeight: "500",
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                            >
-                                Chào bạn, mình muốn kết bạn với bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?
-                            </ReadMore>
-                        </View>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemActionBox
-                            ]}
-                        >
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    {
-                                        backgroundColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.chatNavbarBorderBottomColorLight.color
-                                        :
-                                        commonStyles.chatNavbarBorderBottomColorDark.color
-                                    }
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        
-                                    ]}
-                                >{t("addFriendInvitationDecline")}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    commonStyles.primaryColorBackground
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        commonStyles.primaryColor
-                                    ]}
-                                >{t("addFriendInvitationAccept")}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-                <View
-                    style={[
-                        styles.addFriendInvitationReceivedItemSection
-                    ]}
-                >
-                    <Image
-                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                        style={[
-                            styles.addFriendInvitationAvatarImage,
-                        ]}
-                    />
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedItemMainContent
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemRealName,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
-                            ]}
-                        >John Doe</Text>
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedItemAddDate,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText
-                                :
-                                commonStyles.darkTertiaryText
-                            ]}
-                        >02/12/2023</Text>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemMessageBox,
-                                {
-                                    borderColor:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
-                            ]}
-                        >
-                            <ReadMore
-                                numberOfLines={2}
-                                seeMoreText={t("addFriendInvitationSeeMore")}
-                                seeLessText={t("addFriendInvitationSeeLess")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMessage
-                                ]}
-                                seeMoreStyle={{
-                                    fontWeight: "500",
-                                    
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                                seeLessStyle={{
-                                    fontWeight: "500",
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }}
-                            >
-                                Chào bạn, mình muốn kết bạn với bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?
-                            </ReadMore>
-                        </View>
-                        <View
-                            style={[
-                                styles.addFriendInvitationReceivedItemActionBox
-                            ]}
-                        >
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    {
-                                        backgroundColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.chatNavbarBorderBottomColorLight.color
-                                        :
-                                        commonStyles.chatNavbarBorderBottomColorDark.color
-                                    }
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        
-                                    ]}
-                                >{t("addFriendInvitationDecline")}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.addFriendInvitationReceivedItemActionItem,
-                                    commonStyles.primaryColorBackground
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.addFriendInvitationReceivedItemActionItemText,
-                                        commonStyles.primaryColor
-                                    ]}
-                                >{t("addFriendInvitationAccept")}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+                
+                <SectionList
+                    sections={sectionData}
+                    keyExtractor={(item, index) => "" + index}
+                    renderItem={renderSectionItem}
+                />
             </View>
 
             <View
@@ -894,6 +667,27 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
                 </ScrollView>
             </View>
         </View>
+        :
+        <View
+            style={[
+                styles.addFriendInvitationEmptyList
+            ]}
+        >
+            <Image
+                source={require("../../assets/addInvitationEmptyListImage.png")}
+                style={[
+                    styles.addFriendInvitationEmptyListImage
+                ]}
+            />
+            <Text style={[
+                styles.addFriendInvitationEmptyListText,
+                theme === lightMode
+                ?
+                commonStyles.lightSecondaryText
+                :
+                commonStyles.darkSecondaryText
+            ]}>{t("addFriendInvitationReceivedEmpty")}</Text>
+        </View>
     )
 
 }
@@ -903,65 +697,19 @@ interface AddFriendInvitationSentListProps {
     translation: TFunction<"translation", undefined>
 }
 function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitationSentListProps) {
+    const flatData = [
+        {
+            userID: 1,
+            name: "John Doe",
+            avatar: "https://www.w3schools.com/w3images/avatar2.png",
+            date: "02/12/2023"
+        }
+    ]
 
-    return (
-        <View>
+    function renderFlatItem({item, index}: {item: any, index: number}) {
+        return (
             <View
-                style={[
-                    styles.addFriendInvitationSentFlatItem
-                ]}
-            >
-                <Image
-                    source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                    style={[
-                        styles.addFriendInvitationAvatarImage,
-                    ]}
-                />
-                <View
-                    style={[
-                        styles.addFriendInvitationSentItemMainContent
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.addFriendInvitationReceivedItemRealName,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightPrimaryText
-                            :
-                            commonStyles.darkPrimaryText
-                        ]}
-                    >
-                        John Doe
-                    </Text>
-                    <Text
-                        style={[
-                            styles.addFriendInvitationReceivedItemAddDate,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightTertiaryText
-                            :
-                            commonStyles.darkTertiaryText
-                        ]}
-                    >
-                        02/12/2023
-                    </Text>
-                </View>
-                <TouchableOpacity
-                    style={[
-                        styles.addFriendInvitationSentItemActionAddButton,
-                       
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.addFriendInvitationSentItemActionAddButtonText,
-                            
-                        ]}
-                    >{t("addFriendInvitationSentAddFriend")}</Text>
-                </TouchableOpacity>
-            </View>
-            <View
+                key={index}
                 style={[
                     styles.addFriendInvitationSentFlatItem
                 ]}
@@ -1031,6 +779,95 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                     >{t("addFriendInvitationSentUndo")}</Text>
                 </TouchableOpacity>
             </View>
+        )
+    }
+
+    return (
+        flatData && flatData.length > 1
+        ?
+        <View>
+            {/* <View
+                style={[
+                    styles.addFriendInvitationSentFlatItem
+                ]}
+            >
+                <Image
+                    source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                    style={[
+                        styles.addFriendInvitationAvatarImage,
+                    ]}
+                />
+                <View
+                    style={[
+                        styles.addFriendInvitationSentItemMainContent
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.addFriendInvitationReceivedItemRealName,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightPrimaryText
+                            :
+                            commonStyles.darkPrimaryText
+                        ]}
+                    >
+                        John Doe
+                    </Text>
+                    <Text
+                        style={[
+                            styles.addFriendInvitationReceivedItemAddDate,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightTertiaryText
+                            :
+                            commonStyles.darkTertiaryText
+                        ]}
+                    >
+                        02/12/2023
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    style={[
+                        styles.addFriendInvitationSentItemActionAddButton,
+                       
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.addFriendInvitationSentItemActionAddButtonText,
+                            
+                        ]}
+                    >{t("addFriendInvitationSentAddFriend")}</Text>
+                </TouchableOpacity>
+            </View> */}
+            <FlatList
+                data={flatData}
+                keyExtractor={(item, index) => "" + index}
+                renderItem={renderFlatItem}
+            />
         </View>
+        :
+        <View
+            style={[
+                styles.addFriendInvitationEmptyList
+            ]}
+        >
+            <Image
+                source={require("../../assets/addInvitationEmptyListImage.png")}
+                style={[
+                    styles.addFriendInvitationEmptyListImage
+                ]}
+            />
+            <Text style={[
+                styles.addFriendInvitationEmptyListText,
+                theme === lightMode
+                ?
+                commonStyles.lightSecondaryText
+                :
+                commonStyles.darkSecondaryText
+            ]}>{t("addFriendInvitationSentEmpty")}</Text>
+        </View>
+
     )
 }
