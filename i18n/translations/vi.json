@@ -138,5 +138,10 @@
     "addFriendInvitationSettingAllowUnknownPeopleAddFriendDesc": "Người lạ có thể gửi lời mời kết bạn qua những nguồn này",
     "addFriendInvitationSetting": "Mã QR của tôi",
     "addFriendInvitationCommonGroup": "Nhóm chung",
-    "addFriendInvitationAddFriendSuggestions": "Gợi ý \"Có thể bạn quen\""
+    "addFriendInvitationAddFriendSuggestions": "Gợi ý \"Có thể bạn quen\"",
+    "contactInPhoneTitle": "Danh bạ máy",
+    "contactInPhoneLatestUpdate": "Lần cập nhật danh bạ gần nhất",
+    "contactInPhoneAllFilter": "Tất cả",
+    "contactInPhoneNotFriendFilter": "Chưa là bạn",
+    "contactInPhoneAddFriendTitle": "Kết bạn"
 }

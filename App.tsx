@@ -22,6 +22,7 @@ import ChatProfile from './components/chatProfile';
 import AddFriend from './components/addFriend';
 import AddFriendInvitation from './components/addFriendInvitation';
 import AddFriendInvitationSetting from './components/addFriendInvitationSetting';
+import ContactsInPhone from './components/contactsInPhone';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,7 +38,7 @@ export default function App() {
       <EventProvider style={{ flex: 1 }}>
         <ActionSheetProvider>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='AddFriendInvitation'
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
             
             >
               <Stack.Screen name='OpenScreen' component={OpenScreen}/>
@@ -71,6 +72,7 @@ export default function App() {
               />
               <Stack.Screen name='AddFriendInvitation' component={AddFriendInvitation}/>
               <Stack.Screen name='AddFriendInvitationSetting' component={AddFriendInvitationSetting}/>
+              <Stack.Screen name='ContactsInPhone' component={ContactsInPhone}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

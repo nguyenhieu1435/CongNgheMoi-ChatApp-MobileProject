@@ -135,5 +135,10 @@
     "addFriendInvitationSettingAllowUnknownPeopleAddFriendDesc": "Allow unknown people to add friend by follow sources",
     "addFriendInvitationSetting": "My QR code",
     "addFriendInvitationCommonGroup": "Common group",
-    "addFriendInvitationAddFriendSuggestions": "Suggest \"May be you known\""
+    "addFriendInvitationAddFriendSuggestions": "Suggest \"May be you known\"",
+    "contactInPhoneTitle": "Contacts in device",
+    "contactInPhoneLatestUpdate": "Lastest update",
+    "contactInPhoneAllFilter": "All",
+    "contactInPhoneNotFriendFilter": "Not friend",
+    "contactInPhoneAddFriendTitle": "Add friend"
 }

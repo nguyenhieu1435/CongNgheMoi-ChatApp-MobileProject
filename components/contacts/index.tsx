@@ -11,8 +11,8 @@ import { useRef, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TFunction } from 'i18next';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import { set } from 'react-hook-form';
-import { useNavigation } from '@react-navigation/native';
+import SearchDetailPopup from '../searchDetailPopup';
+
 
 interface ContactsProps {
     navigation: any
@@ -30,6 +30,7 @@ export default function Contacts({navigation} : ContactsProps) {
     const [heightPopup, setHeightPopup] = useState<number>(0)
     const [isClickOutsideSearch, setIsClickOutsideSearch] = useState<boolean>(false)
     const [typeFilterSelected, setTypeFilterSelected] = useState<string>(ContactTypeFilter.FRIEND)
+
 
 
     return (
@@ -85,7 +86,9 @@ export default function Contacts({navigation} : ContactsProps) {
                     </TouchableOpacity>
                 </View>
                 <OutsidePressHandler
-                    onOutsidePress={() => {}}
+                    onOutsidePress={() => {
+                        setIsClickOutsideSearch(true)
+                    }}
                     style={[
                         styles.contactDetailBoxSearchWrapper
                     ]}
@@ -96,7 +99,9 @@ export default function Contacts({navigation} : ContactsProps) {
                                 ? commonStyles.lightSecondaryBackground
                                 : commonStyles.darkSecondaryBackground
                             ]}
-                            onTouchStart={() => {}}
+                            onTouchStart={() => {
+                                setIsClickOutsideSearch(false)
+                            }}
                         >
                             <EvilIcons name="search" size={26} color={
                                 theme === lightMode
@@ -249,6 +254,13 @@ export default function Contacts({navigation} : ContactsProps) {
                         />
                     }
                 </View>
+                <SearchDetailPopup
+                    heightFromHeaderToInput={heightPopup}
+                    isPressOutsideTextInput={isClickOutsideSearch}
+                    textSearch={textSearch}
+                    setTextSearch={setTextSearch}
+                    setHeightFromHeaderToInput={setHeightPopup}
+                />
             </SafeAreaView>
         </View>
     )
@@ -753,6 +765,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     style={[
                         styles.contactDetailFriendAnotherActionBtn
                     ]}
+                    onPress={()=> navigation.navigate("ContactsInPhone")}
                 >
                     <View
                         style={[

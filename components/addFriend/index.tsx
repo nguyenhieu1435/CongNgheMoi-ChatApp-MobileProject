@@ -289,6 +289,7 @@ export default function AddFriend({navigation}: AddFriendProps) {
                     style={[
                         styles.addFriendAnotherFeatureBox
                     ]}
+                    onPress={() => navigation.navigate("ContactsInPhone")}
                 >
                     <Image
                         source={require("../../assets/contacts-book-3-line-icon.png")}

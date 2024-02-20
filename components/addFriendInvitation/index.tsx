@@ -53,6 +53,7 @@ export default function AddFriendInvitation({navigation}: AddFriendInvitationPro
                     ]}
                 >
                     <TouchableOpacity
+                        onPress={()=> navigation.goBack()}
                         style={[
                             styles.addFriendInvitationHeaderBackButton,
                         ]}
@@ -783,10 +784,10 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
     }
 
     return (
-        flatData && flatData.length > 1
+        flatData && flatData.length > 0
         ?
         <View>
-            {/* <View
+            <View
                 style={[
                     styles.addFriendInvitationSentFlatItem
                 ]}
@@ -840,7 +841,7 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                         ]}
                     >{t("addFriendInvitationSentAddFriend")}</Text>
                 </TouchableOpacity>
-            </View> */}
+            </View>
             <FlatList
                 data={flatData}
                 keyExtractor={(item, index) => "" + index}
