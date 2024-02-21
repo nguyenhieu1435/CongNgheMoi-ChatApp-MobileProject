@@ -143,5 +143,9 @@
     "contactInPhoneLatestUpdate": "Lần cập nhật danh bạ gần nhất",
     "contactInPhoneAllFilter": "Tất cả",
     "contactInPhoneNotFriendFilter": "Chưa là bạn",
-    "contactInPhoneAddFriendTitle": "Kết bạn"
+    "contactInPhoneAddFriendTitle": "Kết bạn",
+    "searchHistoryModificationTitle": "Chỉnh sửa lịch sử tìm kiếm",
+    "searchHistoryModificationHistoryTitle": "Lịch sử tìm kiếm",
+    "searchHistoryModificationSaveContactSearched": "Lưu liên hệ đã tìm",
+    "searchHistoryModificationSaveKeywordSearched": "Lưu từ khóa đã tìm"
 }

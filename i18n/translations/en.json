@@ -140,5 +140,9 @@
     "contactInPhoneLatestUpdate": "Lastest update",
     "contactInPhoneAllFilter": "All",
     "contactInPhoneNotFriendFilter": "Not friend",
-    "contactInPhoneAddFriendTitle": "Add friend"
+    "contactInPhoneAddFriendTitle": "Add friend",
+    "searchHistoryModificationTitle": "Search history modification",
+    "searchHistoryModificationHistoryTitle": "Search History",
+    "searchHistoryModificationSaveContactSearched": "Save contact searched",
+    "searchHistoryModificationSaveKeywordSearched": "Save keyword searched"
 }

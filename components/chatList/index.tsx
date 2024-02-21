@@ -171,6 +171,7 @@ export default function ChatList({navigation} : Props) {
                                             style={[
                                                 styles.chatListHeaderPopUpRightBtn
                                             ]}
+                                            onPress={() => navigation.navigate("AddFriend")}
                                         >
                                             <Image
                                                 style={[

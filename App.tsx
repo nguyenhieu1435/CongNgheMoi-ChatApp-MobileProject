@@ -23,6 +23,7 @@ import AddFriend from './components/addFriend';
 import AddFriendInvitation from './components/addFriendInvitation';
 import AddFriendInvitationSetting from './components/addFriendInvitationSetting';
 import ContactsInPhone from './components/contactsInPhone';
+import SearchHistoryModification from './components/searchHistoryModification';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,6 +74,7 @@ export default function App() {
               <Stack.Screen name='AddFriendInvitation' component={AddFriendInvitation}/>
               <Stack.Screen name='AddFriendInvitationSetting' component={AddFriendInvitationSetting}/>
               <Stack.Screen name='ContactsInPhone' component={ContactsInPhone}/>
+              <Stack.Screen name='SearchHistoryModification' component={SearchHistoryModification}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

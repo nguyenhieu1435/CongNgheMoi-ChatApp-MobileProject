@@ -354,6 +354,7 @@ function DetailSearchPopUpSearchEmpty({translation : t, theme, navigate} : Detai
                     style={[
                         styles.detailSearchPopUpSearchEmptyBtnEditSearchHistory,
                     ]}
+                    onPress={()=> navigate("SearchHistoryModification")}
                 >
                     <Text
                         style={[
