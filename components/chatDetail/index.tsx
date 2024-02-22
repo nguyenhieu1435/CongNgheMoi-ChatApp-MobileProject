@@ -1,11 +1,11 @@
-import { View, Text, StatusBar, SafeAreaView, Image, Pressable, KeyboardAvoidingView, Button, TouchableHighlight, TouchableNativeFeedback, GestureResponderEvent, Dimensions } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, Image,  GestureResponderEvent, Dimensions } from 'react-native'
 import { styles } from './styles'
 import { useSelector } from 'react-redux'
 import { IRootState } from '../../redux_toolkit/store'
 import { useTranslation } from 'react-i18next'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
 import commonStyles from '../../CommonStyles/commonStyles'
-import { ScrollView, TextInput, TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler'
+import { ScrollView, TextInput, TouchableOpacity} from 'react-native-gesture-handler'
 import { FontAwesome } from '@expo/vector-icons';
 import OutsidePressHandler from 'react-native-outside-press';
 import { useEffect, useRef, useState } from 'react'
