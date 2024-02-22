@@ -6,7 +6,6 @@ import { styles } from './styles'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
 import commonStyles from '../../CommonStyles/commonStyles'
 import { useRef, useState } from 'react'
-import { bool } from 'yup'
 
 
 interface IContactsInPhoneProps {

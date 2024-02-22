@@ -9,8 +9,6 @@ import { ScrollView, TextInput, TouchableOpacity, TouchableWithoutFeedback } fro
 import { FontAwesome } from '@expo/vector-icons';
 import OutsidePressHandler from 'react-native-outside-press';
 import { useEffect, useRef, useState } from 'react'
-import { set } from 'react-hook-form'
-import { LinearGradient } from 'expo-linear-gradient'
 const {TypingAnimation} = require('react-native-typing-animation');
 
 

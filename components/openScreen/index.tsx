@@ -1,7 +1,6 @@
 import { Image, SafeAreaView, StatusBar, Text, View } from 'react-native'
 import {styles} from "./styles"
 import commonStyle from "../../CommonStyles/commonStyles"
-import { useNavigation } from '@react-navigation/native';
 import { useEffect } from 'react';
 
 

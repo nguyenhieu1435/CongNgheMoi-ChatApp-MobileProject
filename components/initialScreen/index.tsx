@@ -1,7 +1,6 @@
 
 import { useTranslation } from 'react-i18next'
 import { View, Text, SafeAreaView, StatusBar, Image, Dimensions, ScrollView, NativeScrollEvent, TouchableOpacity } from 'react-native'
-import { useColorScheme } from 'react-native';
 import {styles} from "./styles"
 import commonStyles from '../../CommonStyles/commonStyles';
 import { useRef, useState } from 'react';

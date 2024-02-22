@@ -13,7 +13,6 @@ import OutsidePressHandler from 'react-native-outside-press';
 const {TypingAnimation} = require('react-native-typing-animation');
 import { Camera, requestCameraPermissionsAsync } from 'expo-camera';
 import SearchDetailPopup from '../searchDetailPopup';
-import { useNavigation } from '@react-navigation/native';
 
 type Props = {
     navigation: any

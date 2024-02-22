@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, Pressable, TouchableOpacity, Image, TextInput } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, TextInput } from 'react-native'
 import { useSelector } from 'react-redux'
 import { styles } from './styles'
 import { IRootState } from '../../redux_toolkit/store'

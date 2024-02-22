@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Pressable, Animated, Dimensions, Platform, NativeModules } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Dimensions, Platform, NativeModules } from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ChatList from '../chatList';
 import Contacts from '../contacts';
@@ -12,7 +12,6 @@ import commonStyles from '../../CommonStyles/commonStyles';
 import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import Settings from '../settings';
 import { styles } from './styles';
-import { StatusBar } from 'expo-status-bar';
 
 
 const Tab = createBottomTabNavigator();
