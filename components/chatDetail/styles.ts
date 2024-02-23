@@ -107,7 +107,8 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 15,
         borderRadius: 6,
         fontSize: 15,
-        flexGrow: 1
+        flexGrow: 1,
+        flexShrink: 1,
     },
     bottomSecondActionImg:{
         width: 20, 
@@ -215,20 +216,31 @@ export const styles = StyleSheet.create({
     chatDetailMessageFromOpponentMoreActionBox:{
        height: 25,
        position: "relative",
-        zIndex: 10
+       zIndex: 400
     },
-    chatDetailMessageFromOpponentPopupActionBox:{
-        position: "absolute",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 15,
-        width: 180,
-        zIndex: 35,
+    chatDetailTooltipPopupContent:{
         shadowColor: '#171717',
         shadowOffset: {width: 0, height: 3},
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        elevation: 5
+        elevation: 3
+    },
+    chatDetailTooltipPopupContentArrowNone:{
+        width: 0,
+        height: 0,
+    },
+    chatDetailMessageFromOpponentPopupActionBox:{
+        // position: "absolute",
+        borderRadius: 8,
+        paddingHorizontal: 4,
+        paddingVertical: 6,
+        width: 180,
+        // zIndex: 35,
+        // shadowColor: '#171717',
+        // shadowOffset: {width: 0, height: 3},
+        // shadowOpacity: 0.4,
+        // shadowRadius: 2,
+        // elevation: 3
     },
     itemInMessageFromOpponentPopupAction:{
         flexDirection: "row",
@@ -379,5 +391,34 @@ export const styles = StyleSheet.create({
     fileBoxInChatHistoryFileImageIcon:{
         width: 20,
         height: 20,
+    },
+    chatDetailBottomMoreActionWrapper:{
+        width: "100%",
+        borderTopWidth: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap"
+    },
+    chatDetailBottomActionWrapper:{
+        width: "25%",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    chatDetailBottomActionBtn:{
+        flexDirection: "column",
+        alignItems: "center",
+        paddingBottom: 10
+    },
+    chatDetailBottomActionImg:{
+        width: 35,
+        height: 35,
+        resizeMode: "contain",
+        marginBottom: 4
+    },
+    chatDetailBottomActionText:{
+        fontSize: 14,
+
     }
 })

@@ -10,7 +10,6 @@ import { Octicons } from '@expo/vector-icons';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { set } from 'react-hook-form';
 
 interface Props{
     navigation: any

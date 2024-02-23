@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, TextInput, SectionList, ImageBackground } from 'react-native';
+import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, TextInput, SectionList, ScrollView } from 'react-native';
 import { styles } from './styles';
 import { useSelector } from 'react-redux';
 import { IRootState } from '../../redux_toolkit/store';
@@ -8,7 +8,6 @@ import commonStyles from '../../CommonStyles/commonStyles';
 import OutsidePressHandler from 'react-native-outside-press';
 import { EvilIcons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
 import { TFunction } from 'i18next';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import SearchDetailPopup from '../searchDetailPopup';
@@ -398,6 +397,14 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                         isVisible={indexPopupSelected === Number.parseInt((index + "" + item?.userId))}
                         placement='top'
                         backgroundColor='transparent'
+                        contentStyle={[
+                            styles.contactDetailTooltipPopupContent,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightFourBackground
+                            :
+                            commonStyles.darkFourBackground
+                        ]}
                         content={
                             <OutsidePressHandler
                                 onOutsidePress={() => {
@@ -411,16 +418,6 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                                     commonStyles.lightFourBackground
                                     :
                                     commonStyles.darkFourBackground,
-                                    {
-                                        shadowColor: '#0F223A',
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 2,
-                                        },
-                                        shadowOpacity: 0.12,
-                                        shadowRadius: 4,
-                                        elevation: 4,
-                                    },
                                     {
                                         zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
                                         ?
@@ -1311,7 +1308,12 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                 >
                     <Text
                         style={[
-                            styles.contactDetailFriendHeaderGroupFilterLeftText
+                            styles.contactDetailFriendHeaderGroupFilterLeftText,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightPrimaryText
+                            :
+                            commonStyles.darkPrimaryText
                         ]}
                     >{t("searchDetailGroupsAreJoining")}</Text>
                     <TouchableOpacity
@@ -1322,12 +1324,25 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                         <Image
                             source={require("../../assets/arrow-up-down-line-swap.png")}
                             style={[
-                                styles.contactDetailFriendHeaderGroupFilterRightImage
+                                styles.contactDetailFriendHeaderGroupFilterRightImage,
+                                {
+                                    tintColor:
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText.color
+                                    :
+                                    commonStyles.darkSecondaryText.color
+                                }
                             ]}
                         />
                         <Text
                             style={[
-                                styles.contactDetailFriendHeaderGroupFilterRightText
+                                styles.contactDetailFriendHeaderGroupFilterRightText,
+                                theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText
+                                    :
+                                    commonStyles.darkSecondaryText
                             ]}
                         >{t("searchDetailGroupFilterLastAccess")}</Text>
                     </TouchableOpacity>
@@ -1352,18 +1367,26 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                             <View
                                 style={[
                                     styles.contactDetailGroupItemFirstTitleBox
-                                
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleLeftText,
-
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText
+                                        :
+                                        commonStyles.darkPrimaryText
                                     ]}
                                 >Big-Data</Text>
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleRightText,
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightTertiaryText
+                                        :
+                                        commonStyles.darkTertiaryText
                                     ]}
                                 >29/01</Text>
                             </View>
@@ -1404,18 +1427,26 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                             <View
                                 style={[
                                     styles.contactDetailGroupItemFirstTitleBox
-                                
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleLeftText,
-
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText
+                                        :
+                                        commonStyles.darkPrimaryText
                                     ]}
                                 >Big-Data</Text>
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleRightText,
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightTertiaryText
+                                        :
+                                        commonStyles.darkTertiaryText
                                     ]}
                                 >29/01</Text>
                             </View>
@@ -1456,18 +1487,26 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                             <View
                                 style={[
                                     styles.contactDetailGroupItemFirstTitleBox
-                                
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleLeftText,
-
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText
+                                        :
+                                        commonStyles.darkPrimaryText
                                     ]}
                                 >Big-Data</Text>
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleRightText,
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightTertiaryText
+                                        :
+                                        commonStyles.darkTertiaryText
                                     ]}
                                 >29/01</Text>
                             </View>
@@ -1508,18 +1547,26 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                             <View
                                 style={[
                                     styles.contactDetailGroupItemFirstTitleBox
-                                
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleLeftText,
-
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText
+                                        :
+                                        commonStyles.darkPrimaryText
                                     ]}
                                 >Big-Data</Text>
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleRightText,
+                                        theme ===  lightMode
+                                        ?
+                                        commonStyles.lightTertiaryText
+                                        :
+                                        commonStyles.darkTertiaryText
                                     ]}
                                 >29/01</Text>
                             </View>
@@ -1560,174 +1607,26 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                             <View
                                 style={[
                                     styles.contactDetailGroupItemFirstTitleBox
-                                
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleLeftText,
-
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
+                                        theme ===  lightMode
                                         ?
                                         commonStyles.lightPrimaryText
                                         :
                                         commonStyles.darkPrimaryText
                                     ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-
-                                    ]}
                                 >Big-Data</Text>
                                 <Text
                                     style={[
                                         styles.contactDetailGroupItemFirstTitleRightText,
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
+                                        theme ===  lightMode
                                         ?
-                                        commonStyles.lightPrimaryText
+                                        commonStyles.lightTertiaryText
                                         :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
+                                        commonStyles.darkTertiaryText
                                     ]}
                                 >29/01</Text>
                             </View>

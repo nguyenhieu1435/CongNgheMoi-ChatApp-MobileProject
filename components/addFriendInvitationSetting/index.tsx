@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, SafeAreaView, Image, Switch } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, Image} from 'react-native'
 import { styles } from './styles'
 import { IRootState } from '../../redux_toolkit/store'
 import { useSelector } from 'react-redux'

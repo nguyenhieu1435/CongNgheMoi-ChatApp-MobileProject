@@ -1,32 +1,30 @@
-import { View, Text, StatusBar, SafeAreaView, Image, Pressable, KeyboardAvoidingView, Button, TouchableHighlight, TouchableNativeFeedback, GestureResponderEvent, Dimensions } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, Image, GestureResponderEvent, Dimensions
+    , TouchableOpacity, TextInput, ScrollView, 
+    Animated,
+    Easing} from 'react-native'
 import { styles } from './styles'
 import { useSelector } from 'react-redux'
 import { IRootState } from '../../redux_toolkit/store'
 import { useTranslation } from 'react-i18next'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
 import commonStyles from '../../CommonStyles/commonStyles'
-import { ScrollView, TextInput, TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler'
+// import { ScrollView} from 'react-native-gesture-handler'
 import { FontAwesome } from '@expo/vector-icons';
 import OutsidePressHandler from 'react-native-outside-press';
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import Tooltip from 'react-native-walkthrough-tooltip'
+import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard'
 const {TypingAnimation} = require('react-native-typing-animation');
+import { checkText } from 'smile2emoji'
 
 
 interface Props {
     navigation: any
 }
 
-type PropsTouchableOpacity = {
-    onPress: (event: GestureResponderEvent) => void
-}
-
-type PositionMessageActionType = {
-    top?: number | string;
-    left?: number;
-    right?: number;
-    bottom?: number | string;
-}
 const {width : WIDTH, height : HEIGHT} = Dimensions.get("screen");
+
+
 
 export default function ChatDetail({navigation} : Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme)
@@ -35,33 +33,34 @@ export default function ChatDetail({navigation} : Props) {
     const [textSearch, setTextSearch] = useState("")
     const [showMoreAction, setShowMoreAction] = useState(false);
     const [indexMessageAction, setIndexMessageAction] = useState(-1);
-    const [positionMessageAction, setPositionMessageAction] = useState<PositionMessageActionType>({});
     const scrollViewRef = useRef<ScrollView>(null);
-    
-    function handleOpenMoreActionOnMessage(evt : GestureResponderEvent, id: number) : void {
-        
-        if (indexMessageAction === -1){
-            const {pageX, pageY} = evt.nativeEvent;
-            const objectStyles : PositionMessageActionType = {}
-            if (pageX > WIDTH / 2){
-                objectStyles.right = 0;
-            } else {
-                objectStyles.left = 0;
-            }
-            if (pageY > HEIGHT / 2){
-                objectStyles.bottom = 23;
-            } else {
-                objectStyles.top = "100%";
-            }
-            // console.log("objectStyles", objectStyles)
-            setPositionMessageAction(objectStyles);
-            setIndexMessageAction(id);
-        }
-    }
+    const [placement, setPlacement] = useState("top");
+    const [textMessage, setTextMessage] = useState("")
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showMoreChatActions, setShowMoreChatActions] = useState(false);
+    const [heightMessageMoreActions, setHeightMessageMoreActions] = useState<Animated.Value>(new Animated.Value(0));
+
  
+    // useLayoutEffect(()=>{
+    //     if (showMoreChatActions){
+    //         scrollViewRef.current?.scrollToEnd({ animated: true })
+    //     }
+    // }, [showMoreChatActions])
+
     useEffect(()=>{
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-    },[])
+        if (showMoreChatActions){
+            scrollViewRef.current?.scrollToEnd({ animated: true })
+        }
+
+        Animated.timing(heightMessageMoreActions, {
+            toValue: showMoreChatActions ? 80 : 0,
+            duration: 200,
+            useNativeDriver: false,
+            easing: showMoreChatActions ? Easing.out(Easing.exp) : Easing.in(Easing.exp)
+        }).start();
+
+        
+    }, [showMoreChatActions, heightMessageMoreActions])
 
     return (
         <View
@@ -94,13 +93,12 @@ export default function ChatDetail({navigation} : Props) {
                     ]}
                 >
                     <TouchableOpacity
-                        activeOpacity={1}
                         onPress={() => navigation.goBack()}
                         style={[
                             styles.btnGoback
                         ]}
                     >
-                        <FontAwesome name="angle-left" size={20} color={
+                        <FontAwesome name="angle-left" size={24} color={
                                 theme === lightMode
                                 ?
                                 commonStyles.lightSecondaryText.color
@@ -420,7 +418,15 @@ export default function ChatDetail({navigation} : Props) {
                 </View>
                 <View
                     style={[
-                        styles.chatDetailHistoryListWrapper
+                        styles.chatDetailHistoryListWrapper,
+                        {
+                            paddingBottom: 
+                            showMoreChatActions
+                            ?
+                            75 + 80
+                            :
+                            75
+                        }
                     ]}
                 >
                     <ScrollView
@@ -509,22 +515,78 @@ export default function ChatDetail({navigation} : Props) {
                                         ]}
                                     >Doris Brown</Text>
                                 </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 0 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 0)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromOpponentMoreActionBox
-                                   ]}
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 0}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(0)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                    onPress={(evt)=>{
+                                        handleOpenMoreActionOnMessage(evt, 0)
+                                    }}
+                                    style={[
+                                        styles.chatDetailMessageFromOpponentMoreActionBox
+                                    ]}
                                 >
                                     <Image
                                         
                                         source={require("../../assets/more-vertical-line-icon.png")}
                                         resizeMode='contain'
                                         style={{
-                                            width: 18, height: 18,
+                                            width: 20, height: 20,
                                             tintColor:
                                             theme === lightMode
                                             ?
@@ -543,7 +605,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                             </View>
                            
                         </View>
@@ -557,8 +619,66 @@ export default function ChatDetail({navigation} : Props) {
                                     styles.chatDetailMessageFromMeMainWrapper
                                 ]}
                             >
-                                <View
-                                   onTouchStart={(event)=>{
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 1}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(1)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                    onPress={(event)=>{
                                     // 1 is id or index or chat item
                                     handleOpenMoreActionOnMessage(event, 1)
                                    }}
@@ -590,7 +710,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                                 <View
                                     style={[
                                         styles.chatDetailMessageFromOpponentMainContainer
@@ -697,8 +817,66 @@ export default function ChatDetail({navigation} : Props) {
                                     styles.chatDetailMessageFromMeMainWrapper
                                 ]}
                             >
-                                <View
-                                   onTouchStart={(event)=>{
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 2}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(2)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                   onPress={(event)=>{
                                     // 1 is id or index or chat item
                                     handleOpenMoreActionOnMessage(event, 2)
                                    }}
@@ -730,7 +908,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                                 <View
                                     style={[
                                         styles.chatDetailMessageFromOpponentMainContainer
@@ -1034,9 +1212,66 @@ export default function ChatDetail({navigation} : Props) {
                                         ]}
                                     >Doris Brown</Text>
                                 </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 3}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(3)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                   onPress={(event)=>{
                                     // 0 is id or index or chat item
                                     handleOpenMoreActionOnMessage(event, 3)
                                    }}
@@ -1068,7 +1303,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                             </View>
                            
                         </View>
@@ -1082,8 +1317,66 @@ export default function ChatDetail({navigation} : Props) {
                                     styles.chatDetailMessageFromMeMainWrapper
                                 ]}
                             >
-                                <View
-                                   onTouchStart={(event)=>{
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 4}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(4)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                   onPress={(event)=>{
                                     // 1 is id or index or chat item
                                     handleOpenMoreActionOnMessage(event, 4)
                                    }}
@@ -1115,7 +1408,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                                 <View
                                     style={[
                                         styles.chatDetailMessageFromOpponentMainContainer
@@ -1310,8 +1603,66 @@ export default function ChatDetail({navigation} : Props) {
                                     styles.chatDetailMessageFromMeMainWrapper
                                 ]}
                             >
-                                <View
-                                   onTouchStart={(event)=>{
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightFourBackground
+                                                :
+                                                commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 5}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(5)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                   onPress={(event)=>{
                                     // 1 is id or index or chat item
                                     handleOpenMoreActionOnMessage(event, 5)
                                    }}
@@ -1343,7 +1694,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                                 <View
                                     style={[
                                         styles.chatDetailMessageFromOpponentMainContainer
@@ -1623,11 +1974,69 @@ export default function ChatDetail({navigation} : Props) {
                                         ]}
                                     >Doris Brown</Text>
                                 </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
+
+                                <View>
+                                    <Tooltip
+                                        arrowSize={
+                                            styles.chatDetailTooltipPopupContentArrowNone
+                                        }
+                                        contentStyle={
+                                            [styles.chatDetailTooltipPopupContent,
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightFourBackground
+                                            :
+                                            commonStyles.darkFourBackground]
+                                        }
+                                        onClose={()=> setIndexMessageAction(-1)}
+                                        backgroundColor='transparent'
+                                        isVisible={indexMessageAction === 6}
+                                        showChildInTooltip={false}
+                                        placement={placement as "top" | "left" | "right" | "bottom" | "center" | undefined}
+                                        content={
+                                            <MessagePopupAction
+                                                theme={theme}
+                                                setIndexMessageAction={setIndexMessageAction}
+                                            />
+                                        } 
+                                    >
+                                        <TouchableOpacity
+
+                                            onPress={(evt)=>{
+                                                // handleOpenMoreActionOnMessage(evt, 0)
+                                                if (evt.nativeEvent.pageY > HEIGHT / 2){
+                                                    setPlacement("top")
+                                                } else {
+                                                    setPlacement("bottom")
+                                                }
+                                                setIndexMessageAction(6)
+                                            }}
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentMoreActionBox
+                                            ]}
+                                        >
+                                            <Image
+                                                
+                                                source={require("../../assets/more-vertical-line-icon.png")}
+                                                resizeMode='contain'
+                                                style={{
+                                                    width: 20, height: 20,
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightIconColor.color
+                                                    :
+                                                    commonStyles.darkIconColor.color 
+                                                }}
+                                            />
+                                            
+                                        </TouchableOpacity>
+                                    </Tooltip>
+                                </View>
+                                {/* <TouchableOpacity
+                                   onPress={(event)=>{
                                     // 0 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 0)
+                                    handleOpenMoreActionOnMessage(event, 6)
                                    }}
                                    style={[
                                     styles.chatDetailMessageFromOpponentMoreActionBox
@@ -1657,7 +2066,7 @@ export default function ChatDetail({navigation} : Props) {
                                         />
 
                                     }
-                                </View>
+                                </TouchableOpacity> */}
                             </View>
                            
                         </View>      
@@ -1672,7 +2081,12 @@ export default function ChatDetail({navigation} : Props) {
                             commonStyles.chatNavbarBorderBottomColorLight.color
                             :
                             commonStyles.chatNavbarBorderBottomColorDark.color
-                        }
+                        },
+                        theme === lightMode
+                        ?
+                        commonStyles.lightPrimaryBackground
+                        :
+                        commonStyles.darkPrimaryBackground
                     ]}
                 >
                     <View
@@ -1681,7 +2095,10 @@ export default function ChatDetail({navigation} : Props) {
                         ]}
                     >
                         <TextInput
+                            value={textMessage}
+                            onChangeText={(text)=> setTextMessage(checkText(text))}
                             placeholder={t("chatDetailSendTextPlaceholder")}
+                            onTouchStart={()=>setShowMoreChatActions(false)}
                             style={[
                                 styles.textInputMessage,
                                 theme === lightMode
@@ -1705,7 +2122,9 @@ export default function ChatDetail({navigation} : Props) {
                                 commonStyles.darkTertiaryText.color
                             }
                         />
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={()=>setShowEmojiPicker(true)}
+                        >
                             <Image
                                 source={require("../../assets/emotion-happy-line-icon.png")}
                                 resizeMode='contain'
@@ -1715,46 +2134,289 @@ export default function ChatDetail({navigation} : Props) {
                                 ]}
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/attachment-line-icon.png")}
-                                resizeMode='contain'
+                        {
+                            !textMessage
+                            &&
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../../assets/image-fill-icon.png")}
+                                    resizeMode='contain'
+                                    style={[
+                                        styles.bottomSecondActionImg
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                        }
+
+                        {
+                            !textMessage
+                            &&
+                            <TouchableOpacity
+                                
+                            >
+                                <Image
+                                    source={require("../../assets/mic-line-icon.png")}
+                                    resizeMode='contain'
+                                    style={[
+                                        styles.bottomSecondActionImg
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                        }
+
+                        {
+                            !textMessage
+                            &&
+                            <TouchableOpacity
+                                onPress={()=> setShowMoreChatActions(!showMoreChatActions)}
+                            >
+                                <Image
+                                    source={require("../../assets/more-fill-icon.png")}
+                                    resizeMode='contain'
+                                    style={[
+                                        styles.bottomSecondActionImg
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                        }
+                        
+                        {
+                            textMessage
+                            &&
+                            <TouchableOpacity
                                 style={[
-                                    styles.bottomSecondActionImg
+                                    styles.bottomSendActionBox
                                 ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/image-fill-icon.png")}
-                                resizeMode='contain'
-                                style={[
-                                    styles.bottomSecondActionImg
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                            >
+                                <Image
+                                    source={require("../../assets/send-plane-2-fill-icon.png")}
+                                    resizeMode='contain'
+                                    style={[
+                                        styles.bottomSendActionImg,
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                        }
+                    </View>
+                    {
+                        showMoreChatActions
+                        &&
+                        <Animated.View
                             style={[
-                                styles.bottomSendActionBox
+                                {
+                                    height: heightMessageMoreActions
+                                }
                             ]}
                         >
-                            <Image
-                                source={require("../../assets/send-plane-2-fill-icon.png")}
-                                resizeMode='contain'
+                            <ScrollView
                                 style={[
-                                    styles.bottomSendActionImg,
+                                    {
+                                        height: "100%"
+                                    }
                                 ]}
-                            />
-                        </TouchableOpacity>
-                    </View>
+                            >
+                                <View
+                                    style={[
+                                        styles.chatDetailBottomMoreActionWrapper,
+                                        {
+                                            borderTopColor: theme === lightMode
+                                            ?
+                                            commonStyles.chatNavbarBorderBottomColorLight.color
+                                            :
+                                            commonStyles.chatNavbarBorderBottomColorDark.color,
+                                            
+                                        }
+                                    ]}
+                                >   
+                                    <View
+                                        style={[
+                                            styles.chatDetailBottomActionWrapper
+                                        
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatDetailBottomActionBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../assets/Circle-icons-location.svg.png")}
+                                                style={[
+                                                    styles.chatDetailBottomActionImg
+                                                ]}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatDetailBottomActionText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText
+                                                    :
+                                                    commonStyles.darkSecondaryText
+                                                ]}
+                                            >{t("messageMoreActionLocation")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.chatDetailBottomActionWrapper
+                                        
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatDetailBottomActionBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../assets/Circle-icons-folder.svg.png")}
+                                                style={[
+                                                    styles.chatDetailBottomActionImg
+                                                ]}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatDetailBottomActionText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText
+                                                    :
+                                                    commonStyles.darkSecondaryText
+                                                ]}
+                                            >{t("messageMoreActionDocument")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.chatDetailBottomActionWrapper
+                                        
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatDetailBottomActionBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../assets/Circle-icons-folder.svg.png")}
+                                                style={[
+                                                    styles.chatDetailBottomActionImg
+                                                ]}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatDetailBottomActionText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText
+                                                    :
+                                                    commonStyles.darkSecondaryText
+                                                ]}
+                                            >{t("messageMoreActionDocument")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.chatDetailBottomActionWrapper
+                                        
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatDetailBottomActionBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../assets/Circle-icons-folder.svg.png")}
+                                                style={[
+                                                    styles.chatDetailBottomActionImg
+                                                ]}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatDetailBottomActionText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText
+                                                    :
+                                                    commonStyles.darkSecondaryText
+                                                ]}
+                                            >{t("messageMoreActionDocument")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.chatDetailBottomActionWrapper
+                                        
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.chatDetailBottomActionBtn
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../assets/Circle-icons-folder.svg.png")}
+                                                style={[
+                                                    styles.chatDetailBottomActionImg
+                                                ]}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatDetailBottomActionText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText
+                                                    :
+                                                    commonStyles.darkSecondaryText
+                                                ]}
+                                            >{t("messageMoreActionDocument")}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </ScrollView>
+                        </Animated.View>
+                    }
                 </View>
+                <EmojiPicker
+                    open={showEmojiPicker}
+                    onEmojiSelected={(emoji)=> {
+                        setTextMessage(textMessage + emoji.emoji)
+                    }}
+                    onClose={()=> setShowEmojiPicker(false)}
+                    enableSearchBar
+                    enableRecentlyUsed
+                    theme={
+                        theme === lightMode
+                        ?
+                        {
+                            container: commonStyles.lightPrimaryBackground.backgroundColor,
+                            header: commonStyles.lightPrimaryText.color,
+                            search:{
+                                text: commonStyles.lightPrimaryText.color,
+                                placeholder: commonStyles.lightPrimaryText.color,
+                                icon: commonStyles.lightPrimaryText.color
+                            }
+                        }
+                        :
+                        {
+                            container: commonStyles.darkPrimaryBackground.backgroundColor,
+                            header: commonStyles.darkPrimaryText.color,
+                            search:{
+                                text: commonStyles.darkPrimaryText.color,
+                                placeholder: commonStyles.darkPrimaryText.color,
+                                icon: commonStyles.darkPrimaryText.color
+                            }
+                        }
+                    }
+                />
             </SafeAreaView>
         </View>
     )
 }
 interface MessagePopupActionProps {
     theme: string;
-    style: object;
+    style ?: object;
     setIndexMessageAction: React.Dispatch<React.SetStateAction<number>>;
 }
 function MessagePopupAction(props: MessagePopupActionProps){
@@ -1762,12 +2424,12 @@ function MessagePopupAction(props: MessagePopupActionProps){
     const {t} = useTranslation();
 
     return (
-        <OutsidePressHandler
-                                        onOutsidePress={()=>{
-            
-                                            setIndexMessageAction(-1);
-                                        }}
-                                    >
+        <View
+            // onOutsidePress={()=>{
+            //     console.log("clicked outside")
+            //     setIndexMessageAction(-1);
+            // }}
+        >
                                         <View
                                             style={[
                                                 styles.chatDetailMessageFromOpponentPopupActionBox,
@@ -1775,11 +2437,11 @@ function MessagePopupAction(props: MessagePopupActionProps){
                                                 ?
                                                 commonStyles.lightFourBackground
                                                 :
-                                                commonStyles.darkFourBackground,
-                                                style
+                                                commonStyles.darkFourBackground
                                             ]}
                                         >
                                             <TouchableOpacity
+                                                onPress={()=> {console.log("a")}}
                                                 style={[
                                                     styles.itemInMessageFromOpponentPopupAction
                                                 ]}
@@ -1900,6 +2562,6 @@ function MessagePopupAction(props: MessagePopupActionProps){
                                                 />
                                             </TouchableOpacity>
                                         </View>
-                                    </OutsidePressHandler>       
+        </View>       
     )
 }

@@ -144,5 +144,7 @@
     "searchHistoryModificationTitle": "Search history modification",
     "searchHistoryModificationHistoryTitle": "Search History",
     "searchHistoryModificationSaveContactSearched": "Save contact searched",
-    "searchHistoryModificationSaveKeywordSearched": "Save keyword searched"
+    "searchHistoryModificationSaveKeywordSearched": "Save keyword searched",
+    "messageMoreActionLocation": "Location",
+    "messageMoreActionDocument": "Document"
 }

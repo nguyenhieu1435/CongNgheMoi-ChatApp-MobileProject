@@ -337,6 +337,13 @@ export default function ContactsInPhone({navigation} : IContactsInPhoneProps) {
                             <Image
                                 style={[
                                     styles.contactsInPhoneLatestUpdateBtnIcon,
+                                    {
+                                        tintColor: theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText.color
+                                        :
+                                        commonStyles.darkPrimaryText.color
+                                    }
                                 ]}
                                 source={require("../../assets/loop-right-line-icon.png")}
                             />

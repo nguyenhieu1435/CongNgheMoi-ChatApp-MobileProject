@@ -114,6 +114,11 @@ export default function SearchHistoryModification({navigation} : SearchHistoryMo
                             <Text
                               style={[
                                 styles.searchHistoryBodySettingTitle,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                               ]}
                             >{t("searchHistoryModificationSaveContactSearched")}</Text>
                             <ToggleSwitch
@@ -233,6 +238,11 @@ export default function SearchHistoryModification({navigation} : SearchHistoryMo
                               <Text
                                 style={[
                                   styles.searchHistoryBodySettingTitle,
+                                  theme === lightMode
+                                  ?
+                                  commonStyles.lightPrimaryText
+                                  :
+                                  commonStyles.darkPrimaryText
                                 ]}
                               >{t("searchHistoryModificationSaveKeywordSearched")}</Text>
                               <ToggleSwitch
@@ -263,7 +273,15 @@ export default function SearchHistoryModification({navigation} : SearchHistoryMo
                                   <Image
                                       source={require("../../assets/search-line-icon.png")}
                                       style={[
-                                          styles.searchHistoryKeywordSearchedAvatar
+                                          styles.searchHistoryKeywordSearchedAvatar,
+                                          {
+                                            tintColor:
+                                              theme === lightMode
+                                              ?
+                                              commonStyles.lightPrimaryText.color
+                                              :
+                                              commonStyles.darkPrimaryText.color
+                                          }
                                       ]}
                                   />
                                   <Text
