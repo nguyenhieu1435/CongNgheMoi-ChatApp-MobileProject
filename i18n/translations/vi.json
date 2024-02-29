@@ -149,5 +149,7 @@
     "searchHistoryModificationSaveContactSearched": "Lưu liên hệ đã tìm",
     "searchHistoryModificationSaveKeywordSearched": "Lưu từ khóa đã tìm",
     "messageMoreActionLocation": "Vị trí",
-    "messageMoreActionDocument": "Tài liệu"
+    "messageMoreActionDocument": "Tài liệu",
+    "messageReactionPopupTitle": "Cảm xúc",
+    "messageReactionPopupPressToRemove": "Nhấn để gỡ"
 }

@@ -146,5 +146,7 @@
     "searchHistoryModificationSaveContactSearched": "Save contact searched",
     "searchHistoryModificationSaveKeywordSearched": "Save keyword searched",
     "messageMoreActionLocation": "Location",
-    "messageMoreActionDocument": "Document"
+    "messageMoreActionDocument": "Document",
+    "messageReactionPopupTitle": "Reaction",
+    "messageReactionPopupPressToRemove": "Press to remove"
 }

@@ -10,83 +10,6 @@ export const styles = StyleSheet.create({
         flex: 1,
         position: "relative",
     },
-    btnGoback:{
-        padding: 10,
-        marginRight: 10
-    },
-    chatDetailNavbar: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 10,
-        borderBottomWidth: 1,
-        paddingVertical: 7
-    },
-    chatDetailNavbarUsernameBox: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12
-    },
-    chatDetailUsernameText:{
-        fontSize: 16,
-        fontWeight: "500"
-    },
-    activityIcon: {
-        width: 8,
-        height: 8,
-        borderRadius: 100,
-    },
-    chatDetailNavbarBaseActions:{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 20,
-        flexGrow: 1,
-        marginLeft: 10,
-        justifyContent: "flex-end"
-    },
-    chatDetailNavbarBaseActionItemBox: {
-        position: "relative",
-
-    },
-    chatDetailNavbarBaseActionItemPopup: {
-        borderRadius: 8,
-        padding: 8,
-        position: "absolute",
-        right: 0,
-        top: 40,
-    },
-    chatDetailNavbarBaseActionItePopupInput:{
-        paddingVertical: 5,
-        paddingHorizontal: 15,
-        borderRadius: 6,
-        width: 160,
-        height: 40,
-        fontSize: 15,
-        zIndex: 999
-    },
-    chatDetailNavbarBaseActionMoreItemPopup:{
-        position: "absolute",
-        right: 0,
-        top: 40,
-        borderRadius: 4,
-        paddingVertical: 10,
-        gap: 12
-    },
-    chatDetailNavbarBaseActionMoreItem:{
-        
-        paddingHorizontal: 20,
-        width: 159,
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 4,
-        justifyContent: "space-between"
-    },
-    navbarActionMoreItemText:{
-        fontSize: 15,
-    },
     chatDetailBottomWrapper:{
         position: "absolute",
         bottom: 0,
@@ -153,12 +76,12 @@ export const styles = StyleSheet.create({
         flex: 1,
         gap: 5,
     },
-    chatDetailMessageFromOpponentMainContainer:{
-       width: "100%",
+    chatDetailMessageFromOpponentMainTypingContainer:{
+        width: "45%",
     },
     chatDetailMessageFromOpponentInfoBox:{
         paddingHorizontal: 20,
-        backgroundColor: commonStyles.primaryColor.color,
+        backgroundColor: commonStyles.secondColor.color,
         paddingVertical: 10,
         borderRadius: 8,
         position: "relative",
@@ -206,7 +129,7 @@ export const styles = StyleSheet.create({
         backgroundColor: "transparent",
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
-        borderBottomColor: commonStyles.primaryColor.color,
+        borderBottomColor: commonStyles.secondColor.color,
         left: 0,
         bottom: -8,
         transform: [{
@@ -228,32 +151,6 @@ export const styles = StyleSheet.create({
     chatDetailTooltipPopupContentArrowNone:{
         width: 0,
         height: 0,
-    },
-    chatDetailMessageFromOpponentPopupActionBox:{
-        // position: "absolute",
-        borderRadius: 8,
-        paddingHorizontal: 4,
-        paddingVertical: 6,
-        width: 180,
-        // zIndex: 35,
-        // shadowColor: '#171717',
-        // shadowOffset: {width: 0, height: 3},
-        // shadowOpacity: 0.4,
-        // shadowRadius: 2,
-        // elevation: 3
-    },
-    itemInMessageFromOpponentPopupAction:{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingVertical: 5,
-    },
-    itemInMessageFromOpponentPopupActionText:{
-        fontSize: 15,
-    },
-    itemInMessageFromOpponentPopupActionImg:{
-        width: 18,
-        height: 18,
     },
     chatDetailMessageFromMeBox:{
         flexDirection: "row",
@@ -420,5 +317,75 @@ export const styles = StyleSheet.create({
     chatDetailBottomActionText:{
         fontSize: 14,
 
+    },
+    chatDetailReactionListPopupWrapper:{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between"
+    },
+    chatDetailReactionListPopupTitle:{
+        fontWeight: "500",
+        fontSize: 16,
+    },
+    chatDetailReactionListBtnClose:{
+        width: 25,
+        height: 25,
+        borderRadius: 50,
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    chatDetailReactionListBtnCloseIcon: {
+        width: 20,
+        height: 20,
+        resizeMode: "contain"
+    },
+    chatDetailPopupReactionItem:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        width: "100%"
+    },
+    chatDetailPopupReactionItemAvatar:{
+        width: 38,
+        height: 38,
+        resizeMode: "contain",
+        borderRadius: 50
+    },
+    chatDetailPopupReactionItemMainContent:{
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottomWidth: 1,
+        paddingVertical: 8,
+    },
+    chatDetailPopupReactionItemMainContentUsername:{
+        fontWeight: "500",
+        fontSize: 16
+    },
+    chatDetailPopupReactionItemMainContentRemove:{
+        fontSize: 13
+    },
+    chatDetailPopupReactionItemMainContentIcon:{
+        resizeMode: "contain",
+        width: 25,
+        height: 25,
+
+    },
+    chatDetailReactionListFilterWrapper:{
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 10,
+        gap: 15,
+        flexDirection: "row"
+    },
+    chatDetailReactionListFilterBtn: {
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20
+    },
+    chatDetailReactionListFilterBtnText:{
+        fontSize: 16,
+        fontWeight: "500"
     }
 })
