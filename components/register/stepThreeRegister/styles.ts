@@ -64,35 +64,49 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 30,
         justifyContent: "space-between"
     },
-    boxInputOTP: {
-        width: 40,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-    },
-    inputOneNumberInOTP: {
-        textAlign: "center",
+    passwordContainer:{
         width: "100%",
-        fontSize: 15,
-        paddingVertical: 10,
-    },
-    resendCodeWrapper:{
-        marginTop: 25,
-        flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center"
-    },
-    btnResendCodeBox:{
 
     },
-    textBtnResendCode: {
-        fontWeight: '500',
-        fontSize: 17
+    passwordContainerChild: {
+        marginTop: 40,
+        width: "80%",
+        marginBottom: 20
     },
-    textRemainTimeResend: {
-        fontWeight: "700",
-        color: commonStyles.primaryColor.color,
+    passwordTitleText:{
         fontSize: 17,
-        marginLeft: 10
+    },
+    passwordInputWrapperRow:{
+        flexDirection: "row",
+        marginTop: 16,
+        position: "relative"
+    },
+    passwordInput:{
+        fontSize: 15,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        flex: 1,
+        paddingRight: 30
+    },
+    boxIconToggleShowPassword:{
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 0,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 10
+    },
+    iconToggleShowPassword:{
+        width: 20,
+        height: 20,
+        resizeMode: "contain"
+    },
+    textErrMsg:{
+        fontSize: 14,
+        marginTop: 5,
+        color: "red"
     },
     boxWrapperBtnNext: {
         width: "100%",
