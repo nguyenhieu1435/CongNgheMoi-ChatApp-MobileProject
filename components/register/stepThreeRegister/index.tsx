@@ -1,279 +1,217 @@
-import { View, Text, TouchableOpacity, TextInput } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons';
-import {styles} from "./styles";
-import { lightMode } from '../../../redux_toolkit/slices/theme.slice';
-import {  useSelector } from 'react-redux';
-import commonStyles from '../../../CommonStyles/commonStyles';
-import { useTranslation } from 'react-i18next';
-import { IRootState } from '../../../redux_toolkit/store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LegacyRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Image } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { styles } from "./styles";
+import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
+import { useSelector } from "react-redux";
+import commonStyles from "../../../CommonStyles/commonStyles";
+import { useTranslation } from "react-i18next";
+import { IRootState } from "../../../redux_toolkit/store";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from 'yup'
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useState } from "react";
 
 interface Props {
-    navigation: any,
-    route: any
+    navigation: any;
+    route: any;
 }
 
-const splitPhoneNumber = (phoneNumber: string) : string => { 
-  let result = "";
-  let i = 0;
 
-  if (phoneNumber.split("")[0] === "0"){
-    i = 1
-  }
-
-  for ( i ; i < phoneNumber.length; i++) {
-    if (i % 3 == 0 && i != 0) {
-      result += " ";
-    }
-    result += phoneNumber[i];
-  }
-  return result;
+interface IFormPassword {
+  password: string
 }
-const REMAIN_SECONDS = 59;
 
-export default function StepThreeRegister({navigation, route} : Props) {
-  const {t, i18n} = useTranslation();
-  const theme = useSelector((state: IRootState) => state.theme?.theme)
+export default function StepThreeRegister({ navigation, route }: Props) {
+    const { t, i18n } = useTranslation();
+    const theme = useSelector((state: IRootState) => state.theme?.theme);
+    const [showPassword, setShowPassword] = useState(false);
 
-  const pin1Ref = useRef<TextInput | null>(null);
-  const pin2Ref = useRef<TextInput | null>(null);
-  const pin3Ref = useRef<TextInput | null>(null);
-  const pin4Ref = useRef<TextInput | null>(null);
-  const pin5Ref = useRef<TextInput | null>(null);
-  const pin6Ref = useRef<TextInput | null>(null);
-
-  const [pin1, setPin1] = useState<string>("")
-  const [pin2, setPin2] = useState<string>("")
-  const [pin3, setPin3] = useState<string>("")
-  const [pin4, setPin4] = useState<string>("")
-  const [pin5, setPin5] = useState<string>("")
-  const [pin6, setPin6] = useState<string>("")
-  const [isFullPin, setIsFullPin] = useState<boolean>(false)
-
-  const [remainTime, setRemainTime] = useState<number>(REMAIN_SECONDS);
-  const refRemainTime = useRef<number | null>(null)
-
-  useLayoutEffect(()=>{
-    if (remainTime == REMAIN_SECONDS){
-      refRemainTime.current = setInterval(()=>{
-        setRemainTime((prev)=> {
-          if (prev === 0){
-            clearInterval(refRemainTime.current || 0)
-            return 0;
-          }
-          return prev - 1;
+    const [schema, setSchema] = useState(()=>{
+      return (
+        yup.object().shape({
+          password: yup.string().required(" ")
+            .min(6, t("registerPasswordValidationAtLeast"))
+            .max(30, t("registerPasswordValidationMaxLength"))
         })
-      }, 1000)
+      )
+    }) 
+
+    const {control, handleSubmit, formState: { errors, isValid}, watch, setValue} = useForm<IFormPassword>({
+      resolver: yupResolver(schema),
+      mode: "onSubmit",
+      reValidateMode: "onSubmit",
+      defaultValues: {
+        password: ""
+      }
+    });
+
+    function handleSubmitForm(data : IFormPassword){
+      if (isValid){
+        const finalPassword = data.password
+        setValue("password", "")
+        navigation.navigate("StepFourRegister", {
+          username: route.params.username,
+          phoneNumber: route.params.phoneNumber,
+          password: finalPassword
+        })
+      }
     }
-  }, [remainTime])
 
-  useEffect(()=>{
-    if (pin1 && pin2 && pin3 && pin4 && pin5 && pin6){
-      setIsFullPin(true)
-    } else {
-      setIsFullPin(false)
-    }
-  }, [pin1, pin2, pin3, pin4, pin5, pin6])
-
-
-  return (
-    <View style={[styles.wrapperAll
-      , theme === lightMode ? commonStyles.lightPrimaryBackground : commonStyles.darkPrimaryBackground]}
-    >
-        <View style={[styles.navigationTabBox]}>
-            <TouchableOpacity style={styles.btnReturnInitialPage}
-              onPress={()=> navigation.goBack()}
-            >
-              <FontAwesome name="angle-left" size={28} color={commonStyles.darkPrimaryText.color} />
-            </TouchableOpacity>
-            <Text style={[styles.currentTabName]}>
-                {t("registerVerifyCodeTitle")}
-            </Text>
-        </View>
-        <View style={[styles.mainContentContainer, theme == lightMode ? commonStyles.lightPrimaryBackground : commonStyles.darkPrimaryBackground]}>
-          <Text style={[
-            styles.descriptionForThisPage,
-            theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText,
-            theme == lightMode ? commonStyles.lightSecondaryBackground : commonStyles.darkSecondaryBackground
-          ]}>
-            {t("registerVerifyCodeDesc")}
-          </Text>
-          <View style={[styles.boxDescStatusSendingMsg]}>
-            <View style={[styles.boxIconStatusSendMsg]}>
-              <MaterialCommunityIcons name="phone-return" size={30} color={commonStyles.primaryColor.color} />
-            </View>
-            <Text style={[styles.callingToTitle,
-              theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText
-            ]}>
-              {`${t("registerVerifyCodeCallTo")} (${route.params?.country?.dial_code}) ${splitPhoneNumber(route.params?.phoneNumber)}`}
-            </Text>
-
-            <Text style={[styles.callingToTips
-              , theme == lightMode ? commonStyles.lightSecondaryText : commonStyles.darkSecondaryText
-            ]}>
-              {t("registerVerifyCodeTips")}
-            </Text>
-          </View>
-          <View style={styles.boxListInputOTPWrapper}>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                maxLength={1}
-                ref={pin1Ref}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  console.log(e)
-                  setPin1(e.nativeEvent.text)
-                  if (e.nativeEvent.text){
-                    pin2Ref.current?.focus()
-                  } 
-                }}
-              />
-            </View>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                ref={pin2Ref}
-                maxLength={1}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  setPin2(e.nativeEvent.text)
-                  if (e.nativeEvent.text){
-                    pin3Ref.current?.focus()
-                  } else {
-                    pin1Ref.current?.focus()
-                  }
-                }}
-              />
-            </View>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                ref={pin3Ref}
-                maxLength={1}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  setPin3(e.nativeEvent.text)
-                  if (e.nativeEvent.text){
-                    pin4Ref.current?.focus()
-                  } else {
-                    pin2Ref.current?.focus()
-                  }
-                }}
-              />
-            </View>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                ref={pin4Ref}
-                maxLength={1}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  setPin4(e.nativeEvent.text)
-                  if (e.nativeEvent.text){
-                    pin5Ref.current?.focus()
-                  } else {
-                    pin3Ref.current?.focus()
-                  
-                  }
-                }}
-              />
-            </View>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                ref={pin5Ref}
-                maxLength={1}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  setPin5(e.nativeEvent.text)
-                  if (e.nativeEvent.text){
-                    pin6Ref.current?.focus()
-                  } else {
-                    pin4Ref.current?.focus()
-                  }
-                }}
-              />
-            </View>
-
-            <View style={styles.boxInputOTP}>
-              <TextInput
-                keyboardType='number-pad'
-                ref={pin6Ref}
-                maxLength={1}
-                style={[styles.inputOneNumberInOTP,
-                  theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText]
-                }
-                onChange={(e)=>{
-                  if (e.nativeEvent.text){
-                    setPin6(e.nativeEvent.text)
-                  } else {
-                    pin5Ref.current?.focus()
-                  }
-                  
-                }}
-              />
-            </View>
-
-          </View>
-
-          <View style={styles.resendCodeWrapper}>
-            <TouchableOpacity style={[styles.btnResendCodeBox]}
-              onPress={()=> {
-                if (remainTime === 0){
-                  clearInterval(refRemainTime.current || 0)
-                  setRemainTime(REMAIN_SECONDS)
-                }
-              }}
-              disabled={remainTime > 0}
-            >
-              <Text style={[styles.textBtnResendCode, 
-                remainTime > 0
-                ?
-                theme == lightMode ? commonStyles.lightSecondaryText : commonStyles.darkSecondaryText
-                :
-                commonStyles.primaryColor
-              ]}>
-                {t("registerVerifyCodeResend")}
-              </Text>
-            </TouchableOpacity>
-            {
-              remainTime > 0
-              &&
-              <Text style={styles.textRemainTimeResend}>00:{`${remainTime < 10 ? "0": ""}${remainTime}`}</Text>
-            }
-          </View>
-
-          <View style={styles.boxWrapperBtnNext}>
-            <TouchableOpacity style={[
-              styles.btnNextPage,
-              theme == lightMode ? commonStyles.lightPrimaryBackground : commonStyles.darkTertiaryBackground
+    return (
+        <View
+            style={[
+                styles.wrapperAll,
+                theme === lightMode
+                    ? commonStyles.lightPrimaryBackground
+                    : commonStyles.darkPrimaryBackground,
             ]}
-              disabled={!isFullPin}
+        >
+            <View style={[styles.navigationTabBox]}>
+                <TouchableOpacity
+                    style={styles.btnReturnInitialPage}
+                    onPress={() => navigation.goBack()}
+                >
+                    <FontAwesome
+                        name="angle-left"
+                        size={28}
+                        color={commonStyles.darkPrimaryText.color}
+                    />
+                </TouchableOpacity>
+                <Text style={[styles.currentTabName]}>
+                    {t("registerVerifyCodeTitle")}
+                </Text>
+            </View>
+            <View
+                style={[
+                    styles.mainContentContainer,
+                    theme == lightMode
+                        ? commonStyles.lightPrimaryBackground
+                        : commonStyles.darkPrimaryBackground,
+                ]}
             >
-              <Text style={[
-                styles.textBtnNextPage,
-                theme == lightMode ? commonStyles.lightPrimaryText : commonStyles.darkPrimaryText
-              ]}>{t("next")}</Text>
-            </TouchableOpacity>
-          </View>
+                <Text
+                    style={[
+                        styles.descriptionForThisPage,
+                        theme == lightMode
+                            ? commonStyles.lightPrimaryText
+                            : commonStyles.darkPrimaryText,
+                        theme == lightMode
+                            ? commonStyles.lightSecondaryBackground
+                            : commonStyles.darkSecondaryBackground,
+                    ]}
+                >
+                    {t("registerVerifyCodeDesc")}
+                </Text>
+
+                <View style={[styles.passwordContainer]}>
+                    <View style={[styles.passwordContainerChild]}>
+                        <Text
+                            style={[
+                                styles.passwordTitleText,
+                                theme == lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
+                            {t("registerTitlePassword")}
+                        </Text>
+                        <View>
+                            <View
+                              style={[
+                                styles.passwordInputWrapperRow,
+                                {
+                                  backgroundColor:
+                                    theme === lightMode
+                                      ? commonStyles.chatNavbarBorderBottomColorLight.color
+                                      : commonStyles.chatNavbarBorderBottomColorDark.color,
+                                }
+                              ]}
+                            >
+                              <Controller
+                                control={control}
+                                name="password"
+                                render={({ field: { onChange, onBlur, value}})=>(
+                                  <TextInput
+                                    onChangeText={onChange}
+                                    secureTextEntry={!showPassword}
+                                    placeholder={t("registerPasswordPlaceholder")}
+                                    placeholderTextColor={
+                                        theme == lightMode
+                                            ? commonStyles.lightSecondaryText.color
+                                            : commonStyles.darkSecondaryText.color
+                                    }
+                                    style={[
+                                        styles.passwordInput,
+                                        theme == lightMode
+                                            ? commonStyles.lightPrimaryText
+                                            : commonStyles.darkPrimaryText,
+                                    ]}
+                                />
+                                )}
+                              />
+                              {
+                                watch("password")
+                                &&
+                                <TouchableOpacity
+                                  onPress={() => setShowPassword(!showPassword)}
+                                  style={[
+                                    styles.boxIconToggleShowPassword
+                                  ]}
+                                >
+                                    <Image
+                                      source={
+                                        showPassword
+                                          ? require("../../../assets/eye-off-icon.png")
+                                          : require("../../../assets/eye-open_icon.png")
+                                      }
+                                      style={[
+                                        styles.iconToggleShowPassword,
+                                        {
+                                          tintColor:
+                                            theme === lightMode
+                                              ? commonStyles.lightPrimaryText.color
+                                              : commonStyles.darkPrimaryText.color,
+                                        }
+                                      ]}
+                                    />
+                                </TouchableOpacity>
+                              }
+                            </View>
+                    
+              
+                            {
+                              errors.password && errors.password.message?.trim() && 
+                              <Text style={[styles.textErrMsg]}>
+                                {errors.password.message}
+                              </Text>
+                            }
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.boxWrapperBtnNext}>
+                    <TouchableOpacity
+                        style={[
+                            styles.btnNextPage,
+                            theme == lightMode
+                                ? commonStyles.lightPrimaryBackground
+                                : commonStyles.darkTertiaryBackground,
+                        ]}
+                        onPress={handleSubmit(handleSubmitForm)}
+                    >
+                        <Text
+                            style={[
+                                styles.textBtnNextPage,
+                                theme == lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
+                            {t("next")}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
-    </View>
-  )
+    );
 }

@@ -159,6 +159,7 @@ export default function StepFiveRegister({navigation} : Props) {
                   <TouchableOpacity
                     style={[styles.btnContinueBox, styles.btnContinueBoxActive]}
                     activeOpacity={1}
+                    onPress={()=> navigation.navigate("PrimaryBottomTab")}
                   >
                     <Text
                       style={[styles.textBtnContinueBox

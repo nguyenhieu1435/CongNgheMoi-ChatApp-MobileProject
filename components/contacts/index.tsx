@@ -313,6 +313,11 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     userId: 5,
                     name: "Bau Tran",
                     avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
+                },
+                {
+                    userId: 6,
+                    name: "Bau Tran",
+                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
                 }
             ]
         }
@@ -866,7 +871,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     styles.contactDetailFriendListWrapper
                 ]}
             >
-                <View
+                {/* <View
                     style={[
                         styles.contactDetailFriendListFilterBox,
                         {
@@ -1002,7 +1007,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                         >{t("searchDetailContactNewAccess")}</Text>
                     </TouchableOpacity>
 
-                </View>
+                </View> */}
                 <View>
                     {/* <TouchableOpacity
                         style={[
