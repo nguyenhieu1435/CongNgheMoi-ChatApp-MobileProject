@@ -194,7 +194,7 @@ export default function StepThreeRegister({ navigation, route }: Props) {
                         style={[
                             styles.btnNextPage,
                             theme == lightMode
-                                ? commonStyles.lightPrimaryBackground
+                                ? commonStyles.lightTertiaryBackground
                                 : commonStyles.darkTertiaryBackground,
                         ]}
                         onPress={handleSubmit(handleSubmitForm)}
