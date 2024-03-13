@@ -11,7 +11,6 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import {  useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 
-
 interface Props{
     navigation: any
 }
@@ -160,6 +159,7 @@ export default function StepFiveRegister({navigation} : Props) {
                   <TouchableOpacity
                     style={[styles.btnContinueBox, styles.btnContinueBoxActive]}
                     activeOpacity={1}
+                    onPress={()=> navigation.navigate("PrimaryBottomTab")}
                   >
                     <Text
                       style={[styles.textBtnContinueBox

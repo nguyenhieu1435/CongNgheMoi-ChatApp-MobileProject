@@ -1,1582 +1,558 @@
-import { View, Text, StatusBar, SafeAreaView, Image,  GestureResponderEvent, Dimensions } from 'react-native'
-import { styles } from './styles'
-import { useSelector } from 'react-redux'
-import { IRootState } from '../../redux_toolkit/store'
-import { useTranslation } from 'react-i18next'
-import { lightMode } from '../../redux_toolkit/slices/theme.slice'
-import commonStyles from '../../CommonStyles/commonStyles'
-import { ScrollView, TextInput, TouchableOpacity} from 'react-native-gesture-handler'
-import { FontAwesome } from '@expo/vector-icons';
-import OutsidePressHandler from 'react-native-outside-press';
-import { useEffect, useRef, useState } from 'react'
-const {TypingAnimation} = require('react-native-typing-animation');
-
+import {
+    View,
+    Text,
+    StatusBar,
+    SafeAreaView,
+    Image,
+    GestureResponderEvent,
+    Dimensions,
+    TouchableOpacity,
+    ScrollView,
+    Modal,
+} from "react-native";
+import { styles } from "./styles";
+import { useSelector } from "react-redux";
+import { IRootState } from "../../redux_toolkit/store";
+import { useTranslation } from "react-i18next";
+import { lightMode } from "../../redux_toolkit/slices/theme.slice";
+import commonStyles from "../../CommonStyles/commonStyles";
+import OutsidePressHandler from "react-native-outside-press";
+import { useEffect, useRef, useState } from "react";
+const { TypingAnimation } = require("react-native-typing-animation");
+import ChatDetailHeader from "./chatDetailHeader";
+import ChatDetailBottom from "./chatDetailBottom";
+import MessageComponent from "./messageComponent";
 
 interface Props {
-    navigation: any
+    navigation: any;
 }
 
-type PropsTouchableOpacity = {
-    onPress: (event: GestureResponderEvent) => void
+const { width: WIDTH, height: HEIGHT } = Dimensions.get("screen");
+
+interface DataHistoryChatsI {
+    id: number;
+    date: string;
+    conversations: DataHistoryChatMessageInterface[];
 }
 
-type PositionMessageActionType = {
-    top?: number | string;
-    left?: number;
-    right?: number;
-    bottom?: number | string;
+export interface DataHistoryChatMessageInterface {
+    side: string;
+    image: string;
+    name: string;
+    time: string;
+    messages: {
+        content: string;
+        type: string;
+        id?: number;
+    }[];
+    attachmentFile?: {
+        name: string;
+        url: string;
+    };
+    attachmentImages?: {
+        url: string;
+    }[];
+    reactions: DataHistoryChatMessageReactionInterface[] | [];
 }
-const {width : WIDTH, height : HEIGHT} = Dimensions.get("screen");
-
-export default function ChatDetail({navigation} : Props) {
-    const theme = useSelector((state: IRootState) => state.theme.theme)
-    const {t} = useTranslation();
-    const [showModalSearch, setShowModalSearch] = useState(false)
-    const [textSearch, setTextSearch] = useState("")
-    const [showMoreAction, setShowMoreAction] = useState(false);
+export interface DataHistoryChatMessageReactionInterface {
+    userID: number;
+    emoji: string;
+    userImg: string;
+    userName: string;
+}
+export default function ChatDetail({ navigation }: Props) {
+    const theme = useSelector((state: IRootState) => state.theme.theme);
+    const { t } = useTranslation();
+    const [textSearch, setTextSearch] = useState("");
     const [indexMessageAction, setIndexMessageAction] = useState(-1);
-    const [positionMessageAction, setPositionMessageAction] = useState<PositionMessageActionType>({});
     const scrollViewRef = useRef<ScrollView>(null);
-    
-    function handleOpenMoreActionOnMessage(evt : GestureResponderEvent, id: number) : void {
-        
-        if (indexMessageAction === -1){
-            const {pageX, pageY} = evt.nativeEvent;
-            const objectStyles : PositionMessageActionType = {}
-            if (pageX > WIDTH / 2){
-                objectStyles.right = 0;
-            } else {
-                objectStyles.left = 0;
-            }
-            if (pageY > HEIGHT / 2){
-                objectStyles.bottom = 23;
-            } else {
-                objectStyles.top = "100%";
-            }
-            // console.log("objectStyles", objectStyles)
-            setPositionMessageAction(objectStyles);
-            setIndexMessageAction(id);
-        }
+    const [showMoreChatActions, setShowMoreChatActions] =
+        useState<boolean>(false);
+
+    const heightForMoreChatActions = useRef<number>(80);
+    const [indexMessageShowListReaction, setIndexMessageShowListReaction] =
+        useState(-1);
+
+    const dataHistoryChats: DataHistoryChatsI[] = [
+        {
+            id: 1,
+            date: "15/01/2024",
+            conversations: [
+                {
+                    side: "me",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Doris Brown",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9999,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9998,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    reactions: [],
+                },
+                {
+                    side: "opponent",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Jane Smith",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9997,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9996,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    reactions: [
+                        {
+                            userID: 1,
+                            emoji: "👍",
+                            userImg: "https://avatar.iran.liara.run/public/44",
+                            userName: "Doris Brown"
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            id: 2,
+            date: "18/01/2024",
+            conversations: [
+                {
+                    side: "me",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Doris Brown",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9995,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9994,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    attachmentFile: {
+                        name: "Minible-Whitepaper.pdf",
+                        url: "https://minible.finance/Minible-Whitepaper.pdf",
+                    },
+                    reactions: [
+                        {
+                            userID: 1,
+                            emoji: "❤",
+                            userImg: "https://avatar.iran.liara.run/public/44",
+                            userName: "Doris Brown"
+                        },
+                        {
+                            userID: 3,
+                            emoji: "😡",
+                            userImg: "https://avatar.iran.liara.run/public/44",
+                            userName: "Doris Brown"
+                        },
+                    ],
+                },
+                {
+                    side: "opponent",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Jane Smith",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9993,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9992,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    attachmentFile: {
+                        name: "Minible-Whitepaper.pdf",
+                        url: "https://minible.finance/Minible-Whitepaper.pdf",
+                    },
+                    reactions: [],
+                },
+            ],
+        },
+        {
+            id: 3,
+            date: "20/01/2024",
+            conversations: [
+                {
+                    side: "me",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Doris Brown",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9991,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9990,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    attachmentImages: [
+                        {
+                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+                        },
+                        {
+                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+                        },
+                    ],
+                    reactions: [
+                        {
+                            userID: 2,
+                            emoji: "😡",
+                            userImg: "https://avatar.iran.liara.run/public/44",
+                            userName: "Doris Brown"
+                        },
+                    ],
+                },
+                {
+                    side: "opponent",
+                    image: "https://avatar.iran.liara.run/public/44",
+                    name: "Jane Smith",
+                    time: "10:31",
+                    messages: [
+                        {
+                            content: "Jesse Pinkman",
+                            type: "tag",
+                            id: 9989,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf ",
+                            type: "text",
+                        },
+                        {
+                            content: "Pipilu",
+                            type: "tag",
+                            id: 9988,
+                        },
+                        {
+                            content: " fgfgfgfgfgfgfgf",
+                            type: "text",
+                        },
+                    ],
+                    attachmentImages: [
+                        {
+                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+                        },
+                        {
+                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+                        },
+                    ],
+                    reactions: [
+                        {
+                            userID: 1,
+                            emoji: "😮",
+                            userImg: "https://avatar.iran.liara.run/public/44",
+                            userName: "Doris Brown"
+                        },
+                    ],
+                },
+            ],
+        },
+    ];
+    const [reactionFilter, setReactionFilter] = useState(-1);
+    const scrollReactionRef = useRef<ScrollView>(null);
+
+    function findReactionsByIndexMessageShowListReaction() {
+        let indexOfDataHistoryChats = Math.floor(
+            indexMessageShowListReaction / 10
+        );
+        let indexOfMessage = indexMessageShowListReaction % 10;
+
+        if (indexOfDataHistoryChats < 0) return [];
+
+        return dataHistoryChats[indexOfDataHistoryChats].conversations[
+            indexOfMessage
+        ].reactions;
     }
- 
-    useEffect(()=>{
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-    },[])
+
+    function removeReactionDuplicate(
+        reactions: DataHistoryChatMessageReactionInterface[]
+    ) {
+        return [
+            ...new Map(reactions.map((item) => [item.emoji, item])).values(),
+        ];
+    }
+    function classificationEmoji(
+        reactions: DataHistoryChatMessageReactionInterface[]
+    ) {
+        let emojis = new Map<
+            string,
+            DataHistoryChatMessageReactionInterface[]
+        >();
+        reactions.forEach((item) => {
+            if (emojis.has(item.emoji)) {
+                let oldValues = emojis.get(item.emoji);
+                emojis.set(
+                    item.emoji,
+                    oldValues ? [...oldValues, item] : [item]
+                );
+            } else {
+                emojis.set(item.emoji, [item]);
+            }
+        });
+        return Array.from(emojis.values());
+    }
+    function returnRequireImageReaction(emoji: string) {
+        switch (emoji) {
+            case "👍":
+                return require("../../assets/like-reaction.png");
+            case "😡":
+                return require("../../assets/aggry-reaction.png");
+            case "😮":
+                return require("../../assets/surprise-reaction.png");
+            case "❤":
+                return require("../../assets/heart-reaction.png");
+            case "😢":
+                return require("../../assets/sad-reaction.png");
+            default:
+                return require("../../assets/haha-reaction.png");
+        }
+    }   
+    function handleControllingSlideScroll(index: number) {
+        
+        if (index === -1) {
+            scrollReactionRef.current?.scrollTo({
+                x: 0,
+                animated: true
+            })
+        } else {
+            scrollReactionRef.current?.scrollTo({
+                x: (WIDTH - 30 - 16) * (index+1),
+                animated: true,
+            });
+        }
+        setReactionFilter(index);
+
+    }
+
+
 
     return (
         <View
             style={[
                 styles.chatDetailWrapper,
                 theme === lightMode
-                ?
-                commonStyles.lightPrimaryBackground
-                :
-                commonStyles.darkPrimaryBackground
+                    ? commonStyles.lightPrimaryBackground
+                    : commonStyles.darkPrimaryBackground,
             ]}
         >
-            <StatusBar/>
-            <SafeAreaView
-                style={[
-                    styles.chatDetailContainer
-                ]}
-            >
+            <StatusBar />
+            <SafeAreaView style={[styles.chatDetailContainer]}>
+                <ChatDetailHeader
+                    navigation={navigation}
+                    translation={t}
+                    theme={theme}
+                    textSearch={textSearch}
+                    setTextSearch={setTextSearch}
+                />
                 <View
                     style={[
-                        styles.chatDetailNavbar,
+                        styles.chatDetailHistoryListWrapper,
                         {
-                            borderBottomColor: theme === lightMode
-                            ?
-                            commonStyles.chatNavbarBorderBottomColorLight.color
-                            :
-                            commonStyles.chatNavbarBorderBottomColorDark.color,
-                            zIndex: 20
-                        }
-                    ]}
-                >
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={() => navigation.goBack()}
-                        style={[
-                            styles.btnGoback
-                        ]}
-                    >
-                        <FontAwesome name="angle-left" size={20} color={
-                                theme === lightMode
-                                ?
-                                commonStyles.lightSecondaryText.color
-                                :
-                                commonStyles.darkSecondaryText.color
-                            }
-                        />
-
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        style={[
-                            styles.chatDetailNavbarUsernameBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                            resizeMode='cover'
-                            style={{
-                                width: 36, height: 36, borderRadius: 50
-                            }}
-                        />
-                        <Text
-                            style={[
-                                styles.chatDetailUsernameText,
-                                theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
-                            ]}
-                        >
-                            Doris Brown
-                        </Text>
-                        <View
-                            style={[
-                                styles.activityIcon,
-                                {
-                                    backgroundColor: commonStyles.activeOnlineColor.color
-                                }
-                            ]}
-                        >
-
-                        </View>
-                    </TouchableOpacity>
-
-                    <View
-                        style={[
-                            styles.chatDetailNavbarBaseActions
-                        ]}
-                    >
-                        <OutsidePressHandler
-                            onOutsidePress={() => {
-                                setShowModalSearch(false)
-                            }}
-                            style={[
-                                styles.chatDetailNavbarBaseActionItemBox,
-                            ]}
-                        >
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setShowModalSearch(!showModalSearch)
-                                }}
-                            >
-                                <Image
-                                    source={require("../../assets/search-line-icon.png")}
-                                    resizeMode='contain'
-                                    style={{
-                                        width: 23, height: 23
-                                    }}
-                                    tintColor={
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                />
-                            </TouchableOpacity>
-   
-                            {
-                                showModalSearch
-                                &&
-
-                                    <View
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionItemPopup,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightFourBackground
-                                            :
-                                            commonStyles.darkFourBackground,
-                                            {
-                                                shadowColor: '#0F223A',
-                                                shadowOffset: {
-                                                    width: 0,
-                                                    height: 2,
-                                                },
-                                                shadowOpacity: 0.12,
-                                                shadowRadius: 4,
-                                                elevation: 4, 
-                                            },
-                                        ]}
-                                    >
-                                            <TextInput
-                                                placeholder={t("chatDetailSearchPlaceholder")}
-                                                placeholderTextColor={
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightSecondaryText.color
-                                                    :
-                                                    commonStyles.darkSecondaryText.color
-                                                }
-                                                style={[
-                                                    styles.chatDetailNavbarBaseActionItePopupInput,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryBackground
-                                                    :
-                                                    commonStyles.darkTertiaryBackground,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryText
-                                                    :
-                                                    commonStyles.darkTertiaryText,
-                                                        
-                                                ]}     
-                                            /> 
-                                    </View>
-                                
-                            }
-                        </OutsidePressHandler>
-
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/phone-line-icon.png")}
-                                resizeMode='contain'
-                                style={{
-                                    width: 23, height: 23
-                                }}
-                                tintColor={
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
-                            />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/vidicon-line-icon.png")}
-                                resizeMode='contain'
-                                style={{
-                                    width: 23, height: 23
-                                }}
-                                tintColor={
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
-                            />
-                        </TouchableOpacity>
-
-                        <OutsidePressHandler
-                            onOutsidePress={() => {
-                                setShowMoreAction(false)
-                            }}
-                            style={[
-                                styles.chatDetailNavbarBaseActionItemBox
-                            ]}
-                        >
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setShowMoreAction(!showMoreAction)
-                                }}
-                            >
-                                <Image
-                                    source={require("../../assets/more-line-icon.png")}
-                                    resizeMode='contain'
-                                    style={{
-                                        width: 23, height: 23
-                                    }}
-                                    tintColor={
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                />
-                            </TouchableOpacity>
-                            {
-                                showMoreAction
-                                &&
-                                <View
-                                    style={[
-                                        styles.chatDetailNavbarBaseActionMoreItemPopup,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightFourBackground
-                                        :
-                                        commonStyles.darkFourBackground,
-                                        {
-                                            shadowColor: '#0F223A',
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 2,
-                                            },
-                                            shadowOpacity: 0.12,
-                                            shadowRadius: 4,
-                                            elevation: 4, 
-                                        },
-                                    ]}
-                                >
-                                    <TouchableOpacity
-                                        onPress={()=>{
-                                            navigation.navigate("ChatProfile")
-                                        }}
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionMoreItem
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightTertiaryText
-                                                :
-                                                commonStyles.darkTertiaryText,
-                                                styles.navbarActionMoreItemText
-                                            ]}
-                                        >{t("chatDetaildMoreViewProfileTitle")}</Text>
-                                        <Image
-                                            source={require("../../assets/user-chatlist-bottom-tab.png")}
-                                            resizeMode='contain'
-                                            style={{
-                                                width: 17, height: 17
-                                            }}
-                                            tintColor={
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightSecondaryText.color
-                                                :
-                                                commonStyles.darkSecondaryText.color
-                                            }
-                                        />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionMoreItem
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightTertiaryText
-                                                :
-                                                commonStyles.darkTertiaryText,
-                                                styles.navbarActionMoreItemText
-                                            ]}
-                                        >{t("chatDetailMoreMuteTitle")}</Text>
-                                        <Image
-                                            source={require("../../assets/volume-mute-line-icon.png")}
-                                            resizeMode='contain'
-                                            style={{
-                                                width: 17, height: 17
-                                            }}
-                                            tintColor={
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightSecondaryText.color
-                                                :
-                                                commonStyles.darkSecondaryText.color
-                                            }
-                                        />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionMoreItem
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightTertiaryText
-                                                :
-                                                commonStyles.darkTertiaryText,
-                                                styles.navbarActionMoreItemText
-                                            ]}
-                                        >{t("chatDetailMoreDeleteTitle")}</Text>
-                                        <Image
-                                            source={require("../../assets/delete-bin-line-icon.png")}
-                                            resizeMode='contain'
-                                            style={{
-                                                width: 17, height: 17
-                                            }}
-                                            tintColor={
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightSecondaryText.color
-                                                :
-                                                commonStyles.darkSecondaryText.color
-                                            }
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                        </OutsidePressHandler>
-                       
-                    </View>
-                </View>
-                <View
-                    style={[
-                        styles.chatDetailHistoryListWrapper
+                            paddingBottom: showMoreChatActions
+                                ? 75 + heightForMoreChatActions.current
+                                : 75,
+                        },
                     ]}
                 >
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         ref={scrollViewRef}
-                        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+                        onContentSizeChange={() =>
+                            scrollViewRef.current?.scrollToEnd({
+                                animated: true,
+                            })
+                        }
                     >
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromOpponentBox
-                            ]}
-                        >
+                        {dataHistoryChats &&
+                            dataHistoryChats.map((item, index) => {
+                                const TimeLine =
+                                    index == 0 ? (
+                                        <></>
+                                    ) : (
+                                        <View style={[styles.timeLineBox]}
+                                            key={index}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.timeLineText,
+                                                    theme === lightMode
+                                                        ? commonStyles.lightTertiaryText
+                                                        : commonStyles.darkTertiaryText,
+                                                    {
+                                                        backgroundColor:
+                                                            theme === lightMode
+                                                                ? commonStyles
+                                                                      .chatNavbarBorderBottomColorLight
+                                                                      .color
+                                                                : commonStyles
+                                                                      .chatNavbarBorderBottomColorDark
+                                                                      .color,
+                                                    },
+                                                ]}
+                                            >
+                                                {item.date}
+                                            </Text>
+                                            <View
+                                                style={[
+                                                    styles.timeLineLine,
+                                                    {
+                                                        backgroundColor:
+                                                            theme === lightMode
+                                                                ? commonStyles
+                                                                      .chatNavbarBorderBottomColorLight
+                                                                      .color
+                                                                : commonStyles
+                                                                      .chatNavbarBorderBottomColorDark
+                                                                      .color,
+                                                    },
+                                                ]}
+                                            ></View>
+                                        </View>
+                                    );
+                                const Messages = item.conversations.map(
+                                    (message, index2) => {
+                                        return (
+                                            <MessageComponent
+                                                id={Number(index * 10 + index2)}
+                                                data={message}
+                                                theme={theme}
+                                                translation={t}
+                                                indexMessageAction={
+                                                    indexMessageAction
+                                                }
+                                                setIndexMessageAction={
+                                                    setIndexMessageAction
+                                                }
+                                                indexShowListReaction={
+                                                    indexMessageShowListReaction
+                                                }
+                                                setIndexShowListReaction={
+                                                    setIndexMessageShowListReaction
+                                                }
+                                            />
+                                        );
+                                    }
+                                );
+
+                                return (
+                                    <>
+                                        {TimeLine}
+                                        {Messages}
+                                    </>
+                                );
+                            })}
+
+                        <View style={[styles.chatDetailMessageFromOpponentBox]}>
                             <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
+                                source={{
+                                    uri: "https://avatar.iran.liara.run/public/44",
+                                }}
+                                resizeMode="contain"
+                                style={[styles.chatDetailAvatarImg]}
                             />
                             <View
                                 style={[
-                                    styles.chatDetailMessageFromOpponentMainWrapper
+                                    styles.chatDetailMessageFromOpponentMainWrapper,
                                 ]}
                             >
                                 <View
                                     style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
+                                        styles.chatDetailMessageFromOpponentMainTypingContainer,
                                     ]}
                                 >
                                     <View
                                         style={[
                                             styles.chatDetailMessageFromOpponentInfoBox,
-                                        
                                         ]}
                                     >
                                         <View
                                             style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                    style={[
-                                                        styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                    ]}
-                                            >
-                                                Good morning aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                                            </Text>
-
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentTriangle,
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromOpponentUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 0 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 0)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromOpponentMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 0
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                            </View>
-                           
-                        </View>
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromMeBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromMeMainWrapper
-                                ]}
-                            >
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 1 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 1)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromMeMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 1
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromMeInfoBox,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryBackground
-                                            :
-                                            commonStyles.darkTertiaryBackground
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                    style={[
-                                                        styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                    ]}
-                                            >
-                                                Good morning aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                                            </Text>
-
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg,
-                                                    {
-                                                        tintColor: theme === lightMode
-                                                        ?
-                                                        commonStyles.lightSecondaryText.color
-                                                        :
-                                                        commonStyles.darkSecondaryText.color
-                                                    }
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightSecondaryText
-                                                    :
-                                                    commonStyles.darkSecondaryText
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTriangle,
-                                                {
-                                                    borderBottomColor: theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryBackground.backgroundColor
-                                                    :
-                                                    commonStyles.darkTertiaryBackground.backgroundColor
-                                                }
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromMeUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                            </View>
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                        </View>
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromMeBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromMeMainWrapper
-                                ]}
-                            >
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 1 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 2)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromMeMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 2
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromMeInfoBox,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryBackground
-                                            :
-                                            commonStyles.darkTertiaryBackground
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                    style={[
-                                                        styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                    ]}
-                                            >
-                                                Wow that's great
-                                            </Text>
-
-                                        </View>
-                                        
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg,
-                                                    {
-                                                        tintColor: theme === lightMode
-                                                        ?
-                                                        commonStyles.lightSecondaryText.color
-                                                        :
-                                                        commonStyles.darkSecondaryText.color
-                                                    }
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightSecondaryText
-                                                    :
-                                                    commonStyles.darkSecondaryText
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTriangle,
-                                                {
-                                                    borderBottomColor: theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryBackground.backgroundColor
-                                                    :
-                                                    commonStyles.darkTertiaryBackground.backgroundColor
-                                                }
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromMeUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                            </View>
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                        </View>
-                        <View
-                            style={[
-                                styles.timeLineBox
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.timeLineText,
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightTertiaryText
-                                    :
-                                    commonStyles.darkTertiaryText,
-                                    {
-                                        backgroundColor: theme === lightMode
-                                        ?
-                                        commonStyles.chatNavbarBorderBottomColorLight.color
-                                        :
-                                        commonStyles.chatNavbarBorderBottomColorDark.color
-                                    }
-                                ]}
-                            >
-                                19/01/2024
-                            </Text>
-                            <View style={[
-                                styles.timeLineLine,
-                                {
-                                    backgroundColor:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.chatNavbarBorderBottomColorLight.color
-                                    :
-                                    commonStyles.chatNavbarBorderBottomColorDark.color
-                                }
-                            ]}></View>
-                        </View>
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromOpponentBox
-                            ]}
-                        >
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromOpponentMainWrapper
-                                ]}
-                            >
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromOpponentInfoBox,
-                                        
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
+                                                styles.chatDetailMessageFromOpponentInfoTextBox,
                                             ]}
                                         >
                                             <Text
                                                 style={[
                                                     styles.chatDetailMessageFromOpponentInfoText,
-                                                    
                                                 ]}
-                                            >
-                                                Good morning
-                                            </Text>
-
-                                        </View>
-                                        
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentImageBox,
-                                            ]}
-                                        >
-                                            <View
-                                                style={[styles.chatDetailMessageFromOpponentImageItem]}
-                                            >
-                                                <Image
-                                                    source={require("../../assets/image-in-chat-history.jpg")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.imageInChatHistory,
-                                                        {
-                                                            borderColor: 
-                                                            theme === lightMode
-                                                            ?
-                                                            commonStyles.chatNavbarBorderBottomColorLight.color
-                                                            :
-                                                            commonStyles.chatNavbarBorderBottomColorDark.color
-                                                        }
-                                                    ]}
-                                                />
-                                                <View
-                                                    style={[
-                                                        styles.actionsWithImageInChatHistoryBox,
-                                                    ]}
-                                                >
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require("../../assets/download-2-line-icon.png")}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require('../../assets/more-fill-icon.png')}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                            <View
-                                                style={[styles.chatDetailMessageFromOpponentImageItem]}
-                                            >
-                                                <Image
-                                                    source={require("../../assets/image-in-chat-history.jpg")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.imageInChatHistory,
-                                                        {
-                                                            borderColor: 
-                                                            theme === lightMode
-                                                            ?
-                                                            commonStyles.chatNavbarBorderBottomColorLight.color
-                                                            :
-                                                            commonStyles.chatNavbarBorderBottomColorDark.color
-                                                        }
-                                                    ]}
-                                                />
-                                                <View
-                                                    style={[
-                                                        styles.actionsWithImageInChatHistoryBox,
-                                                    ]}
-                                                >
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require("../../assets/download-2-line-icon.png")}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require('../../assets/more-fill-icon.png')}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentTriangle,
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromOpponentUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 0 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 3)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromOpponentMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 3
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                            </View>
-                           
-                        </View>
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromMeBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromMeMainWrapper
-                                ]}
-                            >
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 1 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 4)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromMeMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 4
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromMeInfoBox,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryBackground
-                                            :
-                                            commonStyles.darkTertiaryBackground
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                ]}
-                                            >
-                                                Good morning
-                                            </Text>
-
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentImageBox,
-                                            ]}
-                                        >
-                                            <View
-                                                style={[styles.chatDetailMessageFromOpponentImageItem]}
-                                            >
-                                                <Image
-                                                    source={require("../../assets/image-in-chat-history.jpg")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.imageInChatHistory,
-                                                        {
-                                                            borderColor: 
-                                                            theme === lightMode
-                                                            ?
-                                                            commonStyles.chatNavbarBorderBottomColorLight.color
-                                                            :
-                                                            commonStyles.chatNavbarBorderBottomColorDark.color
-                                                        }
-                                                    ]}
-                                                />
-                                                <View
-                                                    style={[
-                                                        styles.actionsWithImageInChatHistoryBox,
-                                                    ]}
-                                                >
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require("../../assets/download-2-line-icon.png")}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require('../../assets/more-fill-icon.png')}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                            <View
-                                                style={[styles.chatDetailMessageFromOpponentImageItem]}
-                                            >
-                                                <Image
-                                                    source={require("../../assets/image-in-chat-history.jpg")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.imageInChatHistory,
-                                                        {
-                                                            borderColor: 
-                                                            theme === lightMode
-                                                            ?
-                                                            commonStyles.chatNavbarBorderBottomColorLight.color
-                                                            :
-                                                            commonStyles.chatNavbarBorderBottomColorDark.color
-                                                        }
-                                                    ]}
-                                                />
-                                                <View
-                                                    style={[
-                                                        styles.actionsWithImageInChatHistoryBox,
-                                                    ]}
-                                                >
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require("../../assets/download-2-line-icon.png")}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity>
-                                                        <Image
-                                                            source={require('../../assets/more-fill-icon.png')}
-                                                            style={[
-                                                                styles.actionWithImageInChatHistoryImg
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg,
-                                                    {
-                                                        tintColor: theme === lightMode
-                                                        ?
-                                                        commonStyles.lightSecondaryText.color
-                                                        :
-                                                        commonStyles.darkSecondaryText.color
-                                                    }
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightSecondaryText
-                                                    :
-                                                    commonStyles.darkSecondaryText
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTriangle,
-                                                {
-                                                    borderBottomColor: theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryBackground.backgroundColor
-                                                    :
-                                                    commonStyles.darkTertiaryBackground.backgroundColor
-                                                }
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromMeUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                            </View>
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                        </View>
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromMeBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromMeMainWrapper
-                                ]}
-                            >
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 1 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 5)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromMeMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 5
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
-                                </View>
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromMeInfoBox,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryBackground
-                                            :
-                                            commonStyles.darkTertiaryBackground
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                ]}
-                                            >
-                                                Good morning
-                                            </Text>
-
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.fileBoxInChatHistory,
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightPrimaryBackground
-                                                :
-                                                commonStyles.darkPrimaryBackground
-                                            ]}
-                                        >
-                                            <View
-                                                style={[
-                                                    styles.fileBoxInChatHistoryImgBox,
-                                                    {
-                                                        backgroundColor: 
-                                                        theme === lightMode
-                                                        ?
-                                                        "#ECE1FC"
-                                                        :
-                                                        "#7269EF26"
-                                                    }
-                                                ]}
-                                            >
-                                                <Image
-                                                    source={require("../../assets/file-text-fill-icon.png")}
-                                                    resizeMode='contain'
-                                                    style={{
-                                                        width: 20, height: 20,
-                                                        tintColor: commonStyles.primaryColor.color
-                                                    }}
-                                                />
-                                            </View>
-                                            <Text
-                                                ellipsizeMode='tail'
-                                                numberOfLines={1}
-                                                style={[
-                                                    styles.fileBoxInChatHistoryNameFile,
-
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightPrimaryText
-                                                    :
-                                                    commonStyles.darkPrimaryText
-                                                ]}
-                                                
-                                            >
-                                                ThisIsFileABCBCBABABABA.txt
-                                            </Text>
-                                            <TouchableOpacity>
-                                                <Image
-                                                    source={require("../../assets/download-2-line-icon.png")}
-                                                    style={
-                                                        [styles.fileBoxInChatHistoryFileImageIcon,
-                                                        {
-                                                            tintColor:
-                                                            theme === lightMode
-                                                            ?
-                                                            commonStyles.lightIconColor.color
-                                                            :
-                                                            commonStyles.darkIconColor.color
-                                                        }]
-                                                    }
-                                                />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity>
-                                                <Image
-                                                    source={require("../../assets/more-fill-icon.png")}
-                                                    style={
-                                                        [styles.fileBoxInChatHistoryFileImageIcon,
-                                                            {
-                                                                tintColor:
-                                                                theme === lightMode
-                                                                ?
-                                                                commonStyles.lightIconColor.color
-                                                                :
-                                                                commonStyles.darkIconColor.color
-                                                            }
-                                                        ]
-                                                    }
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg,
-                                                    {
-                                                        tintColor: theme === lightMode
-                                                        ?
-                                                        commonStyles.lightSecondaryText.color
-                                                        :
-                                                        commonStyles.darkSecondaryText.color
-                                                    }
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone,
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightSecondaryText
-                                                    :
-                                                    commonStyles.darkSecondaryText
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromMeTriangle,
-                                                {
-                                                    borderBottomColor: theme === lightMode
-                                                    ?
-                                                    commonStyles.lightTertiaryBackground.backgroundColor
-                                                    :
-                                                    commonStyles.darkTertiaryBackground.backgroundColor
-                                                }
-                                            ]}
-                                        >
-
-                                        </View>
-                                    </View>
-
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromMeUsername,
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
-                                        ]}
-                                    >Doris Brown</Text>
-                                </View>
-                            </View>
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                        </View>  
-                        <View
-                            style={[
-                                styles.chatDetailMessageFromOpponentBox
-                            ]}
-                        >
-                            <Image
-                                source={{uri: "https://avatar.iran.liara.run/public/44"}}
-                                resizeMode='contain'
-                                style={[
-                                    styles.chatDetailAvatarImg
-                                ]}
-                            />
-                            <View
-                                style={[
-                                    styles.chatDetailMessageFromOpponentMainWrapper
-                                ]}
-                            >
-                                <View
-                                    style={[
-                                        styles.chatDetailMessageFromOpponentMainContainer
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.chatDetailMessageFromOpponentInfoBox,
-                                        
-                                        ]}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox
-                                            ]}
-                                        >
-                                            <Text
-                                                    style={[
-                                                        styles.chatDetailMessageFromOpponentInfoText,
-                                                    
-                                                    ]}
                                             >
                                                 typing
                                             </Text>
                                             <TypingAnimation
                                                 dotColor={
-                                                    theme === lightMode
-                                                    ?
-                                                    commonStyles.lightPrimaryText.color
-                                                    :
-                                                    commonStyles.darkPrimaryText.color
+                                                    commonStyles.darkPrimaryText
+                                                        .color
                                                 }
                                                 dotAmplitude={2}
                                                 style={{
                                                     marginBottom: 15,
                                                 }}
                                                 dotStyles={{
-                                                    fontSize: 3
+                                                    fontSize: 3,
                                                 }}
                                                 dotMargin={5}
                                                 dotSpeed={0.3}
@@ -1587,319 +563,392 @@ export default function ChatDetail({navigation} : Props) {
                                         </View>
                                         <View
                                             style={[
-                                                styles.chatDetailMessageFromOpponentTimeInfoBox,
-                                            ]}
-                                        >
-                                            <Image
-                                                source={require("../../assets/time-line-icon.png")}
-                                                resizeMode='contain'
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockImg
-                                                ]}
-                                            />
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageFromOpponentTimeInfoClockMilesStone
-                                                ]}
-                                            >10:00</Text>
-                                        </View>
-                                        <View
-                                            style={[
                                                 styles.chatDetailMessageFromOpponentTriangle,
                                             ]}
-                                        >
-
-                                        </View>
+                                        ></View>
                                     </View>
 
                                     <Text
                                         style={[
                                             styles.chatDetailMessageFromOpponentUsername,
                                             theme === lightMode
-                                            ?
-                                            commonStyles.lightTertiaryText
-                                            :
-                                            commonStyles.darkTertiaryText
+                                                ? commonStyles.lightTertiaryText
+                                                : commonStyles.darkTertiaryText,
                                         ]}
-                                    >Doris Brown</Text>
-                                </View>
-                              
-                                <View
-                                   onTouchStart={(event)=>{
-                                    // 0 is id or index or chat item
-                                    handleOpenMoreActionOnMessage(event, 0)
-                                   }}
-                                   style={[
-                                    styles.chatDetailMessageFromOpponentMoreActionBox
-                                   ]}
-                                >
-                                    <Image
-                                        
-                                        source={require("../../assets/more-vertical-line-icon.png")}
-                                        resizeMode='contain'
-                                        style={{
-                                            width: 18, height: 18,
-                                            tintColor:
-                                            theme === lightMode
-                                            ?
-                                            commonStyles.lightIconColor.color
-                                            :
-                                            commonStyles.darkIconColor.color 
-                                        }}
-                                    />
-                                    {
-                                        indexMessageAction === 0
-                                        &&
-                                        <MessagePopupAction
-                                            style={positionMessageAction}
-                                            theme={theme}
-                                            setIndexMessageAction={setIndexMessageAction}
-                                        />
-
-                                    }
+                                    >
+                                        Doris Brown
+                                    </Text>
                                 </View>
                             </View>
-                           
-                        </View>      
+                        </View>
                     </ScrollView>
                 </View>
-                <View
-                    style={[
-                        styles.chatDetailBottomWrapper,
-                        {
-                            borderTopColor: theme === lightMode
-                            ?
-                            commonStyles.chatNavbarBorderBottomColorLight.color
-                            :
-                            commonStyles.chatNavbarBorderBottomColorDark.color
-                        }
-                    ]}
+                <ChatDetailBottom
+                    heightForMoreChatActions={heightForMoreChatActions.current}
+                    theme={theme}
+                    translation={t}
+                    historyChatScrollViewRef={scrollViewRef}
+                    showMoreChatActions={showMoreChatActions}
+                    setShowMoreChatActions={setShowMoreChatActions}
+                />
+                <Modal
+                    visible={indexMessageShowListReaction !== -1}
+                    animationType="fade"
+                    transparent={true}
+                    onRequestClose={() => setIndexMessageShowListReaction(-1)}
                 >
                     <View
-                        style={[
-                            styles.chatDetailBottomContainer
-                        ]}
+                        style={{
+                            flex: 1,
+                            backgroundColor: "rgba(0,0,0,0.3)",
+                            justifyContent: "flex-end",
+                            alignItems: "center",
+                            paddingHorizontal: 8,
+                        }}
                     >
-                        <TextInput
-                            placeholder={t("chatDetailSendTextPlaceholder")}
+                        <OutsidePressHandler
+                            onOutsidePress={() => {
+                                setIndexMessageShowListReaction(-1);
+                                setReactionFilter(-1);
+                            }}
                             style={[
-                                styles.textInputMessage,
                                 theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryBackground
-                                :
-                                commonStyles.darkTertiaryBackground,
+                                    ? commonStyles.lightPrimaryBackground
+                                    : commonStyles.darkPrimaryBackground,
                                 {
-                                    color: theme === lightMode
-                                    ?
-                                    commonStyles.lightTertiaryText.color
-                                    :
-                                    commonStyles.darkTertiaryText.color
-                                }
-                            ]}
-                            placeholderTextColor={
-                                theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText.color
-                                :
-                                commonStyles.darkTertiaryText.color
-                            }
-                        />
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/emotion-happy-line-icon.png")}
-                                resizeMode='contain'
-                                style={[
-                                    styles.bottomSecondActionImg,
-                                    
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/attachment-line-icon.png")}
-                                resizeMode='contain'
-                                style={[
-                                    styles.bottomSecondActionImg
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../assets/image-fill-icon.png")}
-                                resizeMode='contain'
-                                style={[
-                                    styles.bottomSecondActionImg
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[
-                                styles.bottomSendActionBox
+                                    width: "100%",
+                                    height: 350,
+                                    borderRadius: 25,
+                                    marginBottom: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 10,
+                                },
                             ]}
                         >
-                            <Image
-                                source={require("../../assets/send-plane-2-fill-icon.png")}
-                                resizeMode='contain'
+                            <View
                                 style={[
-                                    styles.bottomSendActionImg,
+                                    styles.chatDetailReactionListPopupWrapper,
                                 ]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </SafeAreaView>
-        </View>
-    )
-}
-interface MessagePopupActionProps {
-    theme: string;
-    style: object;
-    setIndexMessageAction: React.Dispatch<React.SetStateAction<number>>;
-}
-function MessagePopupAction(props: MessagePopupActionProps){
-    const {theme, style, setIndexMessageAction} = props;
-    const {t} = useTranslation();
-
-    return (
-        <OutsidePressHandler
-                                        onOutsidePress={()=>{
-            
-                                            setIndexMessageAction(-1);
+                            >
+                                <Text></Text>
+                                <Text
+                                    style={[
+                                        styles.chatDetailReactionListPopupTitle,
+                                        theme === lightMode
+                                            ? commonStyles.lightPrimaryText
+                                            : commonStyles.darkPrimaryText,
+                                    ]}
+                                >
+                                    {t("messageReactionPopupTitle")}
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        {setIndexMessageShowListReaction(-1)
+                                        setReactionFilter(-1)}
+                                    }
+                                    style={[
+                                        styles.chatDetailReactionListBtnClose,
+                                        {
+                                            backgroundColor:
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                          .chatNavbarBorderBottomColorLight
+                                                          .color
+                                                    : commonStyles
+                                                          .chatNavbarBorderBottomColorDark
+                                                          .color,
+                                        },
+                                    ]}
+                                >
+                                    <Image
+                                        source={require("../../assets/close-line-icon.png")}
+                                        style={[
+                                            styles.chatDetailReactionListBtnCloseIcon,
+                                            {
+                                                tintColor:
+                                                    lightMode === theme
+                                                        ? commonStyles
+                                                              .lightPrimaryText
+                                                              .color
+                                                        : commonStyles
+                                                              .darkPrimaryText
+                                                              .color,
+                                            },
+                                        ]}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            <View
+                                style={{
+                                    marginTop: 10,
+                                    flexGrow: 1,
+                                    flexShrink: 1,
+                                }}
+                            >
+                                <ScrollView
+                                    horizontal={true}
+                                    style={{
+                                        width: "100%",
+                                    }}
+                                    pagingEnabled={true}
+                                    ref={scrollReactionRef}
+                                    showsHorizontalScrollIndicator={false}
+                                    onScroll={(event) => {
+                                        let positionX = event.nativeEvent.contentOffset.x;
+                                        let index = Math.round(
+                                            positionX / (WIDTH - 16 - 30)
+                                        );
+                                        setReactionFilter(index-1);
+                                    }}
+                                >
+                                    <ScrollView
+                                        style={{
+                                            width: WIDTH - 16 - 30,
                                         }}
                                     >
-                                        <View
+                                        {
+                                            findReactionsByIndexMessageShowListReaction().map((itemAll, indexAll) => {
+                                                return (
+                                                    <TouchableOpacity
+                                                    key={indexAll}
+                                                    style={[
+                                                        styles.chatDetailPopupReactionItem,
+                                                    ]}
+                                                >
+                                                    <Image
+                                                        source={{
+                                                            uri: itemAll.userImg,
+                                                        }}
+                                                        style={[
+                                                            styles.chatDetailPopupReactionItemAvatar,
+                                                        ]}
+                                                    />
+                                                    <View
+                                                        style={[
+                                                            styles.chatDetailPopupReactionItemMainContent,
+                                                            {
+                                                                borderBottomColor:
+                                                                    theme ===
+                                                                    lightMode
+                                                                        ? commonStyles
+                                                                              .chatNavbarBorderBottomColorLight
+                                                                              .color
+                                                                        : commonStyles
+                                                                              .chatNavbarBorderBottomColorDark
+                                                                              .color,
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <View>
+                                                            <Text
+                                                                style={[
+                                                                    styles.chatDetailPopupReactionItemMainContentUsername,
+                                                                    theme ===
+                                                                    lightMode
+                                                                        ? commonStyles.lightPrimaryText
+                                                                        : commonStyles.darkPrimaryText,
+                                                                ]}
+                                                            >
+                                                                {itemAll.userName}
+                                                            </Text>
+                                                            <Text
+                                                                style={[
+                                                                    styles.chatDetailPopupReactionItemMainContentRemove,
+                                                                    theme ===
+                                                                    lightMode
+                                                                        ? commonStyles.lightTertiaryText
+                                                                        : commonStyles.darkTertiaryText,
+                                                                ]}
+                                                            >
+                                                                {t(
+                                                                    "messageReactionPopupPressToRemove"
+                                                                )}
+                                                            </Text>
+                                                        </View>
+                                                        <Image
+                                                            source={returnRequireImageReaction(itemAll.emoji)}
+                                                            style={[
+                                                                styles.chatDetailPopupReactionItemMainContentIcon,
+                                                            ]}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
+                                                )
+                                            })
+                                        }
+                                    </ScrollView>
+                                    {classificationEmoji(
+                                        findReactionsByIndexMessageShowListReaction()
+                                    ).map((reactionItems, indexItem) => {
+                                        return (
+                                            <ScrollView
+                                                key={indexItem}
+                                                style={{
+                                                    width: WIDTH - 16 - 30,
+                                                }}
+                                            >
+                                                {reactionItems.map(
+                                                    (
+                                                        userReactionItem,
+                                                        indexUserReactionItem
+                                                    ) => {
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={indexUserReactionItem}
+                                                                style={[
+                                                                    styles.chatDetailPopupReactionItem,
+                                                                ]}
+                                                            >
+                                                                <Image
+                                                                    source={{
+                                                                        uri: userReactionItem.userImg,
+                                                                    }}
+                                                                    style={[
+                                                                        styles.chatDetailPopupReactionItemAvatar,
+                                                                    ]}
+                                                                />
+                                                                <View
+                                                                    style={[
+                                                                        styles.chatDetailPopupReactionItemMainContent,
+                                                                        {
+                                                                            borderBottomColor:
+                                                                                theme ===
+                                                                                lightMode
+                                                                                    ? commonStyles
+                                                                                          .chatNavbarBorderBottomColorLight
+                                                                                          .color
+                                                                                    : commonStyles
+                                                                                          .chatNavbarBorderBottomColorDark
+                                                                                          .color,
+                                                                        },
+                                                                    ]}
+                                                                >
+                                                                    <View>
+                                                                        <Text
+                                                                            style={[
+                                                                                styles.chatDetailPopupReactionItemMainContentUsername,
+                                                                                theme ===
+                                                                                lightMode
+                                                                                    ? commonStyles.lightPrimaryText
+                                                                                    : commonStyles.darkPrimaryText,
+                                                                            ]}
+                                                                        >
+                                                                            {userReactionItem.userName}
+                                                                        </Text>
+                                                                        <Text
+                                                                            style={[
+                                                                                styles.chatDetailPopupReactionItemMainContentRemove,
+                                                                                theme ===
+                                                                                lightMode
+                                                                                    ? commonStyles.lightTertiaryText
+                                                                                    : commonStyles.darkTertiaryText,
+                                                                            ]}
+                                                                        >
+                                                                            {t(
+                                                                                "messageReactionPopupPressToRemove"
+                                                                            )}
+                                                                        </Text>
+                                                                    </View>
+                                                                    <Image
+                                                                        source={returnRequireImageReaction(userReactionItem.emoji)}
+                                                                        style={[
+                                                                            styles.chatDetailPopupReactionItemMainContentIcon,
+                                                                        ]}
+                                                                    />
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    }
+                                                )}
+                                            </ScrollView>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
+                            <View
+                                style={[
+                                    styles.chatDetailReactionListFilterWrapper,
+                                ]}
+                            >
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        handleControllingSlideScroll(-1);
+                                    }}
+                                    style={[
+                                        styles.chatDetailReactionListFilterBtn,
+                                        {
+                                            backgroundColor:
+                                                reactionFilter === -1
+                                                    ? theme === lightMode
+                                                        ? commonStyles
+                                                              .chatNavbarBorderBottomColorLight
+                                                              .color
+                                                        : commonStyles
+                                                              .chatNavbarBorderBottomColorDark
+                                                              .color
+                                                    : "transparent",
+                                        },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.chatDetailReactionListFilterBtnText,
+                                        ]}
+                                    >
+                                        {t("searchDetailAllTitle")}
+                                    </Text>
+                                </TouchableOpacity>
+                                {removeReactionDuplicate(
+                                    findReactionsByIndexMessageShowListReaction()
+                                ).map((item, index) => {
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            onPress={() =>
+                                                handleControllingSlideScroll(index)
+                                            }
                                             style={[
-                                                styles.chatDetailMessageFromOpponentPopupActionBox,
-                                                theme === lightMode
-                                                ?
-                                                commonStyles.lightFourBackground
-                                                :
-                                                commonStyles.darkFourBackground,
-                                                style
+                                                styles.chatDetailReactionListFilterBtn,
+                                                {
+                                                    backgroundColor:
+                                                        reactionFilter === index
+                                                            ? theme ===
+                                                              lightMode
+                                                                ? commonStyles
+                                                                      .chatNavbarBorderBottomColorLight
+                                                                      .color
+                                                                : commonStyles
+                                                                      .chatNavbarBorderBottomColorDark
+                                                                      .color
+                                                            : "transparent",
+                                                },
                                             ]}
                                         >
-                                            <TouchableOpacity
+                                            <Text
                                                 style={[
-                                                    styles.itemInMessageFromOpponentPopupAction
+                                                    styles.chatDetailReactionListFilterBtnText,
+                                                    theme === lightMode
+                                                        ? commonStyles.lightPrimaryText
+                                                        : commonStyles.darkPrimaryText,
                                                 ]}
                                             >
-                                                <Text
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionText,
-                                                        theme === lightMode
-                                                        ?
-                                                        commonStyles.lightTertiaryText
-                                                        :
-                                                        commonStyles.darkTertiaryText
-                                                    ]}
-                                                >{t("chatDetailMessageCopyAction")}</Text>
-                                                <Image
-                                                    source={require("../../assets/file-copy-line-icon.png")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionImg,
-                                                        {
-                                                            tintColor: theme === lightMode
-                                                            ?
-                                                            commonStyles.lightTertiaryText.color
-                                                            :
-                                                            commonStyles.darkTertiaryText.color
-                                                        }
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.itemInMessageFromOpponentPopupAction
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionText,
-                                                        theme === lightMode
-                                                        ?
-                                                        commonStyles.lightTertiaryText
-                                                        :
-                                                        commonStyles.darkTertiaryText
-                                                    ]}
-                                                >{t("chatDetailMessageSaveAction")}</Text>
-                                                <Image
-                                                    source={require("../../assets/save-line-icon.png")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionImg,
-                                                        {
-                                                            tintColor: theme === lightMode
-                                                            ?
-                                                            commonStyles.lightTertiaryText.color
-                                                            :
-                                                            commonStyles.darkTertiaryText.color
-                                                        }
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.itemInMessageFromOpponentPopupAction
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionText,
-                                                        theme === lightMode
-                                                        ?
-                                                        commonStyles.lightTertiaryText
-                                                        :
-                                                        commonStyles.darkTertiaryText
-                                                    ]}
-                                                >{t("chatDetailMessageForwardAction")}</Text>
-                                                <Image
-                                                    source={require("../../assets/chat-forward-line-icon.png")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionImg,
-                                                        {
-                                                            tintColor: theme === lightMode
-                                                            ?
-                                                            commonStyles.lightTertiaryText.color
-                                                            :
-                                                            commonStyles.darkTertiaryText.color
-                                                        }
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.itemInMessageFromOpponentPopupAction
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionText,
-                                                        theme === lightMode
-                                                        ?
-                                                        commonStyles.lightTertiaryText
-                                                        :
-                                                        commonStyles.darkTertiaryText
-                                                    ]}
-                                                >{t("chatDetailMessageDeleteAction")}</Text>
-                                                <Image
-                                                    source={require("../../assets/delete-bin-line-icon.png")}
-                                                    resizeMode='contain'
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupActionImg,
-                                                        {
-                                                            tintColor: theme === lightMode
-                                                            ?
-                                                            commonStyles.lightTertiaryText.color
-                                                            :
-                                                            commonStyles.darkTertiaryText.color
-                                                        }
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </OutsidePressHandler>       
-    )
+                                                {item.emoji}{" "}
+                                                {
+                                                    findReactionsByIndexMessageShowListReaction().filter(
+                                                        (item2) =>
+                                                            item2.emoji ===
+                                                            item.emoji
+                                                    ).length
+                                                }
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </OutsidePressHandler>
+                    </View>
+                </Modal>
+            </SafeAreaView>
+        </View>
+    );
 }

@@ -403,7 +403,8 @@ export default function ChatList({navigation} : Props) {
                             styles.friendsActiveListBox
                         ]}
                     >
-                        <View
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -451,8 +452,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -500,8 +502,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -549,8 +552,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -598,8 +602,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -647,8 +652,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -696,8 +702,9 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
-                        <View
+                        </TouchableOpacity>     
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -745,7 +752,7 @@ export default function ChatList({navigation} : Props) {
 
                                 </View>
                             </View>
-                        </View>     
+                        </TouchableOpacity>     
                     </ScrollView>
 
                 </View>
@@ -774,7 +781,6 @@ export default function ChatList({navigation} : Props) {
                     >
                         <TouchableOpacity
                             onPress={() => navigation.navigate("ChatDetail")}
-                            activeOpacity={1}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -843,7 +849,8 @@ export default function ChatList({navigation} : Props) {
                                 >02</Text>
                             </View>
                         </TouchableOpacity>
-                        <View
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -929,8 +936,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1003,8 +1011,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>       
-                        <View
+                        </TouchableOpacity>       
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1084,8 +1093,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1153,8 +1163,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1240,8 +1251,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity   
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1314,8 +1326,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>       
-                        <View
+                        </TouchableOpacity>       
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1395,8 +1408,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1464,8 +1478,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1551,8 +1566,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
-                        <View
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1625,8 +1641,9 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>       
-                        <View
+                        </TouchableOpacity>       
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("ChatDetail")}
                             style={[styles.chatListHistoryItem]}
                         >
                             <View
@@ -1706,7 +1723,7 @@ export default function ChatList({navigation} : Props) {
                                     ]}
                                 >02</Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     </ScrollView>
                 </View>
             </SafeAreaView>

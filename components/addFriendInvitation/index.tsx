@@ -139,8 +139,12 @@ export default function AddFriendInvitation({navigation}: AddFriendInvitationPro
                                     fontWeight: 
                                     typeFilterSelected === TypeFilter.RECEIVED
                                     ? "500" : "400"
-                                }
-                                
+                                },
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                             ]}
                         >{t("addFriendInvitationReceivedTitle")}</Text>
                     </TouchableOpacity>
@@ -162,7 +166,12 @@ export default function AddFriendInvitation({navigation}: AddFriendInvitationPro
                                     fontWeight: 
                                     typeFilterSelected === TypeFilter.SENT
                                     ? "500" : "400"
-                                }
+                                },
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                             ]}
                         >{t("addFriendInvitationSentTitle")}</Text>
                     </TouchableOpacity>
@@ -267,11 +276,15 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
                                 seeMoreText={t("addFriendInvitationSeeMore")}
                                 seeLessText={t("addFriendInvitationSeeLess")}
                                 style={[
-                                    styles.addFriendInvitationReceivedMessage
+                                    styles.addFriendInvitationReceivedMessage,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightSecondaryText
+                                    :
+                                    commonStyles.darkSecondaryText
                                 ]}
                                 seeMoreStyle={{
-                                    fontWeight: "500",
-                                    
+                                    fontWeight: "500",      
                                     color:
                                     theme === lightMode
                                     ?
@@ -313,6 +326,11 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
                                 <Text
                                     style={[
                                         styles.addFriendInvitationReceivedItemActionItemText,
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightSecondaryText
+                                        :
+                                        commonStyles.darkSecondaryText
                                         
                                     ]}
                                 >{t("addFriendInvitationDecline")}</Text>

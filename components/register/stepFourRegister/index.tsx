@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image } from 'react-native'
+import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native'
 import { styles } from './styles';
 import { useSelector} from 'react-redux';
 import { IRootState } from '../../../redux_toolkit/store';
@@ -8,10 +8,12 @@ import commonStyles from '../../../CommonStyles/commonStyles';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import DatePicker from '@dietime/react-native-date-picker';
+import { LINK_REGISTER_POST } from '@env';
 
 
 interface Props {
-    navigation: any
+    navigation: any,
+    route: any
 }
 interface ICustomRadioButton {
     value: string,
@@ -48,17 +50,53 @@ export function CustomRadioButton({value, selected, onPress, style}: ICustomRadi
                 <></>
             }
         </TouchableOpacity>
+
     )    
 }
 
-export default function StepFourRegister({navigation} : Props) {
+export default function StepFourRegister({navigation, route} : Props) {
     const {t, i18n} = useTranslation();
     const theme = useSelector((state: IRootState) => state.theme.theme)
     const [selectedValue, setSelectedValue] = useState("");
     const [dateOfBirth, setDateOfBirth] = useState(new Date());
+    const [isPosting, setIsPosting] = useState(false)
+
 
     const validateForm = () : boolean=>{
         return selectedValue != "" && dateOfBirth < new Date();
+    }
+
+    async function handleNavigateLayout(){
+        let age = new Date().getFullYear() - dateOfBirth.getFullYear()
+        setIsPosting(true)
+        if (age < 14){
+            Alert.alert(t("registerAgeValidateTitle"), t("registerAgeValidateDesc"), [{
+                text: "OK",
+                onPress: ()=>{}
+            }])
+        } else {
+            try {
+                let data = {
+                    name: route.params.username,
+                    phone: route.params.phoneNumber,
+                    password: route.params.password,
+                    dateOfBirth: dateOfBirth.toISOString().split('T')[0],
+                    gender: selectedValue
+                }
+                const result = await fetch(LINK_REGISTER_POST, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                navigation.navigate("StepFiveRegister")
+                
+            } catch (error) {
+                console.log(error)
+            }
+            setIsPosting(false)
+        }
     }
 
     return (
@@ -162,14 +200,23 @@ export default function StepFourRegister({navigation} : Props) {
                             style={[styles.btnContinueBox, validateForm() ? styles.btnContinueBoxActive : null]}
                             activeOpacity={1}
                             disabled={!validateForm()}
-                            onPress={() => navigation.navigate("StepFiveRegister")}
+                            onPress={handleNavigateLayout}
                         >
-                            <Text
-                                style={[styles.textBtnContinueBox
-                            ,
-                                commonStyles.darkPrimaryText
-                            ]}
-                            >{t("next")}</Text>
+                            {
+                                isPosting
+                                ?
+                                <ActivityIndicator
+                                    color={commonStyles.darkPrimaryText.color}
+                                    size={'small'}
+                                />
+                                :
+                                <Text
+                                    style={[styles.textBtnContinueBox
+                                ,
+                                    commonStyles.darkPrimaryText
+                                ]}
+                                >{t("next")}</Text>
+                            }
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -268,5 +268,12 @@ export const styles = StyleSheet.create({
     },
     contactDetailGroupItemSecondPreviewText:{
         fontSize: 16,
+    },
+    contactDetailTooltipPopupContent:{
+        shadowColor: '#171717',
+        shadowOffset: {width: 0, height: 3},
+        shadowOpacity: 0.4,
+        shadowRadius: 2,
+        elevation: 3
     }
 })

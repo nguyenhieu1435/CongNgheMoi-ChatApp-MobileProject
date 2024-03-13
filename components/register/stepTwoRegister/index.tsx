@@ -63,37 +63,17 @@ export default function StepTwoRegister({navigation, route} : Props) {
     }
   });
 
-  // useEffect(()=>{
-  //   if (!search.trim()){
-  //     setCountryData(countrys);
-  //   }
-  // }, [search])
-
   const handleSubmitForm = (data : IFormData2)=>{
   
     if (isValid){
-      Alert.alert(`${t("registerPhoneAlertTitle")} (${currentCountry.dial_code}) ${data.phoneNumber}?`
-      , t("registerPhoneAlertMsg"),
-        [
-          {
-            text: t("cancel"),
-            onPress: ()=> console.log("Cancel Pressed"),
-            style: "cancel"
-          },
-          {
-            text: t("confirm"),
-            onPress: ()=> {
-              navigation.navigate("StepThreeRegister", {
-                phoneNumber: data.phoneNumber,
-                zaloName: route.params?.zaloName,
-                country: currentCountry
-              })
-            },
-            style: "default"
-          }
-        ]
-      )
-      
+      navigation.navigate("StepThreeRegister", {
+        username: route.params.username,
+        phoneNumber: data.phoneNumber[0] === "0" 
+        ? 
+        currentCountry.dial_code +  data.phoneNumber.slice(1) 
+        : 
+        currentCountry.dial_code + data.phoneNumber,
+      })
     }
   }
 

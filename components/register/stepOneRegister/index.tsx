@@ -21,14 +21,9 @@ interface Props {
 }
 
 interface IFormData {
-  zaloName: string
-
+  username: string
 }
 
-interface IPatternRegex {
-  value: RegExp,
-  message: string
-}
 
 
 export default function StepOneRegister({navigation} : Props) {
@@ -40,12 +35,14 @@ export default function StepOneRegister({navigation} : Props) {
   const [schema, setSchema] = useState(()=>{
     return (
       yup.object().shape({
-        zaloName: yup.string()
+        username: yup.string()
         .required(" ")
         .min(2, t("registerZaloNameValidateMinLength"))
         .max(40, t("registerZaloNameValidateMaxLength"))
-        .matches(/^[a-zA-Z\s'-]*$/, t("registerZaloNameValidateSpecialCharacter"))
+        // matches if string contains special character except space and vietnamese character
+        .matches(/^[^!@#$%^&*(),.?":{}|<>]*$/, t("registerZaloNameValidateSpecialCharacter"))
         .matches(/^[^0-9]*$/, t("registerZaloNameValidateNumberCharacter"))
+        
       })
     )
   }) 
@@ -55,14 +52,14 @@ export default function StepOneRegister({navigation} : Props) {
     mode: "onSubmit",
     reValidateMode: "onSubmit",
     defaultValues: {
-      zaloName: ""
+      username: ""
     }
   });
 
   const onSubmitForm = (data : IFormData) => {
     if (isValid){
       navigation.navigate("StepTwoRegister", {
-        zaloName: data.zaloName.trim()
+        username: data.username.trim()
       })
     }
   }
@@ -104,14 +101,14 @@ export default function StepOneRegister({navigation} : Props) {
                 onBlur={()=> setIsFocus(false)}
               />
             )}
-            name='zaloName'
+            name='username'
           />
 
           {
-            watch("zaloName")
+            watch("username")
             &&
             <AntDesign name="close" size={20} 
-              onPress={()=> setValue("zaloName", "")}
+              onPress={()=> setValue("username", "")}
               color={theme == lightMode ? commonStyles.lightPrimaryText.color : commonStyles.darkSecondaryText.color}
               style={styles.btnDeleteTextInputZaloName}
             />
@@ -119,9 +116,9 @@ export default function StepOneRegister({navigation} : Props) {
 
         </View>
         {
-          errors.zaloName && errors.zaloName.message?.trim() && 
+          errors.username && errors.username.message?.trim() && 
           <Text style={[styles.textErrMsg]}>
-            {errors.zaloName.message}
+            {errors.username.message}
           </Text>
         }
         
@@ -157,9 +154,9 @@ export default function StepOneRegister({navigation} : Props) {
         </View>
 
         <View style={styles.boxNextToStepTwo}>
-          <TouchableOpacity style={[styles.btnNextToStepTwo, watch("zaloName").trim() ? styles.btnNextToStepTwoActive : null]}
+          <TouchableOpacity style={[styles.btnNextToStepTwo, watch("username").trim() ? styles.btnNextToStepTwoActive : null]}
             onPress={handleSubmit(onSubmitForm)}
-            disabled={!watch("zaloName").trim()}
+            disabled={!watch("username").trim()}
           >
             <AntDesign name="arrowright" size={24} color={commonStyles.darkPrimaryText.color} />
           </TouchableOpacity>
