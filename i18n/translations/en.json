@@ -155,5 +155,19 @@
     "messageMoreActionLocation": "Location",
     "messageMoreActionDocument": "Document",
     "messageReactionPopupTitle": "Reaction",
-    "messageReactionPopupPressToRemove": "Press to remove"
+    "messageReactionPopupPressToRemove": "Press to remove",
+    "createGroupTitle": "New group",
+    "createGroupSelectedMember": "Selected member: ",
+    "createGroupInputGroupNamePlaceholder": "Enter group name",
+    "createGroupSearchPlaceholder": "Search by name or phone number",
+    "createGroupRecentTitle": "RECENT",
+    "createGroupContactTitle": "CONTACT",
+    "createGroupGroupNotInputName": "Group name is not entered",
+    "createGroupPressToInputName": "Press to enter group name",
+    "createGroupHoursAgo": "hours ago",
+    "createGroupMinutesAgo": "minutes ago",
+    "createGroupDayAgo": "day ago",
+    "createGroupGoBackTitle": "Confirm exit",
+    "createGroupGoBackDesc": "Are you sure you want to exit? All changes will be lost"
+    
 }

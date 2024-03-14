@@ -24,6 +24,7 @@ import AddFriendInvitation from './components/addFriendInvitation';
 import AddFriendInvitationSetting from './components/addFriendInvitationSetting';
 import ContactsInPhone from './components/contactsInPhone';
 import SearchHistoryModification from './components/searchHistoryModification';
+import CreateGroup from './components/createGroup';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -39,7 +40,7 @@ export default function App() {
       <EventProvider style={{ flex: 1 }}>
         <ActionSheetProvider>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='InitialScreen'
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='PrimaryBottomTab'
             
             >
               <Stack.Screen name='OpenScreen' component={OpenScreen}/>
@@ -75,6 +76,7 @@ export default function App() {
               <Stack.Screen name='AddFriendInvitationSetting' component={AddFriendInvitationSetting}/>
               <Stack.Screen name='ContactsInPhone' component={ContactsInPhone}/>
               <Stack.Screen name='SearchHistoryModification' component={SearchHistoryModification}/>
+              <Stack.Screen name='CreateGroup' component={CreateGroup}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

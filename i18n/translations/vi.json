@@ -158,5 +158,18 @@
     "messageMoreActionLocation": "Vị trí",
     "messageMoreActionDocument": "Tài liệu",
     "messageReactionPopupTitle": "Cảm xúc",
-    "messageReactionPopupPressToRemove": "Nhấn để gỡ"
+    "messageReactionPopupPressToRemove": "Nhấn để gỡ",
+    "createGroupTitle": "Nhóm mới",
+    "createGroupSelectedMember": "Đã chọn: ",
+    "createGroupInputGroupNamePlaceholder": "Đặt tên nhóm",
+    "createGroupSearchPlaceholder": "Tìm tên hoặc số điện thoại",
+    "createGroupRecentTitle": "GẦN ĐÂY",
+    "createGroupContactTitle": "DANH BẠ",
+    "createGroupGroupNotInputName": "Nhóm chưa đặt tên",
+    "createGroupPressToInputName": "Bấm để đặt tên nhóm",
+    "createGroupHoursAgo": "giờ trước",
+    "createGroupMinutesAgo": "phút trước",
+    "createGroupDayAgo": "ngày trước",
+    "createGroupGoBackTitle": "Xác nhận thoát",
+    "createGroupGoBackDesc": "Bạn có muốn thoát khỏi trang này không? Tất cả thay đổi sẽ không được lưu"
 }

@@ -250,6 +250,7 @@ export default function Contacts({navigation} : ContactsProps) {
                                 flexGrow: 1,
                                 flexShrink: 1,
                             }}
+                            navigation={navigation}
                         />
                     }
                 </View>
@@ -1243,10 +1244,11 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
 interface GroupScrollBoxProps {
     translation: TFunction<"translation", undefined>,
     theme: string,
-    style: object
+    style: object,
+    navigation: any
 }
 
-function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
+function GroupScrollBox({translation: t, theme, style, navigation} : GroupScrollBoxProps){
     return (
         <ScrollView
             style={[
@@ -1257,6 +1259,7 @@ function GroupScrollBox({translation: t, theme, style} : GroupScrollBoxProps){
                 style={[
                     styles.contactDetailFriendCreateNewGroupBtn,
                 ]}
+                onPress={()=> navigation.navigate("CreateGroup")}
             >
                 <View
                     style={[

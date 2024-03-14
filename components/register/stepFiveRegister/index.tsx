@@ -36,7 +36,9 @@ export default function StepFiveRegister({navigation} : Props) {
     })
     if (!newAvatar.canceled){
       const firstElement = newAvatar.assets?.[0];
-      setAvatar(firstElement?.uri || null);
+      if (firstElement.type === 'image'){
+        setAvatar(firstElement.uri);
+      }
     }
   }
 
@@ -57,6 +59,9 @@ export default function StepFiveRegister({navigation} : Props) {
     if (!result.canceled){
       const firstElement = result.assets?.[0];
       setAvatar(firstElement?.uri || null);
+      if (firstElement.type === 'image'){
+        setAvatar(firstElement.uri);
+      }
     }
 
   }
