@@ -49,6 +49,8 @@
     "registerVerifyCodeResend": "Resend code",
     "registerAgeValidateTitle": "Age is invalid",
     "registerAgeValidateDesc": "You must be at least 14 years old to use app",
+    "registerPhoneNumberValidateTitle": "Sign up failed",
+    "registerPhoneNumberValidateDesc": "This phone number is already registered!",
     "next": "Next",
     "cancel": "Cancel",
     "confirm": "Confirm",
