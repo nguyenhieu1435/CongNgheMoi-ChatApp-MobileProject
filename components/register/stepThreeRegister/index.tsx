@@ -31,7 +31,8 @@ export default function StepThreeRegister({ navigation, route }: Props) {
         yup.object().shape({
           password: yup.string().required(" ")
             .min(6, t("registerPasswordValidationAtLeast"))
-            .max(30, t("registerPasswordValidationMaxLength"))
+            .max(32, t("registerPasswordValidationMaxLength"))
+            .matches(/^(?=.*\d)(?=.*[a-zA-Z]).{6,32}$/, t("registerPasswordValidationCommonRequire"))
         })
       )
     }) 

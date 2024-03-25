@@ -720,7 +720,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
     }
 
     return (
-        <ScrollView
+        <View
             style={[
                 style,
             ]}
@@ -1237,7 +1237,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     )}
                 />
             </View>
-        </ScrollView>
+        </View>
     )
 }
 
@@ -1250,7 +1250,7 @@ interface GroupScrollBoxProps {
 
 function GroupScrollBox({translation: t, theme, style, navigation} : GroupScrollBoxProps){
     return (
-        <ScrollView
+        <View
             style={[
                 style
             ]}
@@ -1658,6 +1658,6 @@ function GroupScrollBox({translation: t, theme, style, navigation} : GroupScroll
                     </TouchableOpacity>
                 </View>
             </View>
-        </ScrollView>
+        </View>
     )
 }

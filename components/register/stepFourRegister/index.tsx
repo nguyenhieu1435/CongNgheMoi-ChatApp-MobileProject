@@ -17,10 +17,11 @@ import commonStyles from "../../../CommonStyles/commonStyles";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import DatePicker from "@dietime/react-native-date-picker";
-import { LINK_REGISTER_POST } from "@env";
+import { LINK_REGISTER_POST, SQLITE_DB_NAME } from "@env";
 import { useDispatch } from "react-redux";
 import { setUserInfo } from "../../../redux_toolkit/slices/userInfo.slice";
 import * as SQLite from "expo-sqlite";
+import { createUserInfoTable, deleteTableByName, getDBConnection, insertUserInfo } from "../../../utils/sqlite";
 
 interface Props {
     navigation: any;
@@ -92,24 +93,17 @@ export default function StepFourRegister({ navigation, route }: Props) {
     async function handleSaveInfoToSQLite(jsonData: any) {
         const dbName = process.env.SQLITE_DB_NAME;
         if (dbName) {
-            const db = SQLite.openDatabase("chat_app_cnm.db")
+            const db = getDBConnection()
+
             try {
-                
-                const resultCreateTable = await db.execAsync([{sql: `CREATE TABLE IF NOT EXISTS user_info (
-                    phone TEXT PRIMARY KEY NOT NULL, 
-                    password TEXT NOT NULL,
-                    accessToken TEXT NOT NULL,
-                    refreshToken TEXT NOT NULL
-                )`, args: [] }], false)
+                const resultCreateTable = await createUserInfoTable(db)
                 const select = await db.execAsync([{ sql: 'SELECT * FROM user_info;', args: [] }], true)
                 const obj = select[0]
                 if ("rows" in obj && obj.rows.length > 0) {
-                    await db.execAsync([{ sql: 'DELETE FROM user_info;', args: [] }], false)
-                }
-                const resultInsert = await db.execAsync([{ sql: 'INSERT INTO user_info (phone, password, accessToken, refreshToken) VALUES (?, ?, ?, ?)'
-                , args: [jsonData.user.phone, jsonData.user.password, jsonData.accessToken + "", jsonData.refreshToken +""] }], false)
-                const select2 = await db.execAsync([{ sql: 'SELECT * FROM user_info;', args: [] }], true)     
 
+                    await deleteTableByName(db, "user_info")    
+                }
+                const resultInsert = await insertUserInfo(db, jsonData.user.phone, jsonData.user.password, jsonData.accessToken + "", jsonData.refreshToken +"")
             } catch (error) {
                 console.log(error)
             }
@@ -146,7 +140,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
                     body: JSON.stringify(data),
                 });
                 const jsonData = await result.json();
-                console.log("json data:", jsonData);
+                
                 if (jsonData.error?.status == 400) {
                     Alert.alert(
                         t("registerPhoneNumberValidateTitle"),
@@ -161,7 +155,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
                     setIsPosting(false);
                     return;
                 }
-                console.log("before dispatch", jsonData)
+                console.log(jsonData);
                 dispatch(
                     setUserInfo({
                         user: {
@@ -178,6 +172,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
                             phone: jsonData.user?.phone,
                             qrCode: jsonData.user?.qrCode,
                             updatedAt: jsonData.user?.updatedAt,
+                            friends: jsonData.user?.friends,
                         },
                         accessToken: jsonData.accessToken,
                         refreshToken: jsonData.refreshToken,
@@ -185,7 +180,11 @@ export default function StepFourRegister({ navigation, route }: Props) {
                 );
                 handleSaveInfoToSQLite(jsonData);
                 setIsPosting(false);
-                navigation.navigate("StepFiveRegister");
+                navigation.navigate("StepFiveRegister", {
+                    avatar: jsonData.user?.avatar,
+                    _id: jsonData.user?._id,
+                    accessToken: jsonData.accessToken,
+                });
             } catch (error) {
                 console.log(error);
             }

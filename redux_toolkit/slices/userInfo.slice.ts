@@ -15,6 +15,7 @@ interface userInfoInterfaceI{
         phone: string,
         qrCode: string,
         updatedAt: string,
+        friends ?: string[] | [],
     } | undefined,
     accessToken?: string | undefined,
     refreshToken?: string | undefined
@@ -34,9 +35,14 @@ const userInfoSlice = createSlice({
             state.user = action.payload.user
             state.accessToken = action.payload.accessToken,
             state.refreshToken = action.payload.refreshToken
+        },
+        updateAvatarImage : (state, action)=>{
+            if (state.user) {
+                state.user.avatar = action.payload
+            }
         }
     }
 })
 
 export default userInfoSlice.reducer
-export const {setUserInfo} = userInfoSlice.actions
+export const {setUserInfo, updateAvatarImage} = userInfoSlice.actions

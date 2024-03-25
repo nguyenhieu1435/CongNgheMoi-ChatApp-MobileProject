@@ -29,6 +29,7 @@
     "registerZaloNameValidateNumberCharacter": "Name must not contain numbers. (1000155)",
     "registerPasswordValidationAtLeast": "Password must contain at least 6 characters.",
     "registerPasswordValidationMaxLength": "Password not exceed 30 characters.",
+    "registerPasswordValidationCommonRequire": "Password must include letters and numbers",
     "reigsterPhoneNumberDesc": "Enter your new phone number to register new account",
     "registerPhoneAgreeTitle": "I agree to",
     "registerPhoneTerms": "Zalo Terms of Service",

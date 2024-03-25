@@ -29,6 +29,7 @@
     "registerZaloNameValidateNumberCharacter": "Tên không được chứa chữ số. (1000155)",
     "registerPasswordValidationAtLeast": "Mật khẩu phải chứa ít nhất 6 ký tự",
     "registerPasswordValidationMaxLength": "Mật khẩu không được quá 30 ký tự",
+    "registerPasswordValidationCommonRequire": "Mật khẩu phải gồm chữ và số",
     "reigsterPhoneNumberDesc": "Nhập số điện thoại của bạn để tạo tài khoản mới",
     "registerPhoneAgreeTitle": "Tôi đồng ý với các",
     "registerPhoneTerms": "điều khoản sử dụng Zalo",

@@ -12,6 +12,7 @@ import commonStyles from '../../CommonStyles/commonStyles';
 import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import Settings from '../settings';
 import { styles } from './styles';
+import { deleteTableByName, getDBConnection } from '../../utils/sqlite';
 
 
 const Tab = createBottomTabNavigator();
@@ -408,8 +409,10 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                         <TouchableOpacity
                             activeOpacity={1}
                             style={{flexDirection: "row", alignItems: "center"}}
-                            onPress={()=>{
+                            onPress={async()=>{
                                 setToggleShowLogout(false)
+                                const db = getDBConnection()
+                                await deleteTableByName(db, "user_info")
                                 navigation.navigate("InitialScreen")
                             
                             }}
