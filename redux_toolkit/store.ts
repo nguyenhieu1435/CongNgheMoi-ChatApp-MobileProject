@@ -1,9 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit';
-import themeReducer from './slices/theme.slice';
+import { configureStore } from "@reduxjs/toolkit";
+import themeReducer from "./slices/theme.slice"
+import userInfoReducer from "./slices/userInfo.slice"
 
 export const store = configureStore({
     reducer: {
         theme: themeReducer,
-    },
-});
-export type IRootState = ReturnType<typeof store.getState>;
+        userInfo: userInfoReducer
+    }
+})
+export type IRootState = ReturnType<typeof store.getState>

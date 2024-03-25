@@ -11,9 +11,15 @@ export default StyleSheet.create({
 
     darkTertiaryBackground: { backgroundColor: '#36404A' },
 
-    lightTertiaryBackground: { backgroundColor: '#FFFFFF' },
 
     darkPrimaryText: { color: '#FFFFFF' },
+
+    lightTertiaryBackground: {backgroundColor: "#e6ebf5"},
+
+    darkFourBackground: {backgroundColor: "#313a43"},
+
+    lightFourBackground: {backgroundColor: "#ffffff"},
+
 
     lightPrimaryText: { color: '#343a40' },
 
@@ -33,5 +39,31 @@ export default StyleSheet.create({
 
     lightBackgroundIconActive: { backgroundColor: '#f7f7ff' },
 
-    primaryColor: { color: '#7269EF' },
-});
+    primaryColor: {color: "#7269EF"},
+    secondColor: {color: "#AAA5F5"},
+    primaryColorBackground: {
+        backgroundColor: "rgba(114, 105, 239, 0.3)"
+    },
+    tagColor: {
+        color: "#0068ff"
+    },
+    activeOnlineColor: {
+        color: "#06d6a0"
+    },
+    busyOnlineColor: {
+        color: "#FFD166"
+    },
+    redPrimaryColor: {
+        color: "#EF476F"
+    },
+    redPrimaryBackground: {
+        backgroundColor: "rgba(239,71,111,.18)"
+    },
+    chatNavbarBorderBottomColorLight: {
+        color: "#f0eff5"
+        // #f0eff5
+    },
+    chatNavbarBorderBottomColorDark: {
+        color: "#36404a"
+    }
+})

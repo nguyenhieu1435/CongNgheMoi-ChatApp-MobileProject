@@ -1,9 +1,15 @@
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StatusBar, Text, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Pressable,
+    StatusBar,
+    Text,
+    View,
+} from 'react-native';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import { useSelector } from 'react-redux';
 import * as yup from 'yup';
@@ -11,6 +17,15 @@ import commonStyles from '../../CommonStyles/commonStyles';
 import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import { IRootState } from '../../redux_toolkit/store';
 import { styles } from './styles';
+import { useDispatch } from 'react-redux';
+import { setUserInfo } from '../../redux_toolkit/slices/userInfo.slice';
+import { SQLITE_DB_NAME } from '@env';
+import {
+    createUserInfoTable,
+    deleteTableByName,
+    getDBConnection,
+    insertUserInfo,
+} from '../../utils/sqlite';
 interface Props {
     navigation: any;
 }
@@ -24,7 +39,11 @@ export default function Login({ navigation }: Props) {
     const [isFocus, setIsFocus] = useState(false);
     const [isShow, setIsShow] = useState(t('show'));
     const phoneErrorMessage = t('registerPhoneValidate');
+    const passwordErrorMessage= t("registerPasswordValidationCommonRequire")
     const [showError, setShowError] = useState(false);
+    const dispath = useDispatch();
+    const [isLoadingLogin, setIsLoadingLogin] = useState(false);
+    const [errorText, setErrorText] = useState<string | undefined>('');
 
     const [schema, setSchema] = useState<yup.ObjectSchema<IFormData>>(
         (): yup.ObjectSchema<IFormData> => {
@@ -32,15 +51,22 @@ export default function Login({ navigation }: Props) {
                 phoneNumber: yup
                     .string()
                     .required()
-                    .matches(/^(?!0\d)\d{9}$|^0\d{9}$/, phoneErrorMessage),
+                    .matches(
+                        /^(?!0\d)\d{9}$|^0\d{9}|^(\+\d{2})\d{9}$/,
+                        phoneErrorMessage,
+                    ),
                 password: yup
                     .string()
                     .required()
-                    .matches(/^(?=.*\d)(?=.*[a-zA-Z]).{6,32}$/),
+                    .matches(
+                        /^(?=.*\d)(?=.*[a-zA-Z]).{6,32}$/,
+                        passwordErrorMessage,
+                    ),
             });
             return formSchema;
         },
     );
+
     const {
         control,
         handleSubmit,
@@ -56,6 +82,22 @@ export default function Login({ navigation }: Props) {
             phoneNumber: '',
         },
     });
+    useEffect(() => {
+        const errPhone = errors.phoneNumber;
+        if (errPhone && errPhone.message) {
+            setErrorText(errPhone.message);
+            return;
+        }
+        const errPwd = errors.password;
+        if (errPwd && errPwd.message) {
+            setErrorText(errPwd.message);
+            return;
+        }
+        
+        if (!errPhone?.message || !errPwd?.message) {
+            setErrorText(undefined);
+        }
+    }, [errors]);
 
     const phoneNumber = watch('phoneNumber');
     const password = watch('password');
@@ -70,7 +112,7 @@ export default function Login({ navigation }: Props) {
         if (disabled) return;
 
         setShowError(false);
-
+        setIsLoadingLogin(true);
         try {
             const response = await fetch(
                 'https://homeless-eadith-vunguyendev.koyeb.app/api/v1/auth/login',
@@ -85,11 +127,56 @@ export default function Login({ navigation }: Props) {
                     }),
                 },
             );
+
             if (response.ok) {
-                navigation.navigate('InitialScreen');
+                let data = await response.json();
+                console.log(data);
+
+                dispath(
+                    setUserInfo({
+                        user: {
+                            __v: data.user?.__v,
+                            _id: data.user?._id,
+                            avatar: data.user?.avatar,
+                            background: data.user?.background,
+                            createdAt: data.user?.createdAt,
+                            dateOfBirth: data.user?.dateOfBirth,
+                            deleted: data.user?.deleted,
+                            gender: data.user?.gender,
+                            name: data.user?.name,
+                            password: data.user?.password,
+                            phone: data.user?.phone,
+                            qrCode: data.user?.qrCode,
+                            updatedAt: data.user?.updatedAt,
+                            friends: data.user?.friends,
+                        },
+                        accessToken: data.accessToken,
+                        refreshToken: data.refreshToken,
+                    }),
+                );
+                if (SQLITE_DB_NAME) {
+                    const db = getDBConnection();
+                    try {
+                        await createUserInfoTable(db);
+                    } catch (error) {
+                        console.log(error);
+                    }
+                    await deleteTableByName(db, 'user_info');
+                    await insertUserInfo(
+                        db,
+                        data.user?.phone,
+                        data.user?.password,
+                        data.accessToken,
+                        data.refreshToken + '',
+                    );
+                }
+                setIsLoadingLogin(false);
+                navigation.navigate('PrimaryBottomTab');
             } else {
+                setErrorText(t('loginError'));
                 setShowError(true);
             }
+            setIsLoadingLogin(false);
         } catch (error) {
             console.log('Error in login page', error);
             setShowError(true);
@@ -258,10 +345,8 @@ export default function Login({ navigation }: Props) {
                             />
                         )}
                     </View>
-                    {(showError || Object.keys(errors)) && (
-                        <Text style={[styles.textErrMsg]}>
-                            {t('loginError')}
-                        </Text>
+                    {(showError || Object.keys(errors)) && errorText && (
+                        <Text style={[styles.textErrMsg]}>{errorText}</Text>
                     )}
                     <View>
                         <Text
@@ -283,13 +368,21 @@ export default function Login({ navigation }: Props) {
                             styles.btnNextToStepTwo,
                             disabled ? { opacity: 0.7 } : { opacity: 1 },
                         ]}
+                        disabled={isLoadingLogin}
                         onPress={handleSubmit(onSubmitForm)}
                     >
-                        <AntDesign
-                            name='arrowright'
-                            size={24}
-                            color={commonStyles.darkPrimaryText.color}
-                        />
+                        {isLoadingLogin ? (
+                            <ActivityIndicator
+                                color={commonStyles.darkPrimaryText.color}
+                                size={'small'}
+                            />
+                        ) : (
+                            <AntDesign
+                                name='arrowright'
+                                size={24}
+                                color={commonStyles.darkPrimaryText.color}
+                            />
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
