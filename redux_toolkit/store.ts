@@ -1,8 +1,9 @@
-import { configureStore } from "@reduxjs/toolkit";
-import themeReducer from "./slices/theme.slice"
+import { configureStore } from '@reduxjs/toolkit';
+import themeReducer from './slices/theme.slice';
 
 export const store = configureStore({
     reducer: {
-        theme: themeReducer
-    }
-})
+        theme: themeReducer,
+    },
+});
+export type IRootState = ReturnType<typeof store.getState>;

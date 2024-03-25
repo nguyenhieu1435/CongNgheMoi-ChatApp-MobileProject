@@ -1,4 +1,13 @@
 {
     "initialScreenLogin": "Đăng nhập",
-    "initialScreenRegister": "Đăng ký"
+    "initialScreenRegister": "Đăng ký",
+    "loginPhoneNumberDesc": "Vui lòng nhập số điện thoại và mật khẩu để đăng nhập",
+    "loginPhonePlaceHolder": "Số điện thoại",
+    "loginPasswordPlaceHolder": "Mật khẩu",
+    "loginError": "Tên đăng nhập hoặc mật khẩu không khớp, vui lòng nhập lại",
+    "registerPhoneValidate": "Số điện thoại phải không hợp lệ. Vui lòng kiểm tra và thử lại.",
+    "registerPasswordValidate": "Mật khẩu không đúng. Vui lòng kiểm tra và thử lại.",
+    "hide": "Ẩn",
+    "show": "Hiện",
+    "recoverPassword": "Lấy lại mật khẩu"
 }
