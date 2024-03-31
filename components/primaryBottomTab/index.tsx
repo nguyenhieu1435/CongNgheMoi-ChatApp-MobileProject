@@ -80,7 +80,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
     const {routeNames, index} = props.state;
     const {t} = useTranslation();
     const [toggleShowLogout, setToggleShowLogout] = useState(false);
-
+    const userInfo = useSelector((state: IRootState)=> state.userInfo.user)
 
 
     return (
@@ -372,12 +372,12 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
             >
                 <TouchableOpacity
                     activeOpacity={1}
-                    style={{width: 50, height: 40}}
+                    style={{width: 40, height: 40}}
                     onPress={()=> setToggleShowLogout(!toggleShowLogout)}
                 >
                     <Image
-                        source={{uri: "https://cdn.iconscout.com/icon/free/png-256/free-avatar-370-456322.png?f=webp"}}
-                        style={{width: "100%", height: "100%"}}
+                        source={{uri: userInfo?.avatar || "https://cdn.iconscout.com/icon/free/png-256/free-avatar-370-456322.png?f=webp"}}
+                        style={{width: "100%", height: "100%", borderRadius: 100}}
                         resizeMode='contain'
                     />
                 </TouchableOpacity>

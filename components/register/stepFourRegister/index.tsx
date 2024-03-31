@@ -127,11 +127,12 @@ export default function StepFourRegister({ navigation, route }: Props) {
             try {
                 let data = {
                     name: route.params.username,
-                    phone: route.params.phoneNumber,
+                    phone: route.params.emailAddress,
                     password: route.params.password,
                     dateOfBirth: dateOfBirth.toISOString().split("T")[0],
                     gender: selectedValue,
                 };
+                console.log(data);
                 const result = await fetch(LINK_REGISTER_POST, {
                     method: "POST",
                     headers: {
@@ -142,6 +143,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
                 const jsonData = await result.json();
                 
                 if (jsonData.error?.status == 400) {
+                    console.log(jsonData.error);
                     Alert.alert(
                         t("registerPhoneNumberValidateTitle"),
                         t("registerPhoneNumberValidateDesc"),

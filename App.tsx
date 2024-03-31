@@ -24,6 +24,7 @@ import AddFriendInvitationSetting from './components/addFriendInvitationSetting'
 import ContactsInPhone from './components/contactsInPhone';
 import SearchHistoryModification from './components/searchHistoryModification';
 import CreateGroup from './components/createGroup';
+import StepTwoPointFiveRegister from './components/register/stepTwoPointFiveRegister';
 
 const Stack = createStackNavigator();
 
@@ -45,6 +46,7 @@ export default function App() {
               <Stack.Screen name="InitialScreen" component={InitialScreen} />
               <Stack.Screen name='StepOneRegister' component={StepOneRegister}/>
               <Stack.Screen name='StepTwoRegister' component={StepTwoRegister}/>
+              <Stack.Screen name='StepTwoPointFiveRegister' component={StepTwoPointFiveRegister}/>
               <Stack.Screen name='StepThreeRegister' component={StepThreeRegister}/>
               <Stack.Screen name='StepFourRegister' component={StepFourRegister}/>
               <Stack.Screen name='StepFiveRegister' component={StepFiveRegister}/>

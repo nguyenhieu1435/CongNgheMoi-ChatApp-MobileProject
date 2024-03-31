@@ -52,7 +52,7 @@ export default function StepThreeRegister({ navigation, route }: Props) {
         setValue("password", "")
         navigation.navigate("StepFourRegister", {
           username: route.params.username,
-          phoneNumber: route.params.phoneNumber,
+          emailAddress: route.params.emailAddress,
           password: finalPassword
         })
       }
