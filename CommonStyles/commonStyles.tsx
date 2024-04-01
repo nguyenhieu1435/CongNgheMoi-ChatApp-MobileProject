@@ -1,16 +1,18 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
+    darkPrimaryBackground: { backgroundColor: '#262E35' },
 
-    darkPrimaryBackground: {backgroundColor: "#262E35"},
+    lightPrimaryBackground: { backgroundColor: '#FFFFFF' },
 
-    lightPrimaryBackground: {backgroundColor: "#FFFFFF"},
+    darkSecondaryBackground: { backgroundColor: '#303841' },
 
-    darkSecondaryBackground: {backgroundColor: "#303841"},
+    lightSecondaryBackground: { backgroundColor: '#F5F7FB' },
 
-    lightSecondaryBackground: {backgroundColor: "#F5F7FB"},
+    darkTertiaryBackground: { backgroundColor: '#36404A' },
 
-    darkTertiaryBackground: {backgroundColor: "#36404A"},
+
+    darkPrimaryText: { color: '#FFFFFF' },
 
     lightTertiaryBackground: {backgroundColor: "#e6ebf5"},
 
@@ -19,26 +21,24 @@ export default StyleSheet.create({
     lightFourBackground: {backgroundColor: "#ffffff"},
 
 
-    darkPrimaryText: {color: "#FFFFFF"},
+    lightPrimaryText: { color: '#343a40' },
 
-    lightPrimaryText: {color: "#343a40"},
+    darkSecondaryText: { color: '#abb4d2' },
 
-    darkSecondaryText: {color: "#abb4d2"},
+    lightSecondaryText: { color: '#7a7f9a' },
 
-    lightSecondaryText: {color: "#7a7f9a"},
+    darkTertiaryText: { color: '#a6b0cf' },
 
-    darkTertiaryText: {color: "#a6b0cf"},    
+    lightTertiaryText: { color: '#495057' },
 
-    lightTertiaryText: {color: "#495057"},
+    lightIconColor: { color: '#495057' },
 
-    lightIconColor: {color: "#495057"},
+    darkIconColor: { color: '#a6b0cf' },
 
-    darkIconColor: {color: "#a6b0cf"},
+    darkBackgroundIconActive: { backgroundColor: '#3e4a56' },
 
-    darkBackgroundIconActive: {backgroundColor: "#3e4a56"},
+    lightBackgroundIconActive: { backgroundColor: '#f7f7ff' },
 
-    lightBackgroundIconActive: {backgroundColor: "#f7f7ff"},
-    
     primaryColor: {color: "#7269EF"},
     secondColor: {color: "#AAA5F5"},
     primaryColorBackground: {

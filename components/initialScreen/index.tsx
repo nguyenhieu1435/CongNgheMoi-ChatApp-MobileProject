@@ -194,5 +194,5 @@ export default function InitialScreen({navigation} : Props) {
                 </View>
             </SafeAreaView>
         </View>
-    )
+    );
 }
