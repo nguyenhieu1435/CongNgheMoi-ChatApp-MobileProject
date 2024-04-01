@@ -2,7 +2,7 @@ import { Image, SafeAreaView, StatusBar, Text, View } from "react-native";
 import { styles } from "./styles";
 import commonStyle from "../../CommonStyles/commonStyles";
 import { useEffect } from "react";
-import { getDBConnection, insertUserInfo } from "../../utils/sqlite";
+import { dropDatabase, getDBConnection, insertUserInfo } from "../../utils/sqlite";
 import { LINK_SIGN_IN_ENCRYPT } from "@env";
 import { setUserInfo } from "../../redux_toolkit/slices/userInfo.slice";
 import { useDispatch } from "react-redux";
@@ -15,6 +15,17 @@ export default function OpenScreen({ navigation }: Props) {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        // async function test(){
+        //     const db = getDBConnection()
+
+        //     try {
+        //         const result = await dropDatabase(db);
+        //         console.log("result: ", result);
+        //     } catch (error) {
+        //         console.log("error: ", error);
+        //     }
+        // }
+        // test()
         // loading data insteaf of setTimeout
         async function loadData() {
             try {
@@ -24,7 +35,6 @@ export default function OpenScreen({ navigation }: Props) {
                     false
                 );
                 const obj = resultQuery[0];
-              
                 if ("rows" in obj && obj.rows.length > 0) {
                     const phone = obj.rows?.[0].phone;
                     const password = obj.rows?.[0].password;

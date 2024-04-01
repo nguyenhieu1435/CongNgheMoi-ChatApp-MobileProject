@@ -23,6 +23,8 @@ export const styles = StyleSheet.create({
     },
     mainContentContainer: {
         flex: 1,
+        flexGrow: 1,
+        flexShrink: 1,
     },
     mainContentTopBox:{
         flex: 6,
@@ -48,6 +50,7 @@ export const styles = StyleSheet.create({
         marginTop: 15,
     },
     mainContentBottomBox:{
+        marginTop: 30,
         flex: 4,
         alignItems: "center",
     },

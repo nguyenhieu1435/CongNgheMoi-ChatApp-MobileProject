@@ -4,6 +4,18 @@ import * as SQLite from 'expo-sqlite';
 export const getDBConnection = ()=>{
     return SQLite.openDatabase(SQLITE_DB_NAME)
 }
+export const dropDatabase = async (db: SQLite.SQLiteDatabase) => {
+    try {
+        db.transaction((tx) => {
+            tx.executeSql('DROP DATABASE IF EXISTS ' + SQLITE_DB_NAME);
+
+        });
+        return true;
+    } catch (error) {
+        throw new Error("Error when dropping database")
+    }
+
+}
 export const createUserInfoTable = async (db: SQLite.SQLiteDatabase) =>{
     try {
         const resultCreateTable = await db.execAsync([{sql: `CREATE TABLE IF NOT EXISTS user_info (
