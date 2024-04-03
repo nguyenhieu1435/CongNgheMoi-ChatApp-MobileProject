@@ -53,7 +53,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                         .string()
                         .required(" ")
                         .matches(
-                            /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                            /(^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$)|(^\+\d{1,2}\d{9}$|^0\d{9}$)/,
                             t("registerPhoneValidate")
                         ),
                     isCheckTerm: yup.boolean().required().oneOf([true]),

@@ -10,7 +10,7 @@
     "loginPhonePlaceHolder": "Phone number",
     "loginPasswordPlaceHolder": "Password",
     "loginError": "Phone number or password does not match, please re-enter",
-    "registerPhoneValidate": "Invalid email. Please double-check and try again. ",
+    "registerPhoneValidate": "Invalid email or phone. Please double-check and try again. ",
     "registerPasswordValidate": "Invalid login credentials. Please double-check and try again.",
     "hide": "Hide",
     "show": "Show",

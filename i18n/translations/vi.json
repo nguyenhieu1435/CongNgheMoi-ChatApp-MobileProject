@@ -10,7 +10,7 @@
     "loginPhonePlaceHolder": "Số điện thoại",
     "loginPasswordPlaceHolder": "Mật khẩu",
     "loginError": "Tên đăng nhập hoặc mật khẩu không khớp, vui lòng nhập lại",
-    "registerPhoneValidate": "Email phải không hợp lệ. Vui lòng kiểm tra và thử lại.",
+    "registerPhoneValidate": "Email hoặc số điện thoại không hợp lệ. Vui lòng kiểm tra và thử lại.",
     "registerPasswordValidate": "Mật khẩu không đúng. Vui lòng kiểm tra và thử lại.",
     "hide": "Ẩn",
     "show": "Hiện",
