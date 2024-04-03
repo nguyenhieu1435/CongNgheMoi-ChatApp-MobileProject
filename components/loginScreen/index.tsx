@@ -52,8 +52,8 @@ export default function Login({ navigation }: Props) {
                     .string()
                     .required()
                     .matches(
-                        /^(?!0\d)\d{9}$|^0\d{9}|^(\+\d{2})\d{9}$/,
-                        phoneErrorMessage,
+                        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                        phoneErrorMessage
                     ),
                 password: yup
                     .string()
@@ -239,7 +239,7 @@ export default function Login({ navigation }: Props) {
                                     field: { onChange, onBlur, value },
                                 }) => (
                                     <TextInput
-                                        keyboardType='numeric'
+                                        keyboardType='default'
                                         placeholder={t('loginPhonePlaceHolder')}
                                         placeholderTextColor={
                                             theme === lightMode

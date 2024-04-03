@@ -7,13 +7,16 @@ import commonStyles from '../../CommonStyles/commonStyles'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
 import { useState } from 'react'
 import OutsidePressHandler from 'react-native-outside-press'
+import getDateString from '../../utils/date'
 
 export default function Personal() {
     const theme = useSelector((state: IRootState) => state.theme.theme)
     const {t} = useTranslation();
     const [indexTabSelected, setIndexTabSelected] = useState(0)
     const [showPersonalPopup, setShowPersonalPopup] = useState(false)
+    const userInfo = useSelector((state: IRootState) => state.userInfo.user)
 
+    
     if(Platform.OS === 'android') {
       UIManager.setLayoutAnimationEnabledExperimental(true);
     }
@@ -29,7 +32,9 @@ export default function Personal() {
     }
 
     return (
-        <View
+      userInfo 
+      ?
+      <View
         style={[
           styles.personalWrapper,
           theme === lightMode
@@ -153,7 +158,7 @@ export default function Personal() {
             ]}
           >
             <Image
-              source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
+              source={{uri: userInfo.avatar}}
               style={[
                 styles.personalAvatarImage
               ]}
@@ -167,7 +172,7 @@ export default function Personal() {
                 :
                 commonStyles.darkPrimaryText
               ]}
-            >Doris Brown</Text>
+            >{userInfo.name}</Text>
             <View
               style={[
                 styles.personalActivityBox
@@ -313,7 +318,7 @@ export default function Personal() {
                         commonStyles.darkPrimaryText
                       ]}
                     >
-                      Doris Brown
+                      {userInfo.name}
                     </Text>
                   </View>
                   <View
@@ -343,7 +348,7 @@ export default function Personal() {
                         commonStyles.darkPrimaryText
                       ]}
                     >
-                      Doris Brown
+                      {userInfo.phone}
                     </Text>
                   </View>
                   <View
@@ -373,10 +378,10 @@ export default function Personal() {
                         commonStyles.darkPrimaryText
                       ]}
                     >
-                      Doris Brown
+                      {getDateString(userInfo.createdAt)}
                     </Text>
                   </View>
-                  <View
+                  {/* <View
                     style={[
                       styles.personalAboutItemBox
                     ]}
@@ -405,7 +410,7 @@ export default function Personal() {
                     >
                       Doris Brown
                     </Text>
-                  </View>
+                  </View> */}
                 </View>
               }
             </View>
@@ -674,5 +679,7 @@ export default function Personal() {
           </ScrollView>
         </SafeAreaView>
       </View>
+      :
+      <View></View>
     )
 }
