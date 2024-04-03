@@ -30,15 +30,17 @@ export default function OpenScreen({ navigation }: Props) {
         async function loadData() {
             try {
                 const db = getDBConnection();
+        
                 const resultQuery = await db.execAsync(
                     [{ sql: `SELECT * FROM user_info`, args: [] }],
                     false
                 );
                 const obj = resultQuery[0];
+                console.log("obj: ", JSON.stringify(obj));
                 if ("rows" in obj && obj.rows.length > 0) {
-                    const phone = obj.rows?.[0].phone;
+                    const contact = obj.rows?.[0].contact;
                     const password = obj.rows?.[0].password;
-                    if (phone && password) {
+                    if (contact && password) {
 
                         const response = await fetch(LINK_SIGN_IN_ENCRYPT, {
                             method: "POST",
@@ -46,7 +48,7 @@ export default function OpenScreen({ navigation }: Props) {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
-                                phone: phone,
+                                contact: contact,
                                 password: password,
                             }),
                         });
@@ -67,8 +69,8 @@ export default function OpenScreen({ navigation }: Props) {
                                         deleted: data.user.deleted,
                                         gender: data.user.gender,
                                         name: data.user.name,
+                                        status: data.user.status,
                                         password: data.user.password,
-                                        phone: data.user.phone,
                                         qrCode: data.user.qrCode,
                                         updatedAt: data.user.updatedAt,
                                         friends : data.user.friends,

@@ -70,7 +70,7 @@ export default function StepTwoPointFiveRegister({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    phone: route.params.emailAddress,
+                    contact: route.params.contact,
                 }),
             })
             if (response.ok){
@@ -99,7 +99,7 @@ export default function StepTwoPointFiveRegister({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    phone: route.params.emailAddress,
+                    contact: route.params.contact,
                     otp: verifyCode,
                 }),
 
@@ -109,7 +109,7 @@ export default function StepTwoPointFiveRegister({
                 clearInterval(refIdTime.current!);
                 setIsVerifyCode(false);
                 navigation.navigate("StepThreeRegister", {
-                    emailAddress: route.params.emailAddress,
+                    contact: route.params.contact,
                     password: route.params.password,
                     username: route.params.username,
                 });

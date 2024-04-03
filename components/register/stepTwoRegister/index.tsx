@@ -21,12 +21,10 @@ import { IRootState } from "../../../redux_toolkit/store";
 import { useTranslation } from "react-i18next";
 import Checkbox from "expo-checkbox";
 import { LINK_USING_TERM, LINK_SOCIAL_TERM, LINK_CREATE_OTP } from "@env";
-import { useForm, Controller, set } from "react-hook-form";
+import { useForm, Controller} from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect, useState } from "react";
-import { ICountryList, countrys, ICountryItem } from "../../../data/countrys";
-import ModalShowCountryCode from "../../modalShowCountryCode";
+import {  useState } from "react";
 
 interface Props {
     navigation: any;
@@ -34,7 +32,7 @@ interface Props {
 }
 
 interface IFormData2 {
-    emailAddress: string;
+    contact: string;
     isCheckTerm?: boolean;
     isCheckSocialTerm?: boolean;
 }
@@ -49,7 +47,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
             const formSchema: yup.ObjectSchema<IFormData2> = yup
                 .object()
                 .shape({
-                    emailAddress: yup
+                    contact: yup
                         .string()
                         .required(" ")
                         .matches(
@@ -75,7 +73,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
         mode: "onSubmit",
         reValidateMode: "onSubmit",
         defaultValues: {
-            emailAddress: "",
+            contact: "",
             isCheckTerm: false,
             isCheckSocialTerm: false,
         },
@@ -91,7 +89,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        phone: data.emailAddress,
+                        contact: data.contact,
                     }),
                 })
                 if (response.ok){
@@ -102,14 +100,14 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                               setIsLoading(false);
                               navigation.navigate("StepTwoPointFiveRegister", {
                                   username: route.params.username,
-                                  emailAddress: data.emailAddress,
+                                  contact: data.contact,
                               });
                           },
                       },
                   
                   ])
                 } else {
-                  setError("emailAddress", {
+                  setError("contact", {
                       type: "custom",
                       message: t("registerEmailExistMsg")
                   })
@@ -195,7 +193,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         ]}
                                         value={value}
                                         onChangeText={(text) => {
-                                          setError("emailAddress", {
+                                          setError("contact", {
                                               type: "custom",
                                               message: ""
                                           })
@@ -203,13 +201,13 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         }}
                                     />
                                 )}
-                                name="emailAddress"
+                                name="contact"
                             />
-                            {watch("emailAddress").trim() && (
+                            {watch("contact").trim() && (
                                 <AntDesign
                                     name="close"
                                     size={20}
-                                    onPress={() => setValue("emailAddress", "")}
+                                    onPress={() => setValue("contact", "")}
                                     color={
                                         theme == lightMode
                                             ? commonStyles.lightPrimaryText
@@ -222,10 +220,10 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                             )}
                         </View>
                     </View>
-                    {errors.emailAddress &&
-                        errors.emailAddress.message?.trim() && (
+                    {errors.contact &&
+                        errors.contact.message?.trim() && (
                             <Text style={[styles.textErrMsg]}>
-                                {errors.emailAddress.message}
+                                {errors.contact.message}
                             </Text>
                         )}
 
@@ -317,7 +315,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                 styles.btnNextToStepTwo,
                                 watch("isCheckSocialTerm") &&
                                 watch("isCheckTerm") &&
-                                watch("emailAddress").trim()
+                                watch("contact").trim()
                                     ? styles.btnNextToStepTwoActive
                                     : null,
                             ]}

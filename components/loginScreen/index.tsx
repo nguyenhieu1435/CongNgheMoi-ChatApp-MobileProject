@@ -30,7 +30,7 @@ interface Props {
     navigation: any;
 }
 interface IFormData {
-    phoneNumber: string;
+    contact: string;
     password: string;
 }
 export default function Login({ navigation }: Props) {
@@ -41,19 +41,19 @@ export default function Login({ navigation }: Props) {
     const phoneErrorMessage = t('registerPhoneValidate');
     const passwordErrorMessage= t("registerPasswordValidationCommonRequire")
     const [showError, setShowError] = useState(false);
-    const dispath = useDispatch();
+    const dispatch = useDispatch();
     const [isLoadingLogin, setIsLoadingLogin] = useState(false);
     const [errorText, setErrorText] = useState<string | undefined>('');
 
     const [schema, setSchema] = useState<yup.ObjectSchema<IFormData>>(
         (): yup.ObjectSchema<IFormData> => {
             const formSchema: yup.ObjectSchema<IFormData> = yup.object().shape({
-                phoneNumber: yup
+                contact: yup
                     .string()
                     .required()
                     .matches(
-                        /^(?!0\d)\d{9}$|^0\d{9}|^(\+\d{2})\d{9}$/,
-                        phoneErrorMessage,
+                        /(^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$)|(^\+\d{1,2}\d{9}$|^0\d{9}$)/,
+                        phoneErrorMessage
                     ),
                 password: yup
                     .string()
@@ -65,6 +65,7 @@ export default function Login({ navigation }: Props) {
             });
             return formSchema;
         },
+      
     );
 
     const {
@@ -79,11 +80,11 @@ export default function Login({ navigation }: Props) {
         reValidateMode: 'onSubmit',
         defaultValues: {
             password: '',
-            phoneNumber: '',
+            contact: '',
         },
     });
     useEffect(() => {
-        const errPhone = errors.phoneNumber;
+        const errPhone = errors.contact;
         if (errPhone && errPhone.message) {
             setErrorText(errPhone.message);
             return;
@@ -99,11 +100,11 @@ export default function Login({ navigation }: Props) {
         }
     }, [errors]);
 
-    const phoneNumber = watch('phoneNumber');
+    const contact = watch('contact');
     const password = watch('password');
     const disabled = useMemo(
-        () => phoneNumber.length < 6 || password.length < 6,
-        [phoneNumber, password],
+        () => contact.length < 6 || password.length < 6,
+        [contact, password],
     );
     console.log('🚀 ~ Login ~ disabled:', disabled);
 
@@ -122,7 +123,7 @@ export default function Login({ navigation }: Props) {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        phone: data.phoneNumber,
+                        contact: data.contact,
                         password: data.password,
                     }),
                 },
@@ -132,7 +133,7 @@ export default function Login({ navigation }: Props) {
                 let data = await response.json();
                 console.log(data);
 
-                dispath(
+                dispatch(
                     setUserInfo({
                         user: {
                             __v: data.user?.__v,
@@ -143,9 +144,9 @@ export default function Login({ navigation }: Props) {
                             dateOfBirth: data.user?.dateOfBirth,
                             deleted: data.user?.deleted,
                             gender: data.user?.gender,
+                            status: data.user?.status,
                             name: data.user?.name,
                             password: data.user?.password,
-                            phone: data.user?.phone,
                             qrCode: data.user?.qrCode,
                             updatedAt: data.user?.updatedAt,
                             friends: data.user?.friends,
@@ -164,7 +165,7 @@ export default function Login({ navigation }: Props) {
                     await deleteTableByName(db, 'user_info');
                     await insertUserInfo(
                         db,
-                        data.user?.phone,
+                        data.user?._id,
                         data.user?.password,
                         data.accessToken,
                         data.refreshToken + '',
@@ -239,7 +240,7 @@ export default function Login({ navigation }: Props) {
                                     field: { onChange, onBlur, value },
                                 }) => (
                                     <TextInput
-                                        keyboardType='numeric'
+                                        keyboardType='default'
                                         placeholder={t('loginPhonePlaceHolder')}
                                         placeholderTextColor={
                                             theme === lightMode
@@ -259,13 +260,13 @@ export default function Login({ navigation }: Props) {
                                         autoFocus
                                     />
                                 )}
-                                name='phoneNumber'
+                                name='contact'
                             />
-                            {watch('phoneNumber').trim() && (
+                            {watch('contact').trim() && (
                                 <AntDesign
                                     name='close'
                                     size={20}
-                                    onPress={() => setValue('phoneNumber', '')}
+                                    onPress={() => setValue('contact', '')}
                                     color={
                                         theme == lightMode
                                             ? commonStyles.lightPrimaryText

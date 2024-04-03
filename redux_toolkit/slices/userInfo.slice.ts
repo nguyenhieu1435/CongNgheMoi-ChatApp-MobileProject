@@ -3,6 +3,7 @@ import {createSlice} from "@reduxjs/toolkit"
 interface userInfoInterfaceI{
     user: {
         __v: number,
+        // _id is phone number or email
         _id: string,
         avatar: string,
         background: string,
@@ -12,9 +13,9 @@ interface userInfoInterfaceI{
         gender: string,
         name: string,
         password: string,
-        phone: string,
         qrCode: string,
         updatedAt: string,
+        status: string,
         friends ?: string[] | [],
     } | undefined,
     accessToken?: string | undefined,

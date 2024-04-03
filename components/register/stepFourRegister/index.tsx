@@ -103,7 +103,8 @@ export default function StepFourRegister({ navigation, route }: Props) {
 
                     await deleteTableByName(db, "user_info")    
                 }
-                const resultInsert = await insertUserInfo(db, jsonData.user.phone, jsonData.user.password, jsonData.accessToken + "", jsonData.refreshToken +"")
+                const resultInsert = await insertUserInfo(db, jsonData.user._id, jsonData.user.password, jsonData.accessToken + "", jsonData.refreshToken +"")
+               
             } catch (error) {
                 console.log(error)
             }
@@ -127,7 +128,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
             try {
                 let data = {
                     name: route.params.username,
-                    phone: route.params.emailAddress,
+                    contact: route.params.contact,
                     password: route.params.password,
                     dateOfBirth: dateOfBirth.toISOString().split("T")[0],
                     gender: selectedValue,
@@ -170,8 +171,8 @@ export default function StepFourRegister({ navigation, route }: Props) {
                             deleted: jsonData.user?.deleted,
                             gender: jsonData.user?.gender,
                             name: jsonData.user?.name,
+                            status: jsonData.user?.status,
                             password: jsonData.user?.password,
-                            phone: jsonData.user?.phone,
                             qrCode: jsonData.user?.qrCode,
                             updatedAt: jsonData.user?.updatedAt,
                             friends: jsonData.user?.friends,
