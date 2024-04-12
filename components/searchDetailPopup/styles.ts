@@ -87,6 +87,7 @@ export const styles = StyleSheet.create({
 
     },
     detailSearchPopUpSearchNotEmptyScrollWrapper:{
+        flex: 1,
         
     },
     detailSearchPopupSearchEmptyAllWrapper:{

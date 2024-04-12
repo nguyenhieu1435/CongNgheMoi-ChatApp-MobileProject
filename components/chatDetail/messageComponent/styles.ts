@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     },
     chatDetailMessageFromMeInfoBox:{
         paddingHorizontal: 20,
-        paddingVertical: 10,
+        paddingVertical: 5,
         borderRadius: 8,
         borderBottomRightRadius: 0,
     },
@@ -108,6 +108,54 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         gap: 5
     },
+    replyMeMessageContainer:{
+        marginTop: 10,
+        borderRadius: 6,
+        padding: 10,
+        marginBottom: 4,
+        flexDirection: "row",
+        gap: 5
+    },
+    replyMeVerticalBar:{
+        width: 2,
+        height: "100%",
+        backgroundColor: commonStyles.primaryColor.color,
+        borderRadius: 2
+    },
+    replyMeMessageContainerMainContent:{
+        flexDirection: "column",
+    },
+    replyMeMessageContainerMainContentUsername:{
+        fontSize: 16,
+        fontWeight: "500"
+    },
+    replyMeMessageContainerMainContentMessage:{
+        fontSize: 15,
+    },
+    replyOpponentMessageContainer:{
+        marginTop: 10,
+        borderRadius: 6,
+        padding: 10,
+        marginBottom: 4,
+        flexDirection: "row",
+        gap: 5
+    },
+    replyOpponentVerticalBar:{
+        width: 2,
+        height: "100%",
+        backgroundColor: commonStyles.primaryColor.color,
+        borderRadius: 2
+    },
+    replyOpponentMessageContainerMainContent:{
+        flexDirection: "column",
+    },
+    replyOpponentMessageContainerMainContentUsername:{
+        fontSize: 16,
+        fontWeight: "500"
+    },
+    replyOpponentMessageContainerMainContentMessage:{
+        fontSize: 15,
+    },
     chatDetailMessageFromOpponentInfoText:{
         fontSize: 16,
         fontWeight: "500",
@@ -176,7 +224,7 @@ export const styles = StyleSheet.create({
         gap: 10,  
         alignItems: "center",
         marginBottom: 3,
-        marginVertical: 6
+        
     },
     fileBoxInChatHistoryImgBox:{
         width: 48,
@@ -220,7 +268,7 @@ export const styles = StyleSheet.create({
         flexDirection: "column"
     },
     chatDetailAnotherActionWrapper:{
-        flexDirection: "row",
+        flexDirection: "column",
         gap: 5,
         height: 25,
     },
@@ -259,5 +307,22 @@ export const styles = StyleSheet.create({
     },
     chatDetailMessageReactedForMsgCount:{
         fontSize: 13,
+    },
+    chatDetailModalImageFullscreenHeader:{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "black",
+        zIndex: 20,
+        paddingHorizontal: 10,
+    },
+    chatDetailModalImageFullscreenHeaderLeft:{
+        flexDirection: "row",
+        alignItems :"center"
+    },
+    chatDetailModalImageFullscreenCloseBtn: {
+        paddingVertical: 10,
+        paddingHorizontal: 2
+
     }
 })

@@ -45,7 +45,7 @@ export default function PrimaryBottomTab({navigation} : Props) {
                 tabBar={(props) => <TabBarCustomize  props={props} theme={theme} navigation={navigation}/>
                     
             }
-            initialRouteName='Contacts'
+            initialRouteName='ChatList'
                 screenOptions={{headerShown: false,
                     tabBarStyle:{
                         height: 65,

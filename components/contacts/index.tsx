@@ -7,10 +7,11 @@ import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import commonStyles from '../../CommonStyles/commonStyles';
 import OutsidePressHandler from 'react-native-outside-press';
 import { EvilIcons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { TFunction } from 'i18next';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import SearchDetailPopup from '../searchDetailPopup';
+import debounce from 'debounce';
 
 
 interface ContactsProps {
@@ -30,7 +31,9 @@ export default function Contacts({navigation} : ContactsProps) {
     const [isClickOutsideSearch, setIsClickOutsideSearch] = useState<boolean>(false)
     const [typeFilterSelected, setTypeFilterSelected] = useState<string>(ContactTypeFilter.FRIEND)
 
-
+    const debounceTextSearch = useCallback(
+        debounce(setTextSearch, 500), []
+    )
 
     return (
         <View
@@ -134,7 +137,7 @@ export default function Contacts({navigation} : ContactsProps) {
                                     commonStyles.darkIconColor.color
                                 }
                                 value={textSearch}
-                                onChangeText={setTextSearch}
+                                onChangeText={debounceTextSearch}
                             />
                         </View>
                 </OutsidePressHandler>

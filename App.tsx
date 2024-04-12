@@ -25,6 +25,8 @@ import ContactsInPhone from './components/contactsInPhone';
 import SearchHistoryModification from './components/searchHistoryModification';
 import CreateGroup from './components/createGroup';
 import StepTwoPointFiveRegister from './components/register/stepTwoPointFiveRegister';
+import RequestAddFriend from './components/requestAddFriend';
+
 
 const Stack = createStackNavigator();
 

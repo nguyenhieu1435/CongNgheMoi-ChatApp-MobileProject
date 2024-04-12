@@ -10,6 +10,56 @@ export const styles = StyleSheet.create({
         width: "100%",
         borderTopWidth: 1,
     },
+    chatDetailReplyMessageContainer:{
+        flexDirection: "row",
+        paddingHorizontal: 20,
+        paddingBottom: 4,
+        paddingTop: 8,
+        width: "100%"
+    },
+    
+    chatDetailReplyVerticalLeftLine:{
+        height: "100%",
+        marginRight: 10,
+        width: 2,
+        backgroundColor: commonStyles.primaryColor.color,
+    },
+    chatDetailReplyMessageContainerBox:{
+        flexGrow: 1,
+        flexShrink: 1,
+        position: "relative"
+    },
+    chatDetailReplyMessageContentHeader:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5
+    },
+    chatDetailReplyMessageContentHeaderImg:{
+        width: 18, 
+        height: 18,
+        resizeMode: "contain",
+    },
+    chatDetailReplyMessageContentHeaderText:{
+        fontSize: 15,
+    },
+    chatDetailReplyMessageContentHeaderUsername:{
+        fontWeight: "600"
+    },
+    chatDetailReplyMessageContentBody:{
+        fontSize: 15,
+        marginTop: 2,
+        marginRight: 10
+    },
+    chatDetailReplyMessageCloseReplyBtn:{
+        position: "absolute",
+        right: -15,
+        top: 0,
+        padding: 10
+    },
+    chatDetailReplyMessageCloseReplyImg:{
+        width: 20,
+        height: 20,
+    },
     chatDetailBottomContainer:{
         flexDirection: "row",
         alignItems: "center",
@@ -69,7 +119,7 @@ export const styles = StyleSheet.create({
         marginBottom: 4
     },
     chatDetailBottomActionText:{
-        fontSize: 14,
+        fontSize: 15,
 
     }
 })

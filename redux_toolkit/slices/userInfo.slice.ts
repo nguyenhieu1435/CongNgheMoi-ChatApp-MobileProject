@@ -1,6 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit"
 
-interface userInfoInterfaceI{
+export interface userInfoInterfaceI{
     user: {
         __v: number,
         // _id is phone number or email

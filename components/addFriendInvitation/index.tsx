@@ -5,9 +5,13 @@ import { useTranslation } from 'react-i18next'
 import { styles } from './styles'
 import { lightMode } from '../../redux_toolkit/slices/theme.slice'
 import commonStyles from '../../CommonStyles/commonStyles'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import ReadMore from '@fawazahmed/react-native-read-more'
+import { LINK_REQUEST_FRIEND_LIST, LINK_REQUEST_FRIEND_WAIT_RESPONSE, LINK_REVOCATION_REQUEST_FRIEND } from '@env'
+import { IRequestFriendSent } from '../../configs/interfaces'
+import { getAccurancyDateVN } from '../../utils/date'
+import { io } from 'socket.io-client'
 
 interface AddFriendInvitationProps {
     navigation: any
@@ -204,6 +208,34 @@ interface   AddFriendInvitationReceivedListProps {
 }
 
 function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvitationReceivedListProps) {
+    const [requestReceived, setRequestReceived] = useState([])
+    const userInfo = useSelector((state: IRootState) => state.userInfo)
+    
+    useEffect(()=>{
+        async function fetchRequestReceived(){
+            try {
+                const response = await fetch(LINK_REQUEST_FRIEND_WAIT_RESPONSE, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + userInfo.accessToken
+                    }
+    
+                })
+                if (response.ok){
+                    const data = await response.json()
+                    console.log(data)
+                } else {
+                    setRequestReceived([])
+                }
+            } catch (error) {
+                console.log(error)
+                setRequestReceived([])
+            }
+        }   
+        fetchRequestReceived()
+    }, [])
+
     const sectionData = [
         {
             title: "12-2023",
@@ -716,16 +748,70 @@ interface AddFriendInvitationSentListProps {
     translation: TFunction<"translation", undefined>
 }
 function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitationSentListProps) {
-    const flatData = [
-        {
-            userID: 1,
-            name: "John Doe",
-            avatar: "https://www.w3schools.com/w3images/avatar2.png",
-            date: "02/12/2023"
-        }
-    ]
+    const [requestSent, setRequestSent] = useState<IRequestFriendSent[]>([])
+    const userInfo = useSelector((state: IRootState) => state.userInfo)
 
-    function renderFlatItem({item, index}: {item: any, index: number}) {
+    async function fetchRequestSent(){
+        try {
+            const response = await fetch(LINK_REQUEST_FRIEND_LIST, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + userInfo.accessToken
+                }
+
+            })
+            if (response.ok){
+                const data = await response.json()
+                const newData : IRequestFriendSent[] = []
+                Array.isArray(data) && data.forEach((item: any) => {
+                    newData.push({
+                        _id: item._id,
+                        sender_id: item.sender_id,
+                        receiver_id: item.receiver_id,
+                        createdAt: item.createdAt,
+                        updatedAt: item.updatedAt,
+                        "__v": item.__v
+                    })
+                })
+                setRequestSent(newData)
+            } else {
+                setRequestSent([])
+            }
+        } catch (error) {
+            console.log(error)
+            setRequestSent([])
+        }
+    }
+
+    useEffect(()=>{
+        fetchRequestSent()
+    }, [])
+
+
+    function renderFlatItem({item , index}: {item: IRequestFriendSent, index: number}) {
+        
+        async function handleUndoRequest(){
+            try {
+                const response = await fetch(LINK_REVOCATION_REQUEST_FRIEND, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + userInfo.accessToken
+                    },
+                    body: JSON.stringify({
+                        "friendId": item.receiver_id._id
+                    })
+
+                })
+                if (response.ok){   
+                    fetchRequestSent()
+                }   
+            } catch (error) {
+                console.log(error)  
+            }
+        }
+
         return (
             <View
                 key={index}
@@ -734,7 +820,7 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                 ]}
             >
                 <Image
-                    source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                    source={{uri: item.receiver_id.avatar}}
                     style={[
                         styles.addFriendInvitationAvatarImage,
                     ]}
@@ -754,7 +840,7 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                             commonStyles.darkPrimaryText
                         ]}
                     >
-                        John Doe
+                        {item.receiver_id.name}
                     </Text>
                     <Text
                         style={[
@@ -766,10 +852,13 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                             commonStyles.darkTertiaryText
                         ]}
                     >
-                        02/12/2023
+                        {
+                            new Date(getAccurancyDateVN(item.createdAt)).toISOString().split('T')[0]
+                        }
                     </Text>
                 </View>
                 <TouchableOpacity
+                    onPress={handleUndoRequest}
                     style={[
                         styles.addFriendInvitationSentItemActionUndoButton,
                         {
@@ -802,7 +891,7 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
     }
 
     return (
-        flatData && flatData.length > 0
+        requestSent && requestSent.length > 0
         ?
         <View>
             <View
@@ -861,9 +950,9 @@ function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitat
                 </TouchableOpacity>
             </View>
             <FlatList
-                data={flatData}
+                data={requestSent}
                 keyExtractor={(item, index) => "" + index}
-                renderItem={renderFlatItem}
+                renderItem={({item, index}) => renderFlatItem({item, index})}
             />
         </View>
         :

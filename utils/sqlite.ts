@@ -30,6 +30,7 @@ export const createUserInfoTable = async (db: SQLite.SQLiteDatabase) =>{
         throw new Error("Error when creating user_info table")
     }
 }
+
 export const deleteTableByName = async (db: SQLite.SQLiteDatabase, tableName: string) =>{
     try {
         const resultDeleteTable = await db.execAsync([{sql: `DELETE FROM ${tableName}`, args: []}], false)
@@ -47,3 +48,41 @@ export const insertUserInfo = async (db: SQLite.SQLiteDatabase, contact: string,
     }
 }
 
+export const createUserSearchedTable = async (db: SQLite.SQLiteDatabase) =>{
+    try {
+        const resultCreateTable = await db.execAsync([{sql: `CREATE TABLE IF NOT EXISTS user_searched (
+            userId TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            avatar TEXT NOT NULL,
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`, args: [] }], false)
+        return resultCreateTable
+    } catch (error) {
+        throw new Error("Error when creating user_searched table")
+    }
+}
+
+export const insertUserSearched = async (db: SQLite.SQLiteDatabase, _id: string, name: string, avatar: string) =>{
+    try {
+        const exists = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE userId = ?`, args: [_id]}], false)
+        const obj = exists[0]
+                
+        if("rows" in obj && obj.rows.length > 0){
+            await db.execAsync([{sql: `DELETE FROM user_searched WHERE userId = ?`, args: [_id]}], false)
+        }
+       
+        const resultInsert = await db.execAsync([{sql: `INSERT INTO user_searched (userId, name, avatar) VALUES (?, ?, ?)`, args: [_id, name, avatar]}], false)
+        return resultInsert
+    } catch (error) {
+        throw new Error("Error when inserting user_searched")
+    }
+}
+
+export const selectTop5NewestUserSearched = async (db: SQLite.SQLiteDatabase) =>{
+    try {
+        const resultSelect = await db.execAsync([{sql: `SELECT * FROM user_searched ORDER BY createdAt DESC LIMIT 5`, args: []}], false)
+        return resultSelect
+    } catch (error) {
+        throw new Error("Error when selecting user_searched")
+    }
+}

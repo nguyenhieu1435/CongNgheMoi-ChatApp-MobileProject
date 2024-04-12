@@ -181,9 +181,6 @@ export const styles = StyleSheet.create({
     chatListModalScanQR:{
         flex: 1,
     },
-
-
-
     detailSearchPopUpWrapper:{
         position: "absolute",
         right: 0,
@@ -194,6 +191,30 @@ export const styles = StyleSheet.create({
         marginTop: 93 + 10 + 15,
         backgroundColor: "red",
         zIndex: 20
-    }
+    },
+    chatListEmptyHistoryBox:{
+        alignItems: "center",
+        flexShrink: 1,
+        flexGrow: 1,
+        justifyContent: "center",
+        marginBottom: 80
+    },
+    chatListEmptyHistoryImage:{
+        width: 150,
+        height: 150,
+        resizeMode: "contain",
+        marginBottom: 40
+
+    },
+    chatListEmptyHistoryTitle:{
+        fontSize: 17,
+        fontWeight: "500",
+        textAlign: "center",
+    },
+    chatListEmptyHistoryDesc:{
+        fontSize: 15,
+        textAlign: "center",
+        marginTop: 10,
+    },
     
 })

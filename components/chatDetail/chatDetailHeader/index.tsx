@@ -6,6 +6,10 @@ import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
 import { FontAwesome } from "@expo/vector-icons";
 import OutsidePressHandler from "react-native-outside-press";
 import { TFunction } from "i18next";
+import debounce from 'debounce';
+import { IConversation, IUserInConversation } from "../../../configs/interfaces";
+import { useSelector } from "react-redux";
+import { IRootState } from "../../../redux_toolkit/store";
 
 interface ChatDetailHeaderProps {
     theme: string;
@@ -13,6 +17,7 @@ interface ChatDetailHeaderProps {
     translation: TFunction<"translation", undefined>;
     textSearch: string;
     setTextSearch: (text: string) => void;
+    conversation : IConversation;
 }
 
 function ChatDetailHeader({
@@ -21,10 +26,22 @@ function ChatDetailHeader({
     translation: t,
     textSearch,
     setTextSearch,
+    conversation,
 }: ChatDetailHeaderProps) {
     const [showModalSearch, setShowModalSearch] = useState(false);
     const [showMoreAction, setShowMoreAction] = useState(false);
+    const userInfo = useSelector((state: IRootState)=> state.userInfo)
     
+    function setTextDebounce(text : string){
+        debounce(()=>{
+            setTextSearch(text)
+            
+        }, 500);
+    }
+
+    function getUserConversation(){
+        return conversation.users.find(user => user._id != userInfo.user?._id)
+    }
 
     return (
         <View
@@ -60,7 +77,7 @@ function ChatDetailHeader({
                 style={[styles.chatDetailNavbarUsernameBox]}
             >
                 <Image
-                    source={{ uri: "https://avatar.iran.liara.run/public/44" }}
+                    source={{ uri:  getUserConversation()?.avatar}}
                     resizeMode="cover"
                     style={{
                         width: 36,
@@ -76,7 +93,7 @@ function ChatDetailHeader({
                             : commonStyles.darkPrimaryText,
                     ]}
                 >
-                    Doris Brown
+                    {getUserConversation()?.name}
                 </Text>
                 <View
                     style={[
@@ -138,7 +155,7 @@ function ChatDetailHeader({
                             <TextInput
                                 placeholder={t("chatDetailSearchPlaceholder")}
                                 value={textSearch}
-                                onChangeText={(text) => setTextSearch(text)}
+                                onChangeText={text => setTextDebounce(text)}
                                 placeholderTextColor={
                                     theme === lightMode
                                         ? commonStyles.lightSecondaryText.color

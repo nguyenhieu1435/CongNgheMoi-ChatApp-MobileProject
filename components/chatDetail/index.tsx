@@ -22,9 +22,18 @@ const { TypingAnimation } = require("react-native-typing-animation");
 import ChatDetailHeader from "./chatDetailHeader";
 import ChatDetailBottom from "./chatDetailBottom";
 import MessageComponent from "./messageComponent";
+import { IConversation, IMessageItem } from "../../configs/interfaces";
+import MapView, { Marker } from "react-native-maps";
+import { LINK_GET_MESSAGE_HISTORY } from "@env";
+import {
+    convertDateStrToHourMinute,
+    getAccurancyDateVN,
+} from "../../utils/date";
+import { io } from "socket.io-client";
 
 interface Props {
     navigation: any;
+    route: any;
 }
 
 const { width: WIDTH, height: HEIGHT } = Dimensions.get("screen");
@@ -60,7 +69,8 @@ export interface DataHistoryChatMessageReactionInterface {
     userImg: string;
     userName: string;
 }
-export default function ChatDetail({ navigation }: Props) {
+
+export default function ChatDetail({ navigation, route }: Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState("");
@@ -68,266 +78,276 @@ export default function ChatDetail({ navigation }: Props) {
     const scrollViewRef = useRef<ScrollView>(null);
     const [showMoreChatActions, setShowMoreChatActions] =
         useState<boolean>(false);
-
     const heightForMoreChatActions = useRef<number>(80);
     const [indexMessageShowListReaction, setIndexMessageShowListReaction] =
         useState(-1);
-
-    const dataHistoryChats: DataHistoryChatsI[] = [
-        {
-            id: 1,
-            date: "15/01/2024",
-            conversations: [
-                {
-                    side: "me",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Doris Brown",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9999,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9998,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    reactions: [],
-                },
-                {
-                    side: "opponent",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Jane Smith",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9997,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9996,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    reactions: [
-                        {
-                            userID: 1,
-                            emoji: "👍",
-                            userImg: "https://avatar.iran.liara.run/public/44",
-                            userName: "Doris Brown"
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            id: 2,
-            date: "18/01/2024",
-            conversations: [
-                {
-                    side: "me",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Doris Brown",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9995,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9994,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    attachmentFile: {
-                        name: "Minible-Whitepaper.pdf",
-                        url: "https://minible.finance/Minible-Whitepaper.pdf",
-                    },
-                    reactions: [
-                        {
-                            userID: 1,
-                            emoji: "❤",
-                            userImg: "https://avatar.iran.liara.run/public/44",
-                            userName: "Doris Brown"
-                        },
-                        {
-                            userID: 3,
-                            emoji: "😡",
-                            userImg: "https://avatar.iran.liara.run/public/44",
-                            userName: "Doris Brown"
-                        },
-                    ],
-                },
-                {
-                    side: "opponent",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Jane Smith",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9993,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9992,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    attachmentFile: {
-                        name: "Minible-Whitepaper.pdf",
-                        url: "https://minible.finance/Minible-Whitepaper.pdf",
-                    },
-                    reactions: [],
-                },
-            ],
-        },
-        {
-            id: 3,
-            date: "20/01/2024",
-            conversations: [
-                {
-                    side: "me",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Doris Brown",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9991,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9990,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    attachmentImages: [
-                        {
-                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-                        },
-                        {
-                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-                        },
-                    ],
-                    reactions: [
-                        {
-                            userID: 2,
-                            emoji: "😡",
-                            userImg: "https://avatar.iran.liara.run/public/44",
-                            userName: "Doris Brown"
-                        },
-                    ],
-                },
-                {
-                    side: "opponent",
-                    image: "https://avatar.iran.liara.run/public/44",
-                    name: "Jane Smith",
-                    time: "10:31",
-                    messages: [
-                        {
-                            content: "Jesse Pinkman",
-                            type: "tag",
-                            id: 9989,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf ",
-                            type: "text",
-                        },
-                        {
-                            content: "Pipilu",
-                            type: "tag",
-                            id: 9988,
-                        },
-                        {
-                            content: " fgfgfgfgfgfgfgf",
-                            type: "text",
-                        },
-                    ],
-                    attachmentImages: [
-                        {
-                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-                        },
-                        {
-                            url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-                        },
-                    ],
-                    reactions: [
-                        {
-                            userID: 1,
-                            emoji: "😮",
-                            userImg: "https://avatar.iran.liara.run/public/44",
-                            userName: "Doris Brown"
-                        },
-                    ],
-                },
-            ],
-        },
-    ];
+    const [replyItem, setReplyItem] = useState<null | IMessageItem>(null);
+    const [messageHistory, setMessageHistory] = useState<IMessageItem[]>(
+        route.params.messages || []
+    );
+    const [conversation, setConversation] = useState<IConversation>(
+        route.params.conversation
+    );
     const [reactionFilter, setReactionFilter] = useState(-1);
     const scrollReactionRef = useRef<ScrollView>(null);
+    const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const [socketIO, setSocketIO] = useState<any>(null);
+    const [isTyping, setIsTyping] = useState<boolean>(false);
+    const ref = useRef<String>('')
 
-    function findReactionsByIndexMessageShowListReaction() {
-        let indexOfDataHistoryChats = Math.floor(
-            indexMessageShowListReaction / 10
-        );
-        let indexOfMessage = indexMessageShowListReaction % 10;
+    // const dataHistoryChats: DataHistoryChatsI[] = [
+    //     {
+    //         id: 1,
+    //         date: "15/01/2024",
+    //         conversations: [
+    //             {
+    //                 side: "me",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Doris Brown",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9999,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9998,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 reactions: [],
+    //             },
+    //             {
+    //                 side: "opponent",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Jane Smith",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9997,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9996,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 reactions: [
+    //                     {
+    //                         userID: 1,
+    //                         emoji: "👍",
+    //                         userImg: "https://avatar.iran.liara.run/public/44",
+    //                         userName: "Doris Brown",
+    //                     },
+    //                 ],
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         id: 2,
+    //         date: "18/01/2024",
+    //         conversations: [
+    //             {
+    //                 side: "me",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Doris Brown",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9995,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9994,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 attachmentFile: {
+    //                     name: "Minible-Whitepaper.pdf",
+    //                     url: "https://minible.finance/Minible-Whitepaper.pdf",
+    //                 },
+    //                 reactions: [
+    //                     {
+    //                         userID: 1,
+    //                         emoji: "❤",
+    //                         userImg: "https://avatar.iran.liara.run/public/44",
+    //                         userName: "Doris Brown",
+    //                     },
+    //                     {
+    //                         userID: 3,
+    //                         emoji: "😡",
+    //                         userImg: "https://avatar.iran.liara.run/public/44",
+    //                         userName: "Doris Brown",
+    //                     },
+    //                 ],
+    //             },
+    //             {
+    //                 side: "opponent",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Jane Smith",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9993,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9992,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 attachmentFile: {
+    //                     name: "Minible-Whitepaper.pdf",
+    //                     url: "https://minible.finance/Minible-Whitepaper.pdf",
+    //                 },
+    //                 reactions: [],
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         id: 3,
+    //         date: "20/01/2024",
+    //         conversations: [
+    //             {
+    //                 side: "me",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Doris Brown",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9991,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9990,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 attachmentImages: [
+    //                     {
+    //                         url: "https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg",
+    //                     },
+    //                     {
+    //                         url: "https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg",
+    //                     },
+    //                 ],
+    //                 reactions: [
+    //                     {
+    //                         userID: 2,
+    //                         emoji: "😡",
+    //                         userImg: "https://avatar.iran.liara.run/public/44",
+    //                         userName: "Doris Brown",
+    //                     },
+    //                 ],
+    //             },
+    //             {
+    //                 side: "opponent",
+    //                 image: "https://avatar.iran.liara.run/public/44",
+    //                 name: "Jane Smith",
+    //                 time: "10:31",
+    //                 messages: [
+    //                     {
+    //                         content: "Jesse Pinkman",
+    //                         type: "tag",
+    //                         id: 9989,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf ",
+    //                         type: "text",
+    //                     },
+    //                     {
+    //                         content: "Pipilu",
+    //                         type: "tag",
+    //                         id: 9988,
+    //                     },
+    //                     {
+    //                         content: " fgfgfgfgfgfgfgf",
+    //                         type: "text",
+    //                     },
+    //                 ],
+    //                 attachmentImages: [
+    //                     {
+    //                         url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+    //                     },
+    //                     {
+    //                         url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
+    //                     },
+    //                 ],
+    //                 reactions: [
+    //                     {
+    //                         userID: 1,
+    //                         emoji: "😮",
+    //                         userImg: "https://avatar.iran.liara.run/public/44",
+    //                         userName: "Doris Brown",
+    //                     },
+    //                 ],
+    //             },
+    //         ],
+    //     },
+    // ];
 
-        if (indexOfDataHistoryChats < 0) return [];
+    // function findReactionsByIndexMessageShowListReaction() {
+    //     let indexOfDataHistoryChats = Math.floor(
+    //         indexMessageShowListReaction / 10
+    //     );
+    //     let indexOfMessage = indexMessageShowListReaction % 10;
 
-        return dataHistoryChats[indexOfDataHistoryChats].conversations[
-            indexOfMessage
-        ].reactions;
-    }
+    //     if (indexOfDataHistoryChats < 0) return [];
+
+    //     return dataHistoryChats[indexOfDataHistoryChats].conversations[
+    //         indexOfMessage
+    //     ].reactions;
+    // }
 
     function removeReactionDuplicate(
         reactions: DataHistoryChatMessageReactionInterface[]
@@ -371,26 +391,170 @@ export default function ChatDetail({ navigation }: Props) {
             default:
                 return require("../../assets/haha-reaction.png");
         }
-    }   
+    }
     function handleControllingSlideScroll(index: number) {
-        
         if (index === -1) {
             scrollReactionRef.current?.scrollTo({
                 x: 0,
-                animated: true
-            })
+                animated: true,
+            });
         } else {
             scrollReactionRef.current?.scrollTo({
-                x: (WIDTH - 30 - 16) * (index+1),
+                x: (WIDTH - 30 - 16) * (index + 1),
                 animated: true,
             });
         }
         setReactionFilter(index);
-
+    }
+    function handelSetPaddingBottom() {
+        let height = 0;
+        height = showMoreChatActions
+            ? 75 + heightForMoreChatActions.current
+            : 75;
+        if (replyItem) {
+            height += 40;
+        }
+        return height;
     }
 
+    // useEffect(() => {
+    //     const bearToken =
+    //         "Bearer " + userInfo.accessToken;
+
+    //     async function fetchMessageHistory() {
+    //         try {
+    //             const response = await fetch(
+    //                 LINK_GET_MESSAGE_HISTORY + conversation._id,
+    //                 {
+    //                     method: "GET",
+    //                     headers: {
+    //                         "Content-Type": "application/json",
+    //                         Authorization: bearToken,
+    //                     },
+    //                 }
+    //             );
+    //             if (!response.ok) {
+    //                 throw new Error("Something went wrong!");
+    //             }
+    //             const data = await response.json();
+    //             if (Array.isArray(data)) {
+    //                 const newData = data.map((message) => {
+    //                     let messageItem: IMessageItem = {
+    //                         _id: message._id,
+    //                         sender: {
+    //                             _id: message.sender._id,
+    //                             name: message.sender.name,
+    //                             avatar: message.sender.avatar,
+    //                         },
+    //                         messages: message.messages,
+    //                         conversation: message.conversation,
+    //                         reply: message.reply,
+    //                         files: message.files,
+    //                         createdAt: getAccurancyDateVN(message.createdAt),
+    //                         updatedAt: getAccurancyDateVN(message.updatedAt),
+    //                         __v: message.__v,
+    //                         statuses: message.statuses,
+    //                         location: message.location,
+    //                         deleted: message.deleted,
+    //                     };
+
+    //                     return messageItem;
+    //                 });
+    //                 console.log(newData);
+    //                 setMessageHistory(newData);
+    //             } else {
+    //                 setMessageHistory([]);
+    //             }
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
+    //     fetchMessageHistory();
+    // }, []);
+
+    // function sortMessageByDateDesc(messages : IMessageItem[]) {
+    //     return messages.sort((a, b) => {
+    //         return new Date(a.createdAt) - new Date(b.createdAt);
+    //     });
+    // }
+
+    const handleConvertDataMessageToDateTimeline = (date: string) => {
+        const objDate = new Date(getAccurancyDateVN(date));
+        // if (objDate is today) return "hh:mm" or return "hh:mm dd/mm/yyyy"
+        const currentDate = new Date(
+            getAccurancyDateVN(new Date().toISOString())
+        );
+
+        if (
+            currentDate.getDay() === objDate.getDay() &&
+            currentDate.getMonth() === objDate.getMonth() &&
+            currentDate.getFullYear() === objDate.getFullYear()
+        ) {
+            return convertDateStrToHourMinute(date);
+        } else {
+            if (currentDate.getFullYear() !== objDate.getFullYear()) {
+                return `${convertDateStrToHourMinute(
+                    date
+                )} ${objDate.getDate()}/${
+                    objDate.getMonth() + 1
+                }/${objDate.getFullYear()}`;
+            } else {
+                return `${convertDateStrToHourMinute(
+                    date
+                )} ${objDate.getDate()}/${objDate.getMonth() + 1}`;
+            }
+        }
+    };
+
+    useEffect(() => {
+        let socket = io("https://homeless-eadith-vunguyendev.koyeb.app");
+
+        
+        socket.on("connect", () => {
+            console.log("connected");
+
+            socket.emit("online", userInfo.user?._id)
+
+            socket.on("receivedMessage", (message) => {
+                console.log("receivedMessage", message);
+                // const isExist = messageHistory.some(myMessage => message._id === myMessage._id)
+                if (ref.current !== message._id){
+                    console.log("ababa", messageHistory)
+                    setMessageHistory(prev => [...prev, message])
+                    ref.current = message._id
+                }
+            });
+    
+            socket.on("typing", ({ conversationId, userId  }) => {
+                console.log("typing", conversationId, userId);
+                setIsTyping(true);
+            });
+            socket.on("stopTyping", () => {
+                console.log("stopTyping");
+                setIsTyping(false);
+            });
+        });
+
+      
+
+        // socket.emit("online", userInfo.user?._id)
+
+        socket.emit("openConversation", {
+            conversation: conversation,
+            user: userInfo.user,
+        });
+
+       
+
+        setSocketIO(socket);
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
 
+    
     return (
         <View
             style={[
@@ -408,14 +572,13 @@ export default function ChatDetail({ navigation }: Props) {
                     theme={theme}
                     textSearch={textSearch}
                     setTextSearch={setTextSearch}
+                    conversation={conversation}
                 />
                 <View
                     style={[
                         styles.chatDetailHistoryListWrapper,
                         {
-                            paddingBottom: showMoreChatActions
-                                ? 75 + heightForMoreChatActions.current
-                                : 75,
+                            paddingBottom: handelSetPaddingBottom(),
                         },
                     ]}
                 >
@@ -428,13 +591,14 @@ export default function ChatDetail({ navigation }: Props) {
                             })
                         }
                     >
-                        {dataHistoryChats &&
-                            dataHistoryChats.map((item, index) => {
+                        {messageHistory &&
+                            messageHistory.map((messageItem, index) => {
                                 const TimeLine =
                                     index == 0 ? (
-                                        <></>
+                                        <View key={index}></View>
                                     ) : (
-                                        <View style={[styles.timeLineBox]}
+                                        <View
+                                            style={[styles.timeLineBox]}
                                             key={index}
                                         >
                                             <Text
@@ -455,7 +619,10 @@ export default function ChatDetail({ navigation }: Props) {
                                                     },
                                                 ]}
                                             >
-                                                {item.date}
+                                                {messageItem.createdAt &&
+                                                    handleConvertDataMessageToDateTimeline(
+                                                        messageItem.createdAt
+                                                    )}
                                             </Text>
                                             <View
                                                 style={[
@@ -474,113 +641,113 @@ export default function ChatDetail({ navigation }: Props) {
                                             ></View>
                                         </View>
                                     );
-                                const Messages = item.conversations.map(
-                                    (message, index2) => {
-                                        return (
-                                            <MessageComponent
-                                                id={Number(index * 10 + index2)}
-                                                data={message}
-                                                theme={theme}
-                                                translation={t}
-                                                indexMessageAction={
-                                                    indexMessageAction
-                                                }
-                                                setIndexMessageAction={
-                                                    setIndexMessageAction
-                                                }
-                                                indexShowListReaction={
-                                                    indexMessageShowListReaction
-                                                }
-                                                setIndexShowListReaction={
-                                                    setIndexMessageShowListReaction
-                                                }
-                                            />
-                                        );
-                                    }
-                                );
-
                                 return (
                                     <>
                                         {TimeLine}
-                                        {Messages}
+                                        <MessageComponent
+                                            id={index}
+                                            data={messageItem}
+                                            theme={theme}
+                                            translation={t}
+                                            indexMessageAction={
+                                                indexMessageAction
+                                            }
+                                            setIndexMessageAction={
+                                                setIndexMessageAction
+                                            }
+                                            indexShowListReaction={
+                                                indexMessageShowListReaction
+                                            }
+                                            setIndexShowListReaction={
+                                                setIndexMessageShowListReaction
+                                            }
+                                            setReplyItem={setReplyItem}
+                                            setMessageHistory={setMessageHistory}
+                                        />
                                     </>
                                 );
                             })}
-
-                        <View style={[styles.chatDetailMessageFromOpponentBox]}>
-                            <Image
-                                source={{
-                                    uri: "https://avatar.iran.liara.run/public/44",
-                                }}
-                                resizeMode="contain"
-                                style={[styles.chatDetailAvatarImg]}
-                            />
+                        {isTyping && (
                             <View
                                 style={[
-                                    styles.chatDetailMessageFromOpponentMainWrapper,
+                                    styles.chatDetailMessageFromOpponentBox,
                                 ]}
                             >
+                                <Image
+                                    source={{
+                                        uri: conversation.picture,
+                                    }}
+                                    resizeMode="contain"
+                                    style={[styles.chatDetailAvatarImg]}
+                                />
                                 <View
                                     style={[
-                                        styles.chatDetailMessageFromOpponentMainTypingContainer,
+                                        styles.chatDetailMessageFromOpponentMainWrapper,
                                     ]}
                                 >
                                     <View
                                         style={[
-                                            styles.chatDetailMessageFromOpponentInfoBox,
+                                            styles.chatDetailMessageFromOpponentMainTypingContainer,
                                         ]}
                                     >
                                         <View
                                             style={[
-                                                styles.chatDetailMessageFromOpponentInfoTextBox,
+                                                styles.chatDetailMessageFromOpponentInfoBox,
                                             ]}
                                         >
-                                            <Text
+                                            <View
                                                 style={[
-                                                    styles.chatDetailMessageFromOpponentInfoText,
+                                                    styles.chatDetailMessageFromOpponentInfoTextBox,
                                                 ]}
                                             >
-                                                typing
-                                            </Text>
-                                            <TypingAnimation
-                                                dotColor={
-                                                    commonStyles.darkPrimaryText
-                                                        .color
-                                                }
-                                                dotAmplitude={2}
-                                                style={{
-                                                    marginBottom: 15,
-                                                }}
-                                                dotStyles={{
-                                                    fontSize: 3,
-                                                }}
-                                                dotMargin={5}
-                                                dotSpeed={0.3}
-                                                dotRadius={2.5}
-                                                dotX={12}
-                                                dotY={6}
-                                            />
+                                                <Text
+                                                    style={[
+                                                        styles.chatDetailMessageFromOpponentInfoText,
+                                                    ]}
+                                                >
+                                                    typing
+                                                </Text>
+                                                <TypingAnimation
+                                                    dotColor={
+                                                        commonStyles
+                                                            .darkPrimaryText
+                                                            .color
+                                                    }
+                                                    dotAmplitude={2}
+                                                    style={{
+                                                        marginBottom: 15,
+                                                    }}
+                                                    dotStyles={{
+                                                        fontSize: 3,
+                                                    }}
+                                                    dotMargin={5}
+                                                    dotSpeed={0.3}
+                                                    dotRadius={2.5}
+                                                    dotX={12}
+                                                    dotY={6}
+                                                />
+                                            </View>
+                                            <View
+                                                style={[
+                                                    styles.chatDetailMessageFromOpponentTriangle,
+                                                ]}
+                                            ></View>
                                         </View>
-                                        <View
-                                            style={[
-                                                styles.chatDetailMessageFromOpponentTriangle,
-                                            ]}
-                                        ></View>
-                                    </View>
 
-                                    <Text
-                                        style={[
-                                            styles.chatDetailMessageFromOpponentUsername,
-                                            theme === lightMode
-                                                ? commonStyles.lightTertiaryText
-                                                : commonStyles.darkTertiaryText,
-                                        ]}
-                                    >
-                                        Doris Brown
-                                    </Text>
+                                        <Text
+                                            style={[
+                                                styles.chatDetailMessageFromOpponentUsername,
+                                                theme === lightMode
+                                                    ? commonStyles.lightTertiaryText
+                                                    : commonStyles.darkTertiaryText,
+                                            ]}
+                                        >
+                                            {conversation.name}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
-                        </View>
+                        )}
                     </ScrollView>
                 </View>
                 <ChatDetailBottom
@@ -590,6 +757,12 @@ export default function ChatDetail({ navigation }: Props) {
                     historyChatScrollViewRef={scrollViewRef}
                     showMoreChatActions={showMoreChatActions}
                     setShowMoreChatActions={setShowMoreChatActions}
+                    replyItem={replyItem}
+                    setReplyItem={setReplyItem}
+                    socket={socketIO}
+                    messageHistory={messageHistory}
+                    setMessageHistory={setMessageHistory}
+                    conversation={conversation}
                 />
                 <Modal
                     visible={indexMessageShowListReaction !== -1}
@@ -642,10 +815,10 @@ export default function ChatDetail({ navigation }: Props) {
                                     {t("messageReactionPopupTitle")}
                                 </Text>
                                 <TouchableOpacity
-                                    onPress={() =>
-                                        {setIndexMessageShowListReaction(-1)
-                                        setReactionFilter(-1)}
-                                    }
+                                    onPress={() => {
+                                        setIndexMessageShowListReaction(-1);
+                                        setReactionFilter(-1);
+                                    }}
                                     style={[
                                         styles.chatDetailReactionListBtnClose,
                                         {
@@ -685,7 +858,7 @@ export default function ChatDetail({ navigation }: Props) {
                                     flexShrink: 1,
                                 }}
                             >
-                                <ScrollView
+                                {/* <ScrollView
                                     horizontal={true}
                                     style={{
                                         width: "100%",
@@ -694,11 +867,12 @@ export default function ChatDetail({ navigation }: Props) {
                                     ref={scrollReactionRef}
                                     showsHorizontalScrollIndicator={false}
                                     onScroll={(event) => {
-                                        let positionX = event.nativeEvent.contentOffset.x;
+                                        let positionX =
+                                            event.nativeEvent.contentOffset.x;
                                         let index = Math.round(
                                             positionX / (WIDTH - 16 - 30)
                                         );
-                                        setReactionFilter(index-1);
+                                        setReactionFilter(index - 1);
                                     }}
                                 >
                                     <ScrollView
@@ -706,76 +880,80 @@ export default function ChatDetail({ navigation }: Props) {
                                             width: WIDTH - 16 - 30,
                                         }}
                                     >
-                                        {
-                                            findReactionsByIndexMessageShowListReaction().map((itemAll, indexAll) => {
+                                        {findReactionsByIndexMessageShowListReaction().map(
+                                            (itemAll, indexAll) => {
                                                 return (
                                                     <TouchableOpacity
-                                                    key={indexAll}
-                                                    style={[
-                                                        styles.chatDetailPopupReactionItem,
-                                                    ]}
-                                                >
-                                                    <Image
-                                                        source={{
-                                                            uri: itemAll.userImg,
-                                                        }}
+                                                        key={indexAll}
                                                         style={[
-                                                            styles.chatDetailPopupReactionItemAvatar,
-                                                        ]}
-                                                    />
-                                                    <View
-                                                        style={[
-                                                            styles.chatDetailPopupReactionItemMainContent,
-                                                            {
-                                                                borderBottomColor:
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles
-                                                                              .chatNavbarBorderBottomColorLight
-                                                                              .color
-                                                                        : commonStyles
-                                                                              .chatNavbarBorderBottomColorDark
-                                                                              .color,
-                                                            },
+                                                            styles.chatDetailPopupReactionItem,
                                                         ]}
                                                     >
-                                                        <View>
-                                                            <Text
-                                                                style={[
-                                                                    styles.chatDetailPopupReactionItemMainContentUsername,
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles.lightPrimaryText
-                                                                        : commonStyles.darkPrimaryText,
-                                                                ]}
-                                                            >
-                                                                {itemAll.userName}
-                                                            </Text>
-                                                            <Text
-                                                                style={[
-                                                                    styles.chatDetailPopupReactionItemMainContentRemove,
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles.lightTertiaryText
-                                                                        : commonStyles.darkTertiaryText,
-                                                                ]}
-                                                            >
-                                                                {t(
-                                                                    "messageReactionPopupPressToRemove"
-                                                                )}
-                                                            </Text>
-                                                        </View>
                                                         <Image
-                                                            source={returnRequireImageReaction(itemAll.emoji)}
+                                                            source={{
+                                                                uri: itemAll.userImg,
+                                                            }}
                                                             style={[
-                                                                styles.chatDetailPopupReactionItemMainContentIcon,
+                                                                styles.chatDetailPopupReactionItemAvatar,
                                                             ]}
                                                         />
-                                                    </View>
-                                                </TouchableOpacity>
-                                                )
-                                            })
-                                        }
+                                                        <View
+                                                            style={[
+                                                                styles.chatDetailPopupReactionItemMainContent,
+                                                                {
+                                                                    borderBottomColor:
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles
+                                                                                  .chatNavbarBorderBottomColorLight
+                                                                                  .color
+                                                                            : commonStyles
+                                                                                  .chatNavbarBorderBottomColorDark
+                                                                                  .color,
+                                                                },
+                                                            ]}
+                                                        >
+                                                            <View>
+                                                                <Text
+                                                                    style={[
+                                                                        styles.chatDetailPopupReactionItemMainContentUsername,
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles.lightPrimaryText
+                                                                            : commonStyles.darkPrimaryText,
+                                                                    ]}
+                                                                >
+                                                                    {
+                                                                        itemAll.userName
+                                                                    }
+                                                                </Text>
+                                                                <Text
+                                                                    style={[
+                                                                        styles.chatDetailPopupReactionItemMainContentRemove,
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles.lightTertiaryText
+                                                                            : commonStyles.darkTertiaryText,
+                                                                    ]}
+                                                                >
+                                                                    {t(
+                                                                        "messageReactionPopupPressToRemove"
+                                                                    )}
+                                                                </Text>
+                                                            </View>
+                                                            <Image
+                                                                source={returnRequireImageReaction(
+                                                                    itemAll.emoji
+                                                                )}
+                                                                style={[
+                                                                    styles.chatDetailPopupReactionItemMainContentIcon,
+                                                                ]}
+                                                            />
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                );
+                                            }
+                                        )}
                                     </ScrollView>
                                     {classificationEmoji(
                                         findReactionsByIndexMessageShowListReaction()
@@ -794,7 +972,9 @@ export default function ChatDetail({ navigation }: Props) {
                                                     ) => {
                                                         return (
                                                             <TouchableOpacity
-                                                                key={indexUserReactionItem}
+                                                                key={
+                                                                    indexUserReactionItem
+                                                                }
                                                                 style={[
                                                                     styles.chatDetailPopupReactionItem,
                                                                 ]}
@@ -833,7 +1013,9 @@ export default function ChatDetail({ navigation }: Props) {
                                                                                     : commonStyles.darkPrimaryText,
                                                                             ]}
                                                                         >
-                                                                            {userReactionItem.userName}
+                                                                            {
+                                                                                userReactionItem.userName
+                                                                            }
                                                                         </Text>
                                                                         <Text
                                                                             style={[
@@ -850,7 +1032,9 @@ export default function ChatDetail({ navigation }: Props) {
                                                                         </Text>
                                                                     </View>
                                                                     <Image
-                                                                        source={returnRequireImageReaction(userReactionItem.emoji)}
+                                                                        source={returnRequireImageReaction(
+                                                                            userReactionItem.emoji
+                                                                        )}
                                                                         style={[
                                                                             styles.chatDetailPopupReactionItemMainContentIcon,
                                                                         ]}
@@ -863,7 +1047,7 @@ export default function ChatDetail({ navigation }: Props) {
                                             </ScrollView>
                                         );
                                     })}
-                                </ScrollView>
+                                </ScrollView> */}
                             </View>
                             <View
                                 style={[
@@ -898,14 +1082,16 @@ export default function ChatDetail({ navigation }: Props) {
                                         {t("searchDetailAllTitle")}
                                     </Text>
                                 </TouchableOpacity>
-                                {removeReactionDuplicate(
+                                {/* {removeReactionDuplicate(
                                     findReactionsByIndexMessageShowListReaction()
                                 ).map((item, index) => {
                                     return (
                                         <TouchableOpacity
                                             key={index}
                                             onPress={() =>
-                                                handleControllingSlideScroll(index)
+                                                handleControllingSlideScroll(
+                                                    index
+                                                )
                                             }
                                             style={[
                                                 styles.chatDetailReactionListFilterBtn,
@@ -943,7 +1129,7 @@ export default function ChatDetail({ navigation }: Props) {
                                             </Text>
                                         </TouchableOpacity>
                                     );
-                                })}
+                                })} */}
                             </View>
                         </OutsidePressHandler>
                     </View>

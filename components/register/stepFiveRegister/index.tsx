@@ -19,12 +19,11 @@ import commonStyles from "../../../CommonStyles/commonStyles";
 import { Octicons } from "@expo/vector-icons";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useEffect, useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import { uploadAsync } from "expo-file-system";
 import { useDispatch } from "react-redux";
 import { updateAvatarImage } from "../../../redux_toolkit/slices/userInfo.slice";
 import { LINK_UPDATE_IMAGE } from "@env";
 import * as FileSystem from "expo-file-system";
+import { handleOpenActionSheet } from "../../../utils/imagePicker";
 
 interface Props {
     navigation: any;
@@ -41,86 +40,33 @@ export default function StepFiveRegister({ navigation, route }: Props) {
     const [hasCameraPermission, setHasCameraPermission] = useState<
         null | boolean
     >(null);
-    const [avatar, setAvatar] = useState<null | string>(null);
+    const [avatar, setAvatar] = useState<null | string | string[]>(null);
     const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
     const dispatch = useDispatch();
 
-    async function handleChooseImageFromLibrary() {
-        if (!hasGalleryPermission) {
-            const { status } =
-                await ImagePicker.requestMediaLibraryPermissionsAsync();
-            setHasGalleryPermission(status === "granted");
-        }
-        const newAvatar = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        if (!newAvatar.canceled) {
-            const firstElement = newAvatar.assets?.[0];
-
-            if (firstElement.type === "image") {
-                setAvatar(firstElement.uri);
-            }
-        }
-    }
-
-    async function handleTakePhotoFromCamera() {
-        if (!hasCameraPermission) {
-            const { status } =
-                await ImagePicker.requestCameraPermissionsAsync();
-            setHasCameraPermission(status === "granted");
-        }
-        let options = {
-            allowsEditing: true,
-            allowsMultipleSelection: false,
-            cameraType: ImagePicker.CameraType.front,
-            quantity: 1,
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        };
-        const result = await ImagePicker.launchCameraAsync(options);
-
-        if (!result.canceled) {
-            const firstElement = result.assets?.[0];
-
-            setAvatar(firstElement?.uri || null);
-            if (firstElement.type === "image") {
-                setAvatar(firstElement.uri);
-            }
-        }
-    }
-
-    const handleOpenActionSheet = () => {
-        const options = [
+    function handleOpenActionSheetFn() {
+        const [registerChooseImageFromLibrary, registerTakePhotoFromCamera, cancel] = [
             t("registerChooseImageFromLibrary"),
             t("registerTakePhotoFromCamera"),
             t("cancel"),
         ];
-        const cancelButtonIndex = 2;
-        showActionSheetWithOptions(
-            {
-                options,
-                cancelButtonIndex,
-            },
-            (selectedIndex) => {
-                switch (selectedIndex) {
-                    case 0:
-                        handleChooseImageFromLibrary();
-                        break;
-                    case 1:
-                        handleTakePhotoFromCamera();
-                        break;
-                    case cancelButtonIndex:
-                        break;
-                    default:
-                        break;
-                }
-            }
-        );
-    };
+        handleOpenActionSheet({
+            registerChooseImageFromLibrary,
+            registerTakePhotoFromCamera,
+            cancel,
+            showActionSheetWithOptions,
+            hasGalleryPermission,
+            setHasGalleryPermission,
+            setImages: setAvatar,
+            hasCameraPermission,
+            setHasCameraPermission,
+            isMultiple: false,
+        
+        })
+    }
+
     async function handleNavigateNextPage() {
-        if (avatar) {
+        if (avatar && typeof avatar === "string") {
             setIsUploadingImage(true);
             try {
                 let formData = new FormData();
@@ -208,7 +154,7 @@ export default function StepFiveRegister({ navigation, route }: Props) {
                             <TouchableOpacity
                                 activeOpacity={1}
                                 style={[styles.btnIconEditAvatar]}
-                                onPress={handleOpenActionSheet}
+                                onPress={handleOpenActionSheetFn}
                             >
                                 <Octicons
                                     name="pencil"
@@ -230,7 +176,7 @@ export default function StepFiveRegister({ navigation, route }: Props) {
                         <View style={[styles.boxWrapperChooseAvatarBtn]}>
                             <TouchableOpacity
                                 style={[styles.btnChooseAvatarNow]}
-                                onPress={handleOpenActionSheet}
+                                onPress={handleOpenActionSheetFn}
                             >
                                 <Text style={[styles.textChooseAvatarNow]}>
                                     {t("registerChooseImageNow")}

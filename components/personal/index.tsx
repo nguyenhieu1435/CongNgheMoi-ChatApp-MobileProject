@@ -348,7 +348,7 @@ export default function Personal() {
                         commonStyles.darkPrimaryText
                       ]}
                     >
-                      {userInfo.phone}
+                      {userInfo._id}
                     </Text>
                   </View>
                   <View
