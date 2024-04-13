@@ -24,5 +24,8 @@ declare module "@env" {
     export const LINK_GET_ADD_FRIEND_ACCEPT: string;
     export const LINK_DELETE_MESSAGE_SIDE_ME: string;
     export const LINK_DELETE_MESSAGE_SIDE_ALL: string;
-
+    export const LINK_PIN_MESSAGE: string;
+    export const LINK_UNPIN_MESSAGE: string;
+    export const LINK_REACT_MESSAGE: string;
+    export const LINK_FORWARD_MESSAGE: string;
 }

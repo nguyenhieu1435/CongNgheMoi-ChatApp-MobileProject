@@ -27,13 +27,15 @@ import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_CONVERSATIONS, LINK_OPEN_CONVERSA
 import { IConversation, IMessageItem } from "../../configs/interfaces";
 import Spinner from "react-native-loading-spinner-overlay";
 import { getAccurancyDateVN } from "../../utils/date";
+import { useIsFocused } from "@react-navigation/native";
 
 type Props = {
     navigation: any;
+    route: any;
 };
 const WIDTH = Dimensions.get("window").width;
 
-export default function ChatList({ navigation }: Props) {
+export default function ChatList({ navigation, route }: Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState("");
@@ -50,6 +52,7 @@ export default function ChatList({ navigation }: Props) {
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const [myConversations, setMyConversations] = useState<IConversation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const isFocused = useIsFocused();
 
     async function handleToggleModalScanQRCode() {
         if (showModalScanQRCode) {
@@ -68,6 +71,7 @@ export default function ChatList({ navigation }: Props) {
 
     useEffect(() => {
         async function getMyConversations() {
+            console.log("fetching my conversations")
             try {
                 setIsLoading(true);
                 const response = await fetch(LINK_GET_MY_CONVERSATIONS, {
@@ -78,9 +82,10 @@ export default function ChatList({ navigation }: Props) {
                     },
                 });
                 if (response.ok) {
-                    const data = await response.json();
-                    console.log("myconversation", data)
+                    let data = await response.json();
+                    
                     let conversations: IConversation[] = [];
+                    
                     Array.isArray(data) &&
                         data.forEach((item: IConversation) => {
                             conversations.push(item);
@@ -97,8 +102,10 @@ export default function ChatList({ navigation }: Props) {
             }
             setIsLoading(false);
         }
-        getMyConversations();
-    }, []);
+        if (isFocused && route.name === "ChatList") {
+            getMyConversations();
+        }
+    }, [route.name, isFocused]);
 
     function getDateFormated(date: string) {
         const utcDate = new Date(date);
@@ -128,7 +135,7 @@ export default function ChatList({ navigation }: Props) {
             } else {
                 let diffDay = Math.floor(diffHour / 24);
                 if (diffDay < 7) {
-                    return diffDay + " " + t("ngày");
+                    return diffDay + " " + t("day");
                 } else {
                     // return dd/mm/yyyy
                     return getDateFormated(accurancyDate);
@@ -212,7 +219,7 @@ export default function ChatList({ navigation }: Props) {
     }
 
     async function handleNavigateToChatDetail(conversation: IConversation) {
-        console.log(conversation._id);
+        console.log("conversation id: " + conversation._id);
         setIsLoading(true);
         if (conversation.isGroup){
 
@@ -227,8 +234,11 @@ export default function ChatList({ navigation }: Props) {
                     }
                 })
                 if (messageHistoryResponse.ok){
-                    const messageHistoryData = await messageHistoryResponse.json();
-                    
+                    let messageHistoryData = await messageHistoryResponse.json();
+                    // if (Array.isArray(messageHistoryData) && messageHistoryData.length > 0) {
+
+                    //     messageHistoryData = messageHistoryData.reverse()
+                    // }
                     let newData : IMessageItem[] = []
                     Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
                         newData.push(
@@ -1239,7 +1249,7 @@ export default function ChatList({ navigation }: Props) {
                                         </View>
                                         <View>
                                             {
-                                                conversation.pin
+                                                conversation.pinnedMessages.length > 0
                                                 &&
                                                 <Image
                                                     source={require("../../assets/pin-fill-icon.png")}

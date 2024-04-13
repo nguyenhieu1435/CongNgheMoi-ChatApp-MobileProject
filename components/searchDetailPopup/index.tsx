@@ -380,6 +380,8 @@ function DetailSearchPopUpSearchNotEmpty({
                 const arrayData: IRequestFriendList[] = [];
                 Array.isArray(data) &&
                     data.forEach((element: any) => {
+                        console.log("ELEMENT: ", element);
+                        
                         arrayData.push({
                             _id: element._id,
                             sender_id: element.sender_id,

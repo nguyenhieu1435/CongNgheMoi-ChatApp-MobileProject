@@ -10,8 +10,8 @@ export interface IFileMessage{
     type: string,
 }
 export interface IMessageStatus{
-    userId: String;
-    status: String;
+    user: String;
+    status: "seen" | "delivered" | "sent";
     react: String;
 }
 export interface IMessageSender{
@@ -69,7 +69,6 @@ export interface IRequestFriendList{
     updatedAt: string
     "__v": number
 }
-
 export interface IConversation{
     _id: string,
     name: string,
@@ -78,7 +77,7 @@ export interface IConversation{
     users: IUserInConversation[],
     bannedMembers: IUserInConversation[],
     public: boolean,
-    pinnedMessages: [],
+    pinnedMessages: IMessageItem[],
     pin: boolean,
     createdAt: string,
     updatedAt: string,

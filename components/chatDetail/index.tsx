@@ -8,10 +8,11 @@ import {
     Dimensions,
     TouchableOpacity,
     ScrollView,
+    FlatList,
     Modal,
 } from "react-native";
 import { styles } from "./styles";
-import { useSelector } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
 import { useTranslation } from "react-i18next";
 import { lightMode } from "../../redux_toolkit/slices/theme.slice";
@@ -22,14 +23,12 @@ const { TypingAnimation } = require("react-native-typing-animation");
 import ChatDetailHeader from "./chatDetailHeader";
 import ChatDetailBottom from "./chatDetailBottom";
 import MessageComponent from "./messageComponent";
-import { IConversation, IMessageItem } from "../../configs/interfaces";
-import MapView, { Marker } from "react-native-maps";
-import { LINK_GET_MESSAGE_HISTORY } from "@env";
+import { IConversation, IMessageItem, IMessageStatus } from "../../configs/interfaces";
 import {
     convertDateStrToHourMinute,
     getAccurancyDateVN,
 } from "../../utils/date";
-import { io } from "socket.io-client";
+import { socket } from "../../configs/socket-io";
 
 interface Props {
     navigation: any;
@@ -74,7 +73,6 @@ export default function ChatDetail({ navigation, route }: Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState("");
-    const [indexMessageAction, setIndexMessageAction] = useState(-1);
     const scrollViewRef = useRef<ScrollView>(null);
     const [showMoreChatActions, setShowMoreChatActions] =
         useState<boolean>(false);
@@ -91,263 +89,14 @@ export default function ChatDetail({ navigation, route }: Props) {
     const [reactionFilter, setReactionFilter] = useState(-1);
     const scrollReactionRef = useRef<ScrollView>(null);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
-    const [socketIO, setSocketIO] = useState<any>(null);
     const [isTyping, setIsTyping] = useState<boolean>(false);
-    const ref = useRef<String>('')
+    const ref = useRef<String>("");
 
-    // const dataHistoryChats: DataHistoryChatsI[] = [
-    //     {
-    //         id: 1,
-    //         date: "15/01/2024",
-    //         conversations: [
-    //             {
-    //                 side: "me",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Doris Brown",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9999,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9998,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 reactions: [],
-    //             },
-    //             {
-    //                 side: "opponent",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Jane Smith",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9997,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9996,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 reactions: [
-    //                     {
-    //                         userID: 1,
-    //                         emoji: "👍",
-    //                         userImg: "https://avatar.iran.liara.run/public/44",
-    //                         userName: "Doris Brown",
-    //                     },
-    //                 ],
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         id: 2,
-    //         date: "18/01/2024",
-    //         conversations: [
-    //             {
-    //                 side: "me",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Doris Brown",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9995,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9994,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 attachmentFile: {
-    //                     name: "Minible-Whitepaper.pdf",
-    //                     url: "https://minible.finance/Minible-Whitepaper.pdf",
-    //                 },
-    //                 reactions: [
-    //                     {
-    //                         userID: 1,
-    //                         emoji: "❤",
-    //                         userImg: "https://avatar.iran.liara.run/public/44",
-    //                         userName: "Doris Brown",
-    //                     },
-    //                     {
-    //                         userID: 3,
-    //                         emoji: "😡",
-    //                         userImg: "https://avatar.iran.liara.run/public/44",
-    //                         userName: "Doris Brown",
-    //                     },
-    //                 ],
-    //             },
-    //             {
-    //                 side: "opponent",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Jane Smith",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9993,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9992,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 attachmentFile: {
-    //                     name: "Minible-Whitepaper.pdf",
-    //                     url: "https://minible.finance/Minible-Whitepaper.pdf",
-    //                 },
-    //                 reactions: [],
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         id: 3,
-    //         date: "20/01/2024",
-    //         conversations: [
-    //             {
-    //                 side: "me",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Doris Brown",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9991,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9990,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 attachmentImages: [
-    //                     {
-    //                         url: "https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg",
-    //                     },
-    //                     {
-    //                         url: "https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg",
-    //                     },
-    //                 ],
-    //                 reactions: [
-    //                     {
-    //                         userID: 2,
-    //                         emoji: "😡",
-    //                         userImg: "https://avatar.iran.liara.run/public/44",
-    //                         userName: "Doris Brown",
-    //                     },
-    //                 ],
-    //             },
-    //             {
-    //                 side: "opponent",
-    //                 image: "https://avatar.iran.liara.run/public/44",
-    //                 name: "Jane Smith",
-    //                 time: "10:31",
-    //                 messages: [
-    //                     {
-    //                         content: "Jesse Pinkman",
-    //                         type: "tag",
-    //                         id: 9989,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf ",
-    //                         type: "text",
-    //                     },
-    //                     {
-    //                         content: "Pipilu",
-    //                         type: "tag",
-    //                         id: 9988,
-    //                     },
-    //                     {
-    //                         content: " fgfgfgfgfgfgfgf",
-    //                         type: "text",
-    //                     },
-    //                 ],
-    //                 attachmentImages: [
-    //                     {
-    //                         url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-    //                     },
-    //                     {
-    //                         url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg",
-    //                     },
-    //                 ],
-    //                 reactions: [
-    //                     {
-    //                         userID: 1,
-    //                         emoji: "😮",
-    //                         userImg: "https://avatar.iran.liara.run/public/44",
-    //                         userName: "Doris Brown",
-    //                     },
-    //                 ],
-    //             },
-    //         ],
-    //     },
-    // ];
 
-    // function findReactionsByIndexMessageShowListReaction() {
-    //     let indexOfDataHistoryChats = Math.floor(
-    //         indexMessageShowListReaction / 10
-    //     );
-    //     let indexOfMessage = indexMessageShowListReaction % 10;
 
-    //     if (indexOfDataHistoryChats < 0) return [];
-
-    //     return dataHistoryChats[indexOfDataHistoryChats].conversations[
-    //         indexOfMessage
-    //     ].reactions;
-    // }
+    function findReactionsByIndexMessageShowListReaction() {
+        return messageHistory[indexMessageShowListReaction].statuses as IMessageStatus[];
+    }
 
     function removeReactionDuplicate(
         reactions: DataHistoryChatMessageReactionInterface[]
@@ -392,20 +141,20 @@ export default function ChatDetail({ navigation, route }: Props) {
                 return require("../../assets/haha-reaction.png");
         }
     }
-    function handleControllingSlideScroll(index: number) {
-        if (index === -1) {
-            scrollReactionRef.current?.scrollTo({
-                x: 0,
-                animated: true,
-            });
-        } else {
-            scrollReactionRef.current?.scrollTo({
-                x: (WIDTH - 30 - 16) * (index + 1),
-                animated: true,
-            });
-        }
-        setReactionFilter(index);
-    }
+    // function handleControllingSlideScroll(index: number) {
+    //     if (index === -1) {
+    //         scrollReactionRef.current?.scrollTo({
+    //             x: 0,
+    //             animated: true,
+    //         });
+    //     } else {
+    //         scrollReactionRef.current?.scrollTo({
+    //             x: (WIDTH - 30 - 16) * (index + 1),
+    //             animated: true,
+    //         });
+    //     }
+    //     setReactionFilter(index);
+    // }
     function handelSetPaddingBottom() {
         let height = 0;
         height = showMoreChatActions
@@ -507,53 +256,177 @@ export default function ChatDetail({ navigation, route }: Props) {
     };
 
     useEffect(() => {
-        let socket = io("https://homeless-eadith-vunguyendev.koyeb.app");
 
-        
-        socket.on("connect", () => {
-            console.log("connected");
+        socket.connect();
 
-            socket.emit("online", userInfo.user?._id)
-
-            socket.on("receivedMessage", (message) => {
-                console.log("receivedMessage", message);
-                // const isExist = messageHistory.some(myMessage => message._id === myMessage._id)
-                if (ref.current !== message._id){
-                    console.log("ababa", messageHistory)
-                    setMessageHistory(prev => [...prev, message])
-                    ref.current = message._id
+        function onConnect(){
+            console.log("Connected Socket!");
+            socket.emit("openConversation", {
+                conversation: conversation,
+                user: userInfo.user,
+            });
+            socket.emit("online", userInfo.user?._id);
+        }
+        function onReceivedMessage(message : IMessageItem){
+           
+            if (ref.current !== message._id) {
+                setMessageHistory([...messageHistory, {
+                    ...message,
+                    createdAt: getAccurancyDateVN(message.createdAt),
+                    updatedAt: getAccurancyDateVN(message.updatedAt),
+                }]);
+                ref.current = message._id;
+            }
+        }
+        function onTyping({ conversationId, userId } : any){
+            console.log("typing", conversationId, userId);
+            setIsTyping(true);
+        }
+        function onStopTyping(){
+            console.log("stopTyping");
+            setIsTyping(false);
+        }
+        function recallMessage(messageReceived: IMessageItem){
+            console.log("MESSSAGE HISTORY", messageHistory)
+            let newMessageHistory = messageHistory.map((message)=>{
+                if (messageReceived._id != message._id){
+                    if (message.reply?._id === messageReceived._id){
+                        message.reply = {
+                            ...messageReceived,
+                            deleted: "2",
+                        };
+                    }
+                    return message;
+                } else {
+                    return {
+                        ...messageReceived,
+                        deleted: "2",
+                    };
                 }
+            })
+            console.log("newMessageHistory", JSON.stringify(newMessageHistory));
+            
+            setMessageHistory(newMessageHistory as IMessageItem[]);
+        }
+        function onPinMessage({message } : {message : IMessageItem}){
+            console.log("onPinMessage onPinMessage")
+            let newPinMessage = conversation.pinnedMessages;
+            newPinMessage.pop();
+            newPinMessage.unshift(message);
+            setConversation({
+                ...conversation,
+                pinnedMessages: newPinMessage,
             });
-    
-            socket.on("typing", ({ conversationId, userId  }) => {
-                console.log("typing", conversationId, userId);
-                setIsTyping(true);
+        }
+        function onUnpinMessage({message }: {message : IMessageItem}){
+            console.log("onUnpinMessage onUnpinMessage")
+            let newPinMessage = conversation.pinnedMessages;
+            newPinMessage = newPinMessage.filter((item) => item._id != message._id);
+            setConversation({
+                ...conversation,
+                pinnedMessages: newPinMessage,
             });
-            socket.on("stopTyping", () => {
-                console.log("stopTyping");
-                setIsTyping(false);
-            });
-        });
+        }
+        function onReactForMessage({conversationId, messageId, react, userId}: {
+            conversationId: string,
+            messageId: string,
+            react: string | null,
+            userId: string
+        }){
+            const newMessageHistory = messageHistory.map((message) => {
+                if (message._id === messageId) {
+                    let newStatuses = message.statuses as IMessageStatus[];
+                    if (react) {
+                        const isExistReact = newStatuses.find((item) => item.user === userId);
+                        if (isExistReact){
+                            newStatuses = newStatuses.map((item) => {
+                                if (item.user === userId){
+                                    return {
+                                        ...item,
+                                        react: react,
+                                    }
+                                } else {
+                                    return item;
+                                }
+                            })
+                        } else {
+                            const newReact : IMessageStatus = {
+                                user: userId,
+                                status: "sent",
+                                react: react,
+                            }
+                            newStatuses.push(newReact);
+                        }
+                    } else {
+                        newStatuses = newStatuses.filter((item) => item.user !== userId);
+                    }
+                    return {
+                        ...message,
+                        statuses: newStatuses,
+                    };
+                } else {
+                    return message;
+                }
+            })
+            setMessageHistory(newMessageHistory);
+        }
 
-      
-
-        // socket.emit("online", userInfo.user?._id)
-
-        socket.emit("openConversation", {
-            conversation: conversation,
-            user: userInfo.user,
-        });
-
-       
-
-        setSocketIO(socket);
+        socket.on("connect", onConnect)
+        socket.on("receivedMessage", onReceivedMessage)
+        socket.on("typing", onTyping)
+        socket.on("stopTyping", onStopTyping)
+        socket.on("recallMessage", recallMessage)
+        socket.on("pinMessage", onPinMessage)
+        socket.on("unpinMessage", onUnpinMessage)
+        socket.on("reactForMessage", onReactForMessage)
 
         return () => {
+            socket.off("connect", onConnect);
+            socket.off("receivedMessage", onReceivedMessage);
+            socket.off("typing", onTyping);
+            socket.off("stopTyping", onStopTyping);
+            socket.off("recallMessage", recallMessage);
+            socket.off("pinMessage", onPinMessage);
+            socket.off("unpinMessage", onUnpinMessage);
+            socket.off("reactForMessage", onReactForMessage);
             socket.disconnect();
-        };
-    }, []);
+        }
+        
+    }, [messageHistory]);
 
+    function handleUpdateAllMessageItem(messageId: string) {
+        const newMessages = messageHistory.map((message : IMessageItem) => {
+            if (message._id == messageId) {
+                
+                const deleteMessage = {
+                    ...message,
+                    deleted: "2",
+                }
 
+                socket.emit("recallMessage", deleteMessage);
+
+                return deleteMessage;
+
+            } else {
+                if (message.reply?._id == messageId) {
+                    message.reply = {
+                        ...message.reply,
+                        deleted: "2",
+                    };
+                }
+                
+                return message;
+            }
+        })
+        setMessageHistory(newMessages as IMessageItem[]);
+    }
+    function handleRemoveMessageItem(messageId: string) {
+        const newArray = messageHistory.filter((message) => {
+            return message._id != messageId;
+        });
+        setMessageHistory(newArray);
+    }
+    
     
     return (
         <View
@@ -573,6 +446,8 @@ export default function ChatDetail({ navigation, route }: Props) {
                     textSearch={textSearch}
                     setTextSearch={setTextSearch}
                     conversation={conversation}
+                    setConversation={setConversation}
+                    socket={socket}
                 />
                 <View
                     style={[
@@ -582,6 +457,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                         },
                     ]}
                 >
+                    
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         ref={scrollViewRef}
@@ -649,12 +525,6 @@ export default function ChatDetail({ navigation, route }: Props) {
                                             data={messageItem}
                                             theme={theme}
                                             translation={t}
-                                            indexMessageAction={
-                                                indexMessageAction
-                                            }
-                                            setIndexMessageAction={
-                                                setIndexMessageAction
-                                            }
                                             indexShowListReaction={
                                                 indexMessageShowListReaction
                                             }
@@ -662,6 +532,16 @@ export default function ChatDetail({ navigation, route }: Props) {
                                                 setIndexMessageShowListReaction
                                             }
                                             setReplyItem={setReplyItem}
+                                            handleUpdateAllMessageItem={
+                                                handleUpdateAllMessageItem
+                                            }
+                                            handleRemoveMessageItem={
+                                                handleRemoveMessageItem
+                                            }
+                                            conversation={conversation}
+                                            setConversation={setConversation}
+                                            socket={socket}
+                                            messageHistory={messageHistory}
                                             setMessageHistory={setMessageHistory}
                                         />
                                     </>
@@ -759,13 +639,13 @@ export default function ChatDetail({ navigation, route }: Props) {
                     setShowMoreChatActions={setShowMoreChatActions}
                     replyItem={replyItem}
                     setReplyItem={setReplyItem}
-                    socket={socketIO}
+                    socket={socket}
                     messageHistory={messageHistory}
                     setMessageHistory={setMessageHistory}
                     conversation={conversation}
                 />
-                <Modal
-                    visible={indexMessageShowListReaction !== -1}
+                {/* <Modal
+                    visible={false}
                     animationType="fade"
                     transparent={true}
                     onRequestClose={() => setIndexMessageShowListReaction(-1)}
@@ -858,7 +738,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                     flexShrink: 1,
                                 }}
                             >
-                                {/* <ScrollView
+                                <ScrollView
                                     horizontal={true}
                                     style={{
                                         width: "100%",
@@ -881,7 +761,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                         }}
                                     >
                                         {findReactionsByIndexMessageShowListReaction().map(
-                                            (itemAll, indexAll) => {
+                                            (status, indexAll) => {
                                                 return (
                                                     <TouchableOpacity
                                                         key={indexAll}
@@ -924,7 +804,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                                                     ]}
                                                                 >
                                                                     {
-                                                                        itemAll.userName
+                                                                        status.user
                                                                     }
                                                                 </Text>
                                                                 <Text
@@ -1047,7 +927,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                             </ScrollView>
                                         );
                                     })}
-                                </ScrollView> */}
+                                </ScrollView>
                             </View>
                             <View
                                 style={[
@@ -1056,7 +936,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                             >
                                 <TouchableOpacity
                                     onPress={() => {
-                                        handleControllingSlideScroll(-1);
+                                        // handleControllingSlideScroll(-1);
                                     }}
                                     style={[
                                         styles.chatDetailReactionListFilterBtn,
@@ -1082,7 +962,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                         {t("searchDetailAllTitle")}
                                     </Text>
                                 </TouchableOpacity>
-                                {/* {removeReactionDuplicate(
+                                {removeReactionDuplicate(
                                     findReactionsByIndexMessageShowListReaction()
                                 ).map((item, index) => {
                                     return (
@@ -1129,11 +1009,11 @@ export default function ChatDetail({ navigation, route }: Props) {
                                             </Text>
                                         </TouchableOpacity>
                                     );
-                                })} */}
+                                })}
                             </View>
                         </OutsidePressHandler>
                     </View>
-                </Modal>
+                </Modal> */}
             </SafeAreaView>
         </View>
     );

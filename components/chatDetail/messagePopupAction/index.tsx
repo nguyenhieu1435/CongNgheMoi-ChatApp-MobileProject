@@ -1,110 +1,158 @@
-import { TFunction } from "i18next";
-import { Dispatch, memo, useEffect, useState } from "react";
+import { exists, TFunction } from "i18next";
+import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
-import { styles } from "./styles"
+import { styles } from "./styles";
 import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../../CommonStyles/commonStyles";
-import { IMessageItem } from "../../../configs/interfaces";
+import { IConversation, IMessageItem } from "../../../configs/interfaces";
 import { userInfoInterfaceI } from "../../../redux_toolkit/slices/userInfo.slice";
-import { LINK_DELETE_MESSAGE_SIDE_ALL, LINK_DELETE_MESSAGE_SIDE_ME, LINK_GET_MESSAGE_HISTORY } from "@env";
+import {
+    LINK_DELETE_MESSAGE_SIDE_ALL,
+    LINK_DELETE_MESSAGE_SIDE_ME,
+    LINK_GET_MESSAGE_HISTORY,
+    LINK_PIN_MESSAGE,
+} from "@env";
 import Spinner from "react-native-loading-spinner-overlay";
+import { saveToClipboard } from "../../../utils/clipboard";
+import { Socket } from "socket.io-client";
+import {DefaultEventsMap} from "@socket.io/component-emitter";
+
 
 interface MessagePopupActionProps {
     theme: string;
     translation: TFunction<"translation", undefined>;
     messageItem: IMessageItem;
     userInfo: userInfoInterfaceI;
-    setMessageHistory: Dispatch<React.SetStateAction<IMessageItem[]>>;
-    setIndexMessageAction: (index: number) => void;
+    handleUpdateAllMessageItem: (messageId: string) => void;
+    handleRemoveMessageItem: (messageId: string) => void;
+    setShowMoreAction: Dispatch<SetStateAction<boolean>>;
+    conversation: IConversation;
+    setConversation: Dispatch<SetStateAction<IConversation>>;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 }
 
-function MessagePopupAction({theme, translation: t, messageItem, userInfo, setMessageHistory, setIndexMessageAction}: MessagePopupActionProps) {
-    const [isLoading, setIsLoading] = useState(false)
+function MessagePopupAction({
+    theme,
+    translation: t,
+    messageItem,
+    userInfo,
+    handleUpdateAllMessageItem,
+    handleRemoveMessageItem,
+    setShowMoreAction,
+    conversation,
+    setConversation,
+    socket
+}: MessagePopupActionProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    
 
-    async function handleDeleteSideMe(){
+    async function handleDeleteSideMe() {
         try {
-            setIsLoading(true)
-            const response = await fetch(LINK_DELETE_MESSAGE_SIDE_ME,{
+            setIsLoading(true);
+            const response = await fetch(LINK_DELETE_MESSAGE_SIDE_ME, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${userInfo.accessToken}`
+                    Authorization: `Bearer ${userInfo.accessToken}`,
                 },
                 body: JSON.stringify({
-                    messageId: messageItem._id
-                })
-            })
+                    messageId: messageItem._id,
+                }),
+            });
             if (response.ok) {
-                console.log("Delete message successfully")
-                setIsLoading(false)
-                setIndexMessageAction(-1)
-                getNewestMessageHistory()
+                const data = await response.json();
+                console.log("Data delete side me: ", data);
+                console.log("Delete message successfully");
+                setIsLoading(false);
+                setShowMoreAction(false);
+                handleRemoveMessageItem(messageItem._id);
             } else {
-                Alert.alert("Error", "Delete message failed")
+                Alert.alert("Error", "Delete message failed");
             }
         } catch (error) {
-            console.log("Error when delete message: ", error)
+            console.log("Error when delete message: ", error);
         }
-        setIsLoading(false)
+        setIsLoading(false);
     }
 
-    async function handleDeleteSideAll(){
+    async function handleDeleteSideAll() {
         try {
-            setIsLoading(true)
-            const response = await fetch(LINK_DELETE_MESSAGE_SIDE_ALL,{
+            setIsLoading(true);
+            const response = await fetch(LINK_DELETE_MESSAGE_SIDE_ALL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${userInfo.accessToken}`
+                    Authorization: `Bearer ${userInfo.accessToken}`,
                 },
                 body: JSON.stringify({
-                    messageId: messageItem._id
-                })
-            })
+                    messageId: messageItem._id,
+                }),
+            });
             if (response.ok) {
-                console.log("Delete message successfully")
-                setIsLoading(false)
-                setIndexMessageAction(-1)
-                getNewestMessageHistory()
-                
-            }else {
-                Alert.alert("Error", "Delete message failed")
+                const data = await response.json();
+                setIsLoading(false);
+                setShowMoreAction(false);
+                handleUpdateAllMessageItem(messageItem._id);
+            } else {
+                Alert.alert("Error", "Delete message failed");
             }
         } catch (error) {
-            console.log("Error when delete message: ", error)
+            console.log("Error when delete message: ", error);
         }
-        setIsLoading(false)
+        setIsLoading(false);
     }
 
-    async function getNewestMessageHistory(){
-        const conversationID = messageItem.conversation._id
-        try {
-        
-            const response = await fetch(LINK_GET_MESSAGE_HISTORY + conversationID, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${userInfo.accessToken}`
-                }
-            })
-            if (response.ok) {
-                const data = await response.json()
-                console.log("Get message history successfully", data)
-                setMessageHistory(data)
-            } 
-        } catch (error) {
-            console.log("Error when get message history: ", error)
+    function handlePinMessage(){
+        setShowMoreAction(false);
+        let isExist = false;
+        isExist = conversation.pinnedMessages.some(messageItemPinned => messageItemPinned._id === messageItem._id)
+        if (isExist){
+            console.log("Existed")
+            return;
         }
-        
+
+        fetch(LINK_PIN_MESSAGE + messageItem._id, {
+            method: "POST", 
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userInfo.accessToken}`
+            }
+        })
+        .then(response => {
+            if (response.ok){
+                let pinnedMessages = conversation.pinnedMessages;
+                if (pinnedMessages.length >= 3){
+                    pinnedMessages.pop();
+                }
+                pinnedMessages.unshift(messageItem);
+                setConversation({
+                    ...conversation,
+                    pinnedMessages: pinnedMessages
+                });
+                
+                socket.emit("pinMessage", {
+                    users: conversation.users,
+                    message: messageItem,
+                    userId: userInfo.user?._id
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err)
+        })
     }
-   
+
+    const handleSaveMessageToClipboard = () => {
+        saveToClipboard(messageItem);
+        setShowMoreAction(false);
+    }
 
     return (
         <View>
             <Spinner
                 visible={isLoading}
                 textContent={t("loading")}
-                textStyle={{color: "#FFF"}}
+                textStyle={{ color: "#FFF" }}
             />
             <View
                 style={[
@@ -115,9 +163,35 @@ function MessagePopupAction({theme, translation: t, messageItem, userInfo, setMe
                 ]}
             >
                 <TouchableOpacity
-                    onPress={() => {
-                        console.log("a");
-                    }}
+                    onPress={handlePinMessage}
+                    style={[styles.itemInMessageFromOpponentPopupAction]}
+                >
+                    <Text
+                        style={[
+                            styles.itemInMessageFromOpponentPopupActionText,
+                            theme === lightMode
+                                ? commonStyles.lightTertiaryText
+                                : commonStyles.darkTertiaryText,
+                        ]}
+                    >
+                        {t("chatDetailMorePinTitle")}
+                    </Text>
+                    <Image
+                        source={require("../../../assets/pin-fill-icon.png")}
+                        resizeMode="contain"
+                        style={[
+                            styles.itemInMessageFromOpponentPopupActionImg,
+                            {
+                                tintColor:
+                                    theme === lightMode
+                                        ? commonStyles.lightTertiaryText.color
+                                        : commonStyles.darkTertiaryText.color,
+                            },
+                        ]}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleSaveMessageToClipboard}
                     style={[styles.itemInMessageFromOpponentPopupAction]}
                 >
                     <Text
@@ -198,38 +272,38 @@ function MessagePopupAction({theme, translation: t, messageItem, userInfo, setMe
                         ]}
                     />
                 </TouchableOpacity>
-                {
-                    userInfo.user?._id === messageItem.sender._id && (
-                        <TouchableOpacity
-                            style={[styles.itemInMessageFromOpponentPopupAction]}
-                            onPress={handleDeleteSideAll}
+                {userInfo.user?._id === messageItem.sender._id && (
+                    <TouchableOpacity
+                        style={[styles.itemInMessageFromOpponentPopupAction]}
+                        onPress={handleDeleteSideAll}
+                    >
+                        <Text
+                            style={[
+                                styles.itemInMessageFromOpponentPopupActionText,
+                                theme === lightMode
+                                    ? commonStyles.lightTertiaryText
+                                    : commonStyles.darkTertiaryText,
+                            ]}
                         >
-                            <Text
-                                style={[
-                                    styles.itemInMessageFromOpponentPopupActionText,
-                                    theme === lightMode
-                                        ? commonStyles.lightTertiaryText
-                                        : commonStyles.darkTertiaryText,
-                                ]}
-                            >
-                                {t("chatDetailMessageDeleteAction")}
-                            </Text>
-                            <Image
-                                source={require("../../../assets/delete-bin-line-icon.png")}
-                                resizeMode="contain"
-                                style={[
-                                    styles.itemInMessageFromOpponentPopupActionImg,
-                                    {
-                                        tintColor:
-                                            theme === lightMode
-                                                ? commonStyles.lightTertiaryText.color
-                                                : commonStyles.darkTertiaryText.color,
-                                    },
-                                ]}
-                            />
-                        </TouchableOpacity>
-                    )
-                }
+                            {t("chatDetailMessageDeleteAction")}
+                        </Text>
+                        <Image
+                            source={require("../../../assets/delete-bin-line-icon.png")}
+                            resizeMode="contain"
+                            style={[
+                                styles.itemInMessageFromOpponentPopupActionImg,
+                                {
+                                    tintColor:
+                                        theme === lightMode
+                                            ? commonStyles.lightTertiaryText
+                                                  .color
+                                            : commonStyles.darkTertiaryText
+                                                  .color,
+                                },
+                            ]}
+                        />
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity
                     style={[styles.itemInMessageFromOpponentPopupAction]}
                     onPress={handleDeleteSideMe}
@@ -263,4 +337,4 @@ function MessagePopupAction({theme, translation: t, messageItem, userInfo, setMe
     );
 }
 
-export default memo(MessagePopupAction)
+export default memo(MessagePopupAction);

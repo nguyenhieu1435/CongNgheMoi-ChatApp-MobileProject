@@ -14,7 +14,6 @@ import Settings from '../settings';
 import { styles } from './styles';
 import { deleteTableByName, getDBConnection } from '../../utils/sqlite';
 
-
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get("window")
 
@@ -28,6 +27,7 @@ export default function PrimaryBottomTab({navigation} : Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { StatusBarManager } = NativeModules;
     const [statusBarHeight, setStatusBarHeight] = useState(0);
+  
 
     useEffect(() => {
         setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT)

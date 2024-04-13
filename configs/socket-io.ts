@@ -1,6 +1,5 @@
-import { LINK_SOCKET_IO } from '@env';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
 
-const socket = io(LINK_SOCKET_IO)
-
-export default socket;
+export const socket = io("https://homeless-eadith-vunguyendev.koyeb.app", {
+    autoConnect: false
+});

@@ -1,15 +1,18 @@
 import { StyleSheet } from "react-native";
+import commonStyles from "../../../CommonStyles/commonStyles";
 
 export const styles = StyleSheet.create({
     btnGoback:{
         padding: 10,
         marginRight: 10
     },
-    chatDetailNavbar: {
+    chatDetailNavbarContainer:{
         position: "absolute",
         top: 0,
         left: 0,
         right: 0,
+    },
+    chatDetailNavbar: {
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 10,
@@ -78,5 +81,53 @@ export const styles = StyleSheet.create({
     navbarActionMoreItemText:{
         fontSize: 15,
     },
+    pinnedMessageIcon:{
+        width: 27,
+        height: 27,
+        resizeMode: "contain",
+        tintColor: commonStyles.primaryColor.color
+    },
+    pinnedMessageContainer:{
+        width: "100%",
+        zIndex: 20
+    },
+    pinnedMessagePreviewBox:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        borderBottomWidth: 1
+    },
+    pinnedContentMessageBox:{
+        flexShrink: 1,
+        flexGrow: 1,
+    },
+    pinnedMessageOtherActionBox:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10
+    },
+    pinnedMessageMoreActionImg:{
+        width: 22,
+        height: 22,
+        resizeMode: "contain"
+    },
+    pinnedMessageSeeMorePinMessageBtn:{
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 8,
+        borderColor: commonStyles.primaryColor.color,
+        paddingHorizontal: 10
+    },
+    itemInMessageFromOpponentPopupAction:{
+        paddingHorizontal: 10,
+        marginVertical: 3
+    },
+    itemInMessageFromOpponentPopupActionText:{
+        fontSize: 15
+    }
+
 })
 

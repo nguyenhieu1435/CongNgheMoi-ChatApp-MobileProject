@@ -16,10 +16,6 @@ import {
     Platform,
     Linking,
 } from "react-native";
-import {
-    DataHistoryChatMessageInterface,
-    DataHistoryChatMessageReactionInterface,
-} from "../index";
 import { styles } from "./styles";
 import Tooltip from "react-native-walkthrough-tooltip";
 import { TFunction, use } from "i18next";
@@ -27,8 +23,13 @@ import commonStyles from "../../../CommonStyles/commonStyles";
 import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
 import MessagePopupAction from "../messagePopupAction";
 import OutsidePressHandler from "react-native-outside-press";
-import { IFileMessage, IMessageItem } from "../../../configs/interfaces";
-import { convertDateStrToHourMinute } from "../../../utils/date";
+import {
+    IConversation,
+    IFileMessage,
+    IMessageItem,
+    IMessageStatus,
+} from "../../../configs/interfaces";
+import { convertDateStrToHourMinute, getAccurancyDateVN } from "../../../utils/date";
 import * as FileSystem from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { Modal } from "react-native";
@@ -37,17 +38,24 @@ import MapView, { Marker } from "react-native-maps";
 import { Video, ResizeMode } from "expo-av";
 import { useSelector } from "react-redux";
 import { IRootState } from "../../../redux_toolkit/store";
+import { Socket } from "socket.io-client";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { LINK_REACT_MESSAGE } from "@env";
 
 interface MessageComponentProps {
     id: number;
     data: IMessageItem;
     theme: string;
     translation: TFunction<"translation", undefined>;
-    indexMessageAction: number;
-    setIndexMessageAction: (index: number) => void;
     indexShowListReaction: number;
     setIndexShowListReaction: (index: number) => void;
     setReplyItem: Dispatch<SetStateAction<IMessageItem | null>>;
+    handleUpdateAllMessageItem: (messageId: string) => void;
+    handleRemoveMessageItem: (messageId: string) => void;
+    conversation: IConversation;
+    setConversation: Dispatch<SetStateAction<IConversation>>;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    messageHistory: IMessageItem[];
     setMessageHistory: Dispatch<SetStateAction<IMessageItem[]>>;
 }
 
@@ -58,11 +66,15 @@ function MessageComponent({
     data,
     theme,
     translation: t,
-    indexMessageAction,
-    setIndexMessageAction,
     indexShowListReaction,
     setIndexShowListReaction,
     setReplyItem,
+    handleUpdateAllMessageItem,
+    handleRemoveMessageItem,
+    conversation,
+    setConversation,
+    socket,
+    messageHistory,
     setMessageHistory,
 }: MessageComponentProps) {
     const [placement, setPlacement] = useState("top");
@@ -72,61 +84,107 @@ function MessageComponent({
     const myId = "thaoanhhaa1@gmail.com";
     const [showFullScreenImageMessage, setShowFullScreenImageMessage] =
         useState<IFileMessage | null>(null);
-    const [officeUrlSelected, setOfficeUrlSelected] = useState<string | null>(
-        null
-    );
+    const [showMoreAction, setShowMoreAction] = useState(false);
+
     useEffect(() => {
         setDataAfter(data);
-    }, []);
+    }, [data]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
 
     function handleAddReaction(emoji: string, dataAfter: IMessageItem) {
-        // setShowReaction(false);
-        // const isMeReacted = dataAfter?.reactions?.findIndex(
-        //     (item) => item.userID === 2
-        // );
-        // if (isMeReacted !== -1) {
-        //     const newReactions = {
-        //         userID: 2,
-        //         emoji: emoji,
-        //         userImg:
-        //             "https://static.wikia.nocookie.net/vsbattles/images/f/f8/YujiroHanmaRenderMadeByRyukama-0.png/revision/latest?cb=20180106041211",
-        //         userName: "me",
-        //     };
-        //     const reactions = dataAfter?.reactions?.filter(
-        //         (item) => item.userID !== 2
-        //     );
-        //     setDataAfter({
-        //         ...dataAfter,
-        //         reactions: [...reactions, newReactions],
-        //     });
-        // } else {
-        //     const newReactions = {
-        //         userID: 2,
-        //         emoji: emoji,
-        //         userImg:
-        //             "https://static.wikia.nocookie.net/vsbattles/images/f/f8/YujiroHanmaRenderMadeByRyukama-0.png/revision/latest?cb=20180106041211",
-        //         userName: "me",
-        //     };
-        //     setDataAfter({
-        //         ...dataAfter,
-        //         reactions: [...dataAfter.reactions, newReactions],
-        //     });
-        // }
+        setShowReaction(false);
+        const isAddedReaction = dataAfter.statuses.some(
+            (item) => item.user == userInfo.user?._id
+        );
+        const isOldReaction = dataAfter.statuses.some(
+            (item) => item.user == userInfo.user?._id && item.react === emoji
+        );
+       
+        if (isAddedReaction && isOldReaction) {
+            fetch(LINK_REACT_MESSAGE, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    messageId: dataAfter._id,
+                    react: null,
+                }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    
+                    const newMessageHistory = messageHistory.map((message) => {
+                        if (message._id === dataAfter._id) {
+                            return {
+                                ...data,
+                                createdAt: getAccurancyDateVN(data.createdAt),
+                                updatedAt: getAccurancyDateVN(data.updatedAt),
+                            }
+                        } else {
+                            return message;
+                        }
+                    });
+                    setMessageHistory(newMessageHistory);
+                    socket.emit("reactForMessage", {
+                        users: conversation.users,
+                        messageId: dataAfter._id,
+                        react: null,
+                        userId: userInfo.user?._id,
+                    });
+                })
+                .catch((err) =>
+                    console.log("Error when remove reaction: ", err)
+                );
+        } else {
+            fetch(LINK_REACT_MESSAGE, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    messageId: dataAfter._id,
+                    react: emoji,
+                }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    const newMessageHistory = messageHistory.map((message) => {
+                        if (message._id === dataAfter._id) {
+                            return {
+                                ...data,
+                                createdAt: getAccurancyDateVN(data.createdAt),
+                                updatedAt: getAccurancyDateVN(data.updatedAt),
+                            }
+                        } else {
+                            return message;
+                        }
+                    });
+                    setMessageHistory(newMessageHistory);
+                    socket.emit("reactForMessage", {
+                        users: conversation.users,
+                        messageId: dataAfter._id,
+                        react: emoji,
+                        userId: userInfo.user?._id,
+                    });
+                })
+                .catch((err) => console.log("Error when add reaction: ", err));
+        }
     }
-    // function getReactionsNotDuplicateEmoji(
-    //     dataAfter: IMessageItem
-    // ): IMessageItem[] | undefined {
-    //     // let key = (reaction: IMessageItem) =>
-    //     //     reaction.emoji;
-    //     // const reactions = [
-    //     //     ...new Map(
-    //     //         dataAfter.reactions.map((item) => [key(item), item])
-    //     //     ).values(),
-    //     // ];
-    //     // return reactions;
-    //     return dataAfter;
-    // }
+    function getReactionsNotDuplicateEmoji(
+        dataAfter: IMessageItem
+    ): IMessageStatus[] | undefined {
+        
+        let key = (status: IMessageStatus) => status.react;
+        const statusesNotDuplicate = [
+            ...new Map(
+                dataAfter.statuses.map((item) => [key(item), item])
+            ).values(),
+        ];
+        return statusesNotDuplicate;
+    }
 
     const handleDownloadFile = async (url: string, name: string) => {
         const fileName = name;
@@ -334,10 +392,10 @@ function MessageComponent({
                                                 : commonStyles.darkFourBackground,
                                         ]}
                                         onClose={() =>
-                                            setIndexMessageAction(-1)
+                                            setShowMoreAction(false)
                                         }
                                         backgroundColor="transparent"
-                                        isVisible={indexMessageAction === id}
+                                        isVisible={showMoreAction}
                                         showChildInTooltip={false}
                                         placement={
                                             placement as
@@ -354,12 +412,18 @@ function MessageComponent({
                                                 translation={t}
                                                 messageItem={dataAfter}
                                                 userInfo={userInfo}
-                                                setMessageHistory={
-                                                    setMessageHistory
+                                                setShowMoreAction={setShowMoreAction}
+                                                handleRemoveMessageItem={
+                                                    handleRemoveMessageItem
                                                 }
-                                                setIndexMessageAction={
-                                                    setIndexMessageAction
+                                                handleUpdateAllMessageItem={
+                                                    handleUpdateAllMessageItem
                                                 }
+                                                conversation={conversation}
+                                                setConversation={
+                                                    setConversation
+                                                }
+                                                socket={socket}
                                             />
                                         }
                                     >
@@ -374,7 +438,7 @@ function MessageComponent({
                                                 } else {
                                                     setPlacement("bottom");
                                                 }
-                                                setIndexMessageAction(id);
+                                                setShowMoreAction(true)
                                             }}
                                             style={[
                                                 styles.chatDetailMessageFromOpponentMoreActionBox,
@@ -439,7 +503,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "❤",
+                                                            "love",
                                                             dataAfter
                                                         );
                                                     }}
@@ -455,7 +519,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😆",
+                                                            "haha",
                                                             dataAfter
                                                         );
                                                     }}
@@ -471,7 +535,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😮",
+                                                            "wow",
                                                             dataAfter
                                                         );
                                                     }}
@@ -487,7 +551,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😢",
+                                                            "sad",
                                                             dataAfter
                                                         );
                                                     }}
@@ -503,7 +567,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😡",
+                                                            "angry",
                                                             dataAfter
                                                         );
                                                     }}
@@ -519,7 +583,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "👍",
+                                                            "like",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1045,63 +1109,64 @@ function MessageComponent({
                                         </Text>
                                     </View>
 
-                                    {/* {dataAfter.reactions &&
-                                dataAfter.reactions.length > 0 ? (
-                                    <TouchableOpacity
-                                        onPress={() =>
-                                            setIndexShowListReaction(id)
-                                        }
-                                        style={[
-                                            styles.chatDetailMessageReactedForMsgBox,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryBackground
-                                                : commonStyles.darkPrimaryBackground,
-                                        ]}
-                                    >
-                                        {getReactionsNotDuplicateEmoji(
-                                            dataAfter
-                                        )?.map((reaction, indexReaction) => {
-                                            return (
-                                                <Image
-                                                    key={indexReaction}
-                                                    source={
-                                                        reaction.emoji === "❤"
-                                                            ? require("../../../assets/heart-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😆"
-                                                            ? require("../../../assets/haha-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😮"
-                                                            ? require("../../../assets/surprise-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😢"
-                                                            ? require("../../../assets/sad-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😡"
-                                                            ? require("../../../assets/aggry-reaction.png")
-                                                            : require("../../../assets/like-reaction.png")
-                                                    }
-                                                    resizeMode="contain"
+                                    {dataAfter.statuses &&
+                                    dataAfter.statuses.length > 0 ? (
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                setIndexShowListReaction(id)
+                                            }
+                                            style={[
+                                                styles.chatDetailMessageReactedForMsgBox,
+                                                theme === lightMode
+                                                    ? commonStyles.lightPrimaryBackground
+                                                    : commonStyles.darkPrimaryBackground,
+                                            ]}
+                                        >
+                                            {getReactionsNotDuplicateEmoji(
+                                                dataAfter
+                                            )?.map((status, indexReaction) => {
+                                                return (
+                                                    <Image
+                                                        key={indexReaction}
+                                                        source={
+                                                            status.react ===
+                                                            "love"
+                                                                ? require("../../../assets/heart-reaction.png")
+                                                                : status.react ===
+                                                                  "haha"
+                                                                ? require("../../../assets/haha-reaction.png")
+                                                                : status.react ===
+                                                                  "wow"
+                                                                ? require("../../../assets/surprise-reaction.png")
+                                                                : status.react ===
+                                                                  "sad"
+                                                                ? require("../../../assets/sad-reaction.png")
+                                                                : status.react ===
+                                                                  "angry"
+                                                                ? require("../../../assets/aggry-reaction.png")
+                                                                : require("../../../assets/like-reaction.png")
+                                                        }
+                                                        resizeMode="contain"
+                                                        style={[
+                                                            styles.chatDetailReactedForMsgImg,
+                                                        ]}
+                                                    />
+                                                );
+                                            })}
+                                            {dataAfter.statuses.length > 1 ? (
+                                                <Text
                                                     style={[
-                                                        styles.chatDetailReactedForMsgImg,
+                                                        styles.chatDetailMessageReactedForMsgCount,
+                                                        theme === lightMode
+                                                            ? commonStyles.lightSecondaryText
+                                                            : commonStyles.darkSecondaryText,
                                                     ]}
-                                                />
-                                            );
-                                        })}
-                                        {dataAfter.reactions.length > 1 ? (
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageReactedForMsgCount,
-                                                    theme === lightMode
-                                                        ? commonStyles.lightSecondaryText
-                                                        : commonStyles.darkSecondaryText,
-                                                ]}
-                                            >
-                                                {dataAfter.reactions.length}
-                                            </Text>
-                                        ) : null}
-                                    </TouchableOpacity>
-                                ) : null} */}
+                                                >
+                                                    {dataAfter.statuses.length}
+                                                </Text>
+                                            ) : null}
+                                        </TouchableOpacity>
+                                    ) : null}
 
                                     <View
                                         style={[
@@ -1375,10 +1440,6 @@ function MessageComponent({
                                     ) && (
                                         <TouchableOpacity
                                             onPress={() => {
-                                                console.log("ababa");
-                                                setOfficeUrlSelected(
-                                                    dataAfter.files[0].link
-                                                );
                                             }}
                                             style={[
                                                 styles.fileBoxInChatHistory,
@@ -1588,64 +1649,64 @@ function MessageComponent({
                                             )}
                                         </Text>
                                     </View>
-                                    {/* 
-                                {dataAfter.reactions &&
-                                dataAfter.reactions.length > 0 ? (
-                                    <TouchableOpacity
-                                        onPress={() =>
-                                            setIndexShowListReaction(id)
-                                        }
-                                        style={[
-                                            styles.chatDetailMessageReactedForMsgBox,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryBackground
-                                                : commonStyles.darkPrimaryBackground,
-                                        ]}
-                                    >
-                                        {getReactionsNotDuplicateEmoji(
-                                            dataAfter
-                                        )?.map((reaction, indexReaction) => {
-                                            return (
-                                                <Image
-                                                    key={indexReaction}
-                                                    source={
-                                                        reaction.emoji === "❤"
-                                                            ? require("../../../assets/heart-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😆"
-                                                            ? require("../../../assets/haha-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😮"
-                                                            ? require("../../../assets/surprise-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😢"
-                                                            ? require("../../../assets/sad-reaction.png")
-                                                            : reaction.emoji ===
-                                                              "😡"
-                                                            ? require("../../../assets/aggry-reaction.png")
-                                                            : require("../../../assets/like-reaction.png")
-                                                    }
-                                                    resizeMode="contain"
+                                    {dataAfter.statuses &&
+                                    dataAfter.statuses.length > 0 ? (
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                setIndexShowListReaction(id)
+                                            }
+                                            style={[
+                                                styles.chatDetailMessageReactedForMsgBox,
+                                                theme === lightMode
+                                                    ? commonStyles.lightPrimaryBackground
+                                                    : commonStyles.darkPrimaryBackground,
+                                            ]}
+                                        >
+                                            {getReactionsNotDuplicateEmoji(
+                                                dataAfter
+                                            )?.map((status, indexReaction) => {
+                                                return (
+                                                    <Image
+                                                        key={indexReaction}
+                                                        source={
+                                                            status.react ===
+                                                            "love"
+                                                                ? require("../../../assets/heart-reaction.png")
+                                                                : status.react ===
+                                                                  "haha"
+                                                                ? require("../../../assets/haha-reaction.png")
+                                                                : status.react ===
+                                                                  "wow"
+                                                                ? require("../../../assets/surprise-reaction.png")
+                                                                : status.react ===
+                                                                  "sad"
+                                                                ? require("../../../assets/sad-reaction.png")
+                                                                : status.react ===
+                                                                  "angry"
+                                                                ? require("../../../assets/aggry-reaction.png")
+                                                                : require("../../../assets/like-reaction.png")
+                                                        }
+                                                        resizeMode="contain"
+                                                        style={[
+                                                            styles.chatDetailReactedForMsgImg,
+                                                        ]}
+                                                    />
+                                                );
+                                            })}
+                                            {dataAfter.statuses.length > 1 ? (
+                                                <Text
                                                     style={[
-                                                        styles.chatDetailReactedForMsgImg,
+                                                        styles.chatDetailMessageReactedForMsgCount,
+                                                        theme === lightMode
+                                                            ? commonStyles.lightSecondaryText
+                                                            : commonStyles.darkSecondaryText,
                                                     ]}
-                                                />
-                                            );
-                                        })}
-                                        {dataAfter.reactions.length > 1 ? (
-                                            <Text
-                                                style={[
-                                                    styles.chatDetailMessageReactedForMsgCount,
-                                                    theme === lightMode
-                                                        ? commonStyles.lightSecondaryText
-                                                        : commonStyles.darkSecondaryText,
-                                                ]}
-                                            >
-                                                {dataAfter.reactions.length}
-                                            </Text>
-                                        ) : null}
-                                    </TouchableOpacity>
-                                ) : null} */}
+                                                >
+                                                    {dataAfter.statuses.length}
+                                                </Text>
+                                            ) : null}
+                                        </TouchableOpacity>
+                                    ) : null}
 
                                     <View
                                         style={[
@@ -1748,7 +1809,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "❤",
+                                                            "love",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1764,7 +1825,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😆",
+                                                            "haha",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1780,7 +1841,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😮",
+                                                            "wow",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1796,7 +1857,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😢",
+                                                            "sad",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1812,7 +1873,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "😡",
+                                                            "angry",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1828,7 +1889,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         handleAddReaction(
-                                                            "👍",
+                                                            "like",
                                                             dataAfter
                                                         );
                                                     }}
@@ -1892,10 +1953,10 @@ function MessageComponent({
                                                 : commonStyles.darkFourBackground,
                                         ]}
                                         onClose={() =>
-                                            setIndexMessageAction(-1)
+                                            setShowMoreAction(false)
                                         }
                                         backgroundColor="transparent"
-                                        isVisible={indexMessageAction === id}
+                                        isVisible={showMoreAction}
                                         showChildInTooltip={false}
                                         placement={
                                             placement as
@@ -1912,12 +1973,18 @@ function MessageComponent({
                                                 translation={t}
                                                 messageItem={dataAfter}
                                                 userInfo={userInfo}
-                                                setMessageHistory={
-                                                    setMessageHistory
+                                                setShowMoreAction={setShowMoreAction}
+                                                handleRemoveMessageItem={
+                                                    handleRemoveMessageItem
                                                 }
-                                                setIndexMessageAction={
-                                                    setIndexMessageAction
+                                                handleUpdateAllMessageItem={
+                                                    handleUpdateAllMessageItem
                                                 }
+                                                conversation={conversation}
+                                                setConversation={
+                                                    setConversation
+                                                }
+                                                socket={socket}
                                             />
                                         }
                                     >
@@ -1932,7 +1999,7 @@ function MessageComponent({
                                                 } else {
                                                     setPlacement("bottom");
                                                 }
-                                                setIndexMessageAction(id);
+                                                setShowMoreAction(true)
                                             }}
                                             style={[
                                                 styles.chatDetailMessageFromOpponentMoreActionBox,
