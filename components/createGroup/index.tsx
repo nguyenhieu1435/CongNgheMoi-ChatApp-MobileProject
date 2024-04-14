@@ -10,6 +10,8 @@ import {
     SectionList,
     Dimensions,
     Alert,
+    Platform,
+    ActivityIndicator,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
@@ -24,6 +26,15 @@ import { CustomRadioButton } from "../register/stepFourRegister";
 import EmojiPicker from "rn-emoji-keyboard";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
+import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_FRIENDS, LINK_GROUP } from "@env";
+import {
+    IGroupConversation,
+    IMessageItem,
+    IUserIsMyFriendsResult,
+    IUserResultSearch,
+} from "../../configs/interfaces";
+import { getAccurancyDateVN } from "../../utils/date";
+import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 
 const typeSelectedEnum = {
     recent: "recent",
@@ -39,7 +50,7 @@ const { width: WIDTH } = Dimensions.get("window");
 export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
-    const [usersSelected, setUsersSelected] = useState<string[]>([]);
+    const [usersSelected, setUsersSelected] = useState<IUserResultSearch[]>([]);
     const [isFocusInputName, setIsFocusInputName] = useState(false);
     const [isKeyboardDefault, setIsKeyBoardDefault] = useState(true);
     const [textSearch, setTextSearch] = useState("");
@@ -54,275 +65,159 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         null | boolean
     >(null);
     const [groupAvatar, setGroupAvatar] = useState<null | string>(null);
-    const [usersByRecent, setUsersByRecent] = useState([
-        {
-            userName: "User1",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-12T12:00:00Z",
-            userID: "123456789",
-            tel: "0123456789",
-        },
-        {
-            userName: "User2",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-12T12:00:00Z",
-            userID: "234567890",
-            tel: "1234567890",
-        },
-        {
-            userName: "User3",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-12T12:00:00Z",
-            userID: "345678901",
-            tel: "2345678901",
-        },
-        {
-            userName: "User4",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T14:49:32.995Z",
-            userID: "456789012",
-            tel: "3456789012",
-        },
-        {
-            userName: "User5",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T14:49:32.995Z",
-            userID: "567890123",
-            tel: "4567890123",
-        },
-        {
-            userName: "User6",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T14:49:32.995Z",
-            userID: "678901234",
-            tel: "5678901234",
-        },
-        {
-            userName: "User7",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T14:49:32.995Z",
-            userID: "789012345",
-            tel: "6789012345",
-        },
-        {
-            userName: "User8",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T09:49:32.995Z",
-            userID: "890123456",
-            tel: "7890123456",
-        },
-        {
-            userName: "User9",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-14T09:49:32.995Z",
-            userID: "901234567",
-            tel: "8901234567",
-        },
-        {
-            userName: "User10",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-11T12:00:00Z",
-            userID: "012345678",
-            tel: "9012345678",
-        },
-        {
-            userName: "User11",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-09T12:00:00Z",
-            userID: "112233445",
-            tel: "1122334455",
-        },
-        {
-            userName: "User12",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-05T12:00:00Z",
-            userID: "223344556",
-            tel: "2233445566",
-        },
-        {
-            userName: "User13",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-01T12:00:00Z",
-            userID: "334455667",
-            tel: "3344556677",
-        },
-        {
-            userName: "User14",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-05T12:00:00Z",
-            userID: "445566778",
-            tel: "4455667788",
-        },
-        {
-            userName: "User15",
-            avatarURL:
-                "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-            activityTime: "2024-03-12T14:49:32.995Z",
-            userID: "556677889",
-            tel: "5566778899",
-        },
-    ]);
-    const [usersByContact, setUsersByContact] = useState([
-        {
-            title: "A",
-            data: [
-                {
-                    userName: "User1",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-12T12:00:00Z",
-                    userID: "123456789",
-                    tel: "0123456789",
-                },
-                {
-                    userName: "User2",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-12T12:00:00Z",
-                    userID: "234567890",
-                    tel: "1234567890",
-                },
-                {
-                    userName: "User3",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-12T12:00:00Z",
-                    userID: "345678901",
-                    tel: "2345678901",
-                },
-            ],
-        },
-        {
-            title: "B",
-            data: [
-                {
-                    userName: "User4",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T14:49:32.995Z",
-                    userID: "456789012",
-                    tel: "3456789012",
-                },
-                {
-                    userName: "User5",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T14:49:32.995Z",
-                    userID: "567890123",
-                    tel: "4567890123",
-                },
-                {
-                    userName: "User6",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T14:49:32.995Z",
-                    userID: "678901234",
-                    tel: "5678901234",
-                },
-            ],
-        },
-        {
-            title: "C",
-            data: [
-                {
-                    userName: "User7",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T14:49:32.995Z",
-                    userID: "789012345",
-                    tel: "6789012345",
-                },
-                {
-                    userName: "User8",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T09:49:32.995Z",
-                    userID: "890123456",
-                    tel: "7890123456",
-                },
-                {
-                    userName: "User9",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-14T09:49:32.995Z",
-                    userID: "901234567",
-                    tel: "8901234567",
-                },
-            ],
-        },
-        {
-            title: "D",
-            data: [
-                {
-                    userName: "User10",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-11T12:00:00Z",
-                    userID: "012345678",
-                    tel: "9012345678",
-                },
-                {
-                    userName: "User11",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-09T12:00:00Z",
-                    userID: "112233445",
-                    tel: "1122334455",
-                },
-                {
-                    userName: "User12",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-05T12:00:00Z",
-                    userID: "223344556",
-                    tel: "2233445566",
-                },
-            ],
-        },
-        {
-            title: "E",
-            data: [
-                {
-                    userName: "User13",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-01T12:00:00Z",
-                    userID: "334455667",
-                    tel: "3344556677",
-                },
-                {
-                    userName: "User14",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-05T12:00:00Z",
-                    userID: "445566778",
-                    tel: "4455667788",
-                },
-                {
-                    userName: "User15",
-                    avatarURL:
-                        "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-                    activityTime: "2024-03-12T14:49:32.995Z",
-                    userID: "556677889",
-                    tel: "5566778899",
-                },
-            ],
-        },
-    ]);
+    const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const [myFriends, setMyFriends] = useState<IUserResultSearch[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // const [usersByContact, setUsersByContact] = useState([
+    //     {
+    //         title: "A",
+    //         data: [
+    //             {
+    //                 userName: "User1",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-12T12:00:00Z",
+    //                 userID: "123456789",
+    //                 tel: "0123456789",
+    //             },
+    //             {
+    //                 userName: "User2",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-12T12:00:00Z",
+    //                 userID: "234567890",
+    //                 tel: "1234567890",
+    //             },
+    //             {
+    //                 userName: "User3",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-12T12:00:00Z",
+    //                 userID: "345678901",
+    //                 tel: "2345678901",
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         title: "B",
+    //         data: [
+    //             {
+    //                 userName: "User4",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T14:49:32.995Z",
+    //                 userID: "456789012",
+    //                 tel: "3456789012",
+    //             },
+    //             {
+    //                 userName: "User5",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T14:49:32.995Z",
+    //                 userID: "567890123",
+    //                 tel: "4567890123",
+    //             },
+    //             {
+    //                 userName: "User6",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T14:49:32.995Z",
+    //                 userID: "678901234",
+    //                 tel: "5678901234",
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         title: "C",
+    //         data: [
+    //             {
+    //                 userName: "User7",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T14:49:32.995Z",
+    //                 userID: "789012345",
+    //                 tel: "6789012345",
+    //             },
+    //             {
+    //                 userName: "User8",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T09:49:32.995Z",
+    //                 userID: "890123456",
+    //                 tel: "7890123456",
+    //             },
+    //             {
+    //                 userName: "User9",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-14T09:49:32.995Z",
+    //                 userID: "901234567",
+    //                 tel: "8901234567",
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         title: "D",
+    //         data: [
+    //             {
+    //                 userName: "User10",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-11T12:00:00Z",
+    //                 userID: "012345678",
+    //                 tel: "9012345678",
+    //             },
+    //             {
+    //                 userName: "User11",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-09T12:00:00Z",
+    //                 userID: "112233445",
+    //                 tel: "1122334455",
+    //             },
+    //             {
+    //                 userName: "User12",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-05T12:00:00Z",
+    //                 userID: "223344556",
+    //                 tel: "2233445566",
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         title: "E",
+    //         data: [
+    //             {
+    //                 userName: "User13",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-01T12:00:00Z",
+    //                 userID: "334455667",
+    //                 tel: "3344556677",
+    //             },
+    //             {
+    //                 userName: "User14",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-05T12:00:00Z",
+    //                 userID: "445566778",
+    //                 tel: "4455667788",
+    //             },
+    //             {
+    //                 userName: "User15",
+    //                 avatarURL:
+    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
+    //                 activityTime: "2024-03-12T14:49:32.995Z",
+    //                 userID: "556677889",
+    //                 tel: "5566778899",
+    //             },
+    //         ],
+    //     },
+    // ]);
+    const defaultGroupAvatar =
+        "https://res.zaloapp.com/pc/avt_group/2_family.jpg";
 
     async function handleChooseImageFromLibrary() {
         if (!hasGalleryPermission) {
@@ -396,67 +291,155 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         );
     };
 
+    async function getMyFriends() {
+        try {
+            const response = await fetch(LINK_GET_MY_FRIENDS, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setMyFriends(data.friends as IUserResultSearch[]);
+            } else {
+                setMyFriends([]);
+            }
+        } catch (error) {
+            console.log(error);
+            setMyFriends([]);
+        }
+    }
+
     useEffect(() => {
-        setUsersByRecent(
-            usersByRecent.sort((a, b) => {
-                return (
-                    new Date(b.activityTime).getTime() -
-                    new Date(a.activityTime).getTime()
-                );
-            })
-        );
+        getMyFriends();
     }, []);
-    function getDateFromTime(time: string) {
-        const date = new Date(Date.parse(time));
 
-        const currentDate = new Date();
-        const diff = currentDate.getTime() - date.getTime();
-        const diffMinutes = Math.floor(diff / 60000);
-
-        if (diffMinutes < 60) {
-            return `${diffMinutes == 0 ? 1 : diffMinutes} minutes ago`;
-        } else if (diffMinutes < 60 * 24) {
-            return `${Math.floor(diffMinutes / 60)} hours ago`;
+    function addAndRemoveUserSelected(userSelected: IUserResultSearch) {
+        const isExist = usersSelected.find(
+            (user) => user._id === userSelected._id
+        );
+        if (isExist) {
+            setUsersSelected(
+                usersSelected.filter((user) => user._id !== userSelected._id)
+            );
         } else {
-            return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
+            setUsersSelected([...usersSelected, userSelected]);
         }
     }
 
-    function addAndRemoveUserSelected(userID: string) {
-        if (usersSelected.includes(userID)) {
-            setUsersSelected(usersSelected.filter((id) => id !== userID));
-        } else {
-            setUsersSelected([...usersSelected, userID]);
+    async function handleCreateGroup() {
+        const formData = new FormData();
+        formData.append("name", groupName.trim());
+        if (groupAvatar) {
+            let splitPath = groupAvatar.split("/");
+            let extName = splitPath[splitPath.length - 1].split(".").pop();
+            formData.append("avatar", {
+                uri:
+                    Platform.OS === "ios"
+                        ? groupAvatar.replace("file://", "")
+                        : groupAvatar,
+                name: splitPath[splitPath.length - 1],
+                type: `image/${extName}`,
+            });
         }
-    }
+        const friendsId = usersSelected.map((user) => user._id);
+        formData.append("users", JSON.stringify(friendsId));
+        
+        try {
+           
+            setIsLoading(true);
+            const response = await fetch(LINK_GROUP, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: formData,
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Result create group: ", data)
+                handleNavigateToChatDetail(data as IGroupConversation, setIsLoading, userInfo, navigation)
 
-    function renderUserByRecent(
-        item: {
-            userName: string;
-            avatarURL: string;
-            activityTime: string;
-            userID: string;
-            tel: string;
-        },
-        index: number,
-        isShowActivityTime: boolean
-    ) {
+            } else {
+                const data = await response.json();
+                console.log("Error create group: ", data)
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        setIsLoading(false);
+    }
+    // async function handleNavigateToChatDetail(conversation: IGroupConversation) {
+    //     try {
+                
+    //         const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
+    //             method: "GET",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 "Authorization": "Bearer " + userInfo.accessToken
+    //             }
+    //         })
+    //         if (messageHistoryResponse.ok){
+    //             let messageHistoryData = await messageHistoryResponse.json();
+    //             let newData : IMessageItem[] = []
+    //             Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
+    //                 newData.push(
+    //                     {
+    //                         _id: item._id,
+    //                         sender: item.sender,
+    //                         messages: item.messages,
+    //                         conversation: item.conversation,
+    //                         reply: item.reply,
+    //                         files: item.files,
+    //                         createdAt: getAccurancyDateVN(item.createdAt),
+    //                         updatedAt: getAccurancyDateVN(item.updatedAt),
+    //                         "__v": item.__v,
+    //                         statuses: item.statuses,
+    //                         location: item.location,
+    //                         deleted: item.deleted
+    //                     }
+    //                 )
+    //             })
+    //             setIsLoading(false);
+    //             if (messageHistoryData.length > 0){
+    //                 navigation.navigate("ChatDetail", {
+    //                     conversation: conversation,
+    //                     messages: newData.reverse()
+    //                 });
+    //             } else {
+    //                 navigation.navigate("ChatDetail", {
+    //                     conversation: conversation,
+    //                     messages: []
+    //                 });
+    //             }
+    //         }
+
+    //     } catch (error) {
+    //         console.log("error get message history");
+    //     }
+    // }
+
+    function renderUserByRecent(item: IUserResultSearch, index: number) {
         return (
             <TouchableOpacity
                 key={index}
                 style={[styles.createGroupSelectedMemberContainer]}
-                onPress={() => addAndRemoveUserSelected(item.userID)}
+                onPress={() => addAndRemoveUserSelected(item)}
             >
                 <CustomRadioButton
                     onPress={() => {
-                        addAndRemoveUserSelected(item.userID);
+                        addAndRemoveUserSelected(item);
                     }}
-                    selected={usersSelected.includes(item.userID)}
-                    value={item.userID}
+                    selected={usersSelected.some(
+                        (user) => user._id === item._id
+                    )}
+                    value={item._id}
                 />
                 <Image
                     source={{
-                        uri: item.avatarURL,
+                        uri: item.avatar,
                     }}
                     style={[styles.createGroupSelectedMemberAvatar]}
                 />
@@ -469,25 +452,13 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                 : commonStyles.darkPrimaryText,
                         ]}
                     >
-                        {item.userName}
+                        {item.name}
                     </Text>
-                    {isShowActivityTime && (
-                        <Text
-                            style={[
-                                styles.createGroupSelectedMemberActivityTime,
-                                theme === lightMode
-                                    ? commonStyles.lightSecondaryText
-                                    : commonStyles.darkSecondaryText,
-                            ]}
-                        >
-                            {getDateFromTime(item.activityTime)}
-                        </Text>
-                    )}
                 </View>
             </TouchableOpacity>
         );
     }
-    function handleGoToBackScreen(){
+    function handleGoToBackScreen() {
         Alert.alert(t("createGroupGoBackTitle"), t("createGroupGoBackDesc"), [
             {
                 text: t("cancel"),
@@ -495,9 +466,9 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
             },
             {
                 text: t("confirm"),
-                onPress: () => navigation.goBack(),
+                onPress: () => navigation.navigate("Contacts"),
             },
-        ])
+        ]);
     }
 
     return (
@@ -859,14 +830,14 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                     {textSearch ? (
                         <View>
                             <FlatList
-                                data={usersByRecent.filter((user) =>
-                                    user.userName
+                                data={usersSelected.filter((user) =>
+                                    user.name
                                         .toLowerCase()
-                                        .includes(textSearch.toLowerCase()) || user.tel.includes(textSearch)
+                                        .includes(textSearch.toLowerCase()) || user._id.includes(textSearch)
                                 )}
-                                keyExtractor={(item) => item.userID}
+                                keyExtractor={(item) => item._id}
                                 renderItem={({ item, index }) =>
-                                    renderUserByRecent(item, index, false)
+                                    renderUserByRecent(item, index)
                                 }
                                 style={[
                                     {
@@ -887,7 +858,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                 justifyContent: "space-between",
                             }}
                         >
-                            <View
+                            {/* <View
                                 style={[
                                     styles.createGroupRecentAndContactFilterContainer,
                                     {
@@ -990,14 +961,30 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                         {t("createGroupContactTitle")}
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
+                            </View> */}
 
-                            {typeSelected === typeSelectedEnum.recent ? (
+                            <FlatList
+                                data={myFriends}
+                                keyExtractor={(item) => item._id}
+                                renderItem={({ item, index }) =>
+                                    renderUserByRecent(item, index)
+                                }
+                                style={[
+                                    {
+                                        paddingHorizontal: 10,
+                                        flexGrow: 1,
+                                        flexShrink: 1,
+                                        marginBottom:
+                                            usersSelected.length > 0 ? 60 : 0,
+                                    },
+                                ]}
+                            />
+                            {/* {typeSelected === typeSelectedEnum.recent ? (
                                 <FlatList
-                                    data={usersByRecent}
-                                    keyExtractor={(item) => item.userID}
+                                    data={myFriends}
+                                    keyExtractor={(item) => item._id}
                                     renderItem={({ item, index }) =>
-                                        renderUserByRecent(item, index, true)
+                                        renderUserByRecent(item, index)
                                     }
                                     style={[
                                         {
@@ -1065,7 +1052,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                         },
                                     ]}
                                 />
-                            )}
+                            )} */}
                         </View>
                     )}
                 </View>
@@ -1098,18 +1085,14 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                             showsHorizontalScrollIndicator={false}
                             scrollEnabled={true}
                         >
-                            {usersByRecent
-                                .filter((item) =>
-                                    usersSelected.includes(item.userID)
-                                )
+                            {usersSelected
+                                .filter((item) => usersSelected.includes(item))
                                 .map((item, index) => {
                                     return (
                                         <TouchableOpacity
                                             key={index}
                                             onPress={() =>
-                                                addAndRemoveUserSelected(
-                                                    item.userID
-                                                )
+                                                addAndRemoveUserSelected(item)
                                             }
                                             style={[
                                                 styles.createGroupSelectedMemberRemoveBtnContainer,
@@ -1117,7 +1100,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                         >
                                             <Image
                                                 source={{
-                                                    uri: item.avatarURL,
+                                                    uri: item.avatar,
                                                 }}
                                                 style={[
                                                     styles.createGroupSelectedMemberAvatar,
@@ -1154,20 +1137,36 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                 })}
                         </ScrollView>
                         <TouchableOpacity
+                            onPress={handleCreateGroup}
                             style={[
                                 styles.createGroupUserListNextStepBtn,
                                 {
-                                    opacity: usersSelected.length > 1 ? 1 : 0.5,
+                                    opacity:
+                                        usersSelected.length > 1 &&
+                                        groupName.trim()
+                                            ? 1
+                                            : 0.5,
                                 },
                             ]}
-                            disabled={usersSelected.length <= 1}
+                            disabled={
+                                usersSelected.length <= 1 ||
+                                !groupName.trim() ||
+                                isLoading
+                            }
                         >
-                            <Image
-                                source={require("../../assets/arrow-right-line-icon.png")}
-                                style={[
-                                    styles.createGroupUserListNextStepBtnImage,
-                                ]}
-                            />
+                            {isLoading ? (
+                                <ActivityIndicator
+                                    size={"small"}
+                                    color={commonStyles.darkPrimaryText.color}
+                                />
+                            ) : (
+                                <Image
+                                    source={require("../../assets/arrow-right-line-icon.png")}
+                                    style={[
+                                        styles.createGroupUserListNextStepBtnImage,
+                                    ]}
+                                />
+                            )}
                         </TouchableOpacity>
                     </View>
                 )}

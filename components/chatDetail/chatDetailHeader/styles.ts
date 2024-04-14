@@ -22,11 +22,17 @@ export const styles = StyleSheet.create({
     chatDetailNavbarUsernameBox: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 12
+        gap: 12,
+        flexShrink: 1,
+        flexGrow: 1,
+        
     },
     chatDetailUsernameText:{
         fontSize: 16,
-        fontWeight: "500"
+        fontWeight: "500",
+        flexShrink: 1,
+        flexGrow: 1
+        
     },
     activityIcon: {
         width: 8,

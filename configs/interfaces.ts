@@ -56,19 +56,39 @@ export interface ILocation{
     vicinity: string
     _id: string
 }
-
+export interface IUserResultSearch {
+    avatar: string;
+    name: string;
+    _id: string;
+}
+export interface IUserIsMyFriendsResult{
+    createdAt: string;
+    updatedAt: string;
+    friends: IUserResultSearch[] | [];
+    // userID
+    _id: string;
+}
+// DANH SÁCH MÌNH ĐÃ GỬI YÊU CẦU KẾT ĐI 
 export interface IRequestFriendList{
     _id: string,
-    sender_id: string,
-    receiver_id: {
-        _id: string,
-        name: string,
-        avatar: string
-    },
+    blockView: boolean,
     createdAt: string,
-    updatedAt: string
-    "__v": number
+    updatedAt: string,
+    message: string,
+    receiver_id: IUserResultSearch,
+    sender_id: string,
 }
+// DANH SÁCH MÌNH ĐÃ NHẬN YÊU CẦU KẾT BẠN
+export interface IReceivedRequestFriendList{
+    _id: string,
+    blockView: boolean,
+    createdAt: string,
+    updatedAt: string,
+    message: string,
+    receiver_id: string,
+    sender_id: IUserResultSearch,
+}
+
 export interface IConversation{
     _id: string,
     name: string,
@@ -83,8 +103,10 @@ export interface IConversation{
     updatedAt: string,
     qrCode: string,
     "__v": number,
-    lastMessage: IMessageItem,
-    pinBy: string[]
+    lastMessage ?: IMessageItem,
+    pinBy: string[],
+    deputy: string[],
+    admin ?: string,
 }
 
 export interface IUserInConversation{
@@ -96,29 +118,21 @@ export interface IUserInConversation{
     deleted: boolean,
     "__v": number
 }
-
-export interface IRequestFriendSent{
+export interface IGroupConversation{
     _id: string,
-    sender_id: string,
-    receiver_id: {
-        _id: string,
-        name: string,
-        avatar: string
-    },
+    name: string,
+    isGroup: boolean,
+    picture: string,
+    users: IUserInConversation[],
+    admin: string,
+    deputy: string[],
+    bannedMembers: IUserInConversation[],
+    public: boolean,
+    pinnedMessages: IMessageItem[],
+    pinBy: string[],
+    deleted: boolean,
     createdAt: string,
     updatedAt: string,
-    "__v": number
-}
-
-export interface IRequestFriendWaitResponse{    
-    _id: string,
-    sender_id: {
-        _id: string,
-        name: string,
-        avatar: string
-    },
-    receiver_id: string,
-    createdAt: string,
-    updatedAt: string,
-    "__v": number
+    qrCode: string,
+    "__v": number,
 }

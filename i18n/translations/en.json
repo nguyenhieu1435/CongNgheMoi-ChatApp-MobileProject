@@ -200,7 +200,7 @@
     "createGroupTitle": "New group",
     "createGroupSelectedMember": "Selected member: ",
     "createGroupInputGroupNamePlaceholder": "Enter group name",
-    "createGroupSearchPlaceholder": "Search by name or phone number",
+    "createGroupSearchPlaceholder": "Search by name or login name",
     "createGroupRecentTitle": "RECENT",
     "createGroupContactTitle": "CONTACT",
     "createGroupGroupNotInputName": "Group name is not entered",

@@ -7,11 +7,18 @@ import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import commonStyles from '../../CommonStyles/commonStyles';
 import OutsidePressHandler from 'react-native-outside-press';
 import { EvilIcons } from '@expo/vector-icons';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TFunction } from 'i18next';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import SearchDetailPopup from '../searchDetailPopup';
 import debounce from 'debounce';
+import { userInfoInterfaceI } from '../../redux_toolkit/slices/userInfo.slice';
+import { LINK_GET_MY_FRIENDS, LINK_GROUP } from '@env';
+import { IGroupConversation, IUserResultSearch } from '../../configs/interfaces';
+import { handleConvertDateStrToDateFormat } from '../../utils/date';
+import CreateGroupAvatarWhenAvatarIsEmpty from '../../utils/createGroupAvatarWhenAvatarIsEmpty';
+import Spinner from 'react-native-loading-spinner-overlay';
+import { handleNavigateToChatDetail } from '../../utils/handleNavigateToChatDetail';
 
 
 interface ContactsProps {
@@ -30,6 +37,7 @@ export default function Contacts({navigation} : ContactsProps) {
     const [heightPopup, setHeightPopup] = useState<number>(0)
     const [isClickOutsideSearch, setIsClickOutsideSearch] = useState<boolean>(false)
     const [typeFilterSelected, setTypeFilterSelected] = useState<string>(ContactTypeFilter.FRIEND)
+    const userInfo = useSelector((state: IRootState) => state.userInfo)
 
     const debounceTextSearch = useCallback(
         debounce(setTextSearch, 500), []
@@ -244,6 +252,7 @@ export default function Contacts({navigation} : ContactsProps) {
                                 paddingVertical: 10,
                             }}
                             navigation={navigation}
+                            userInfo={userInfo}
                         />
                         :
                         <GroupScrollBox
@@ -254,6 +263,7 @@ export default function Contacts({navigation} : ContactsProps) {
                                 flexShrink: 1,
                             }}
                             navigation={navigation}
+                            userInfo={userInfo}
                         />
                     }
                 </View>
@@ -273,67 +283,78 @@ interface FriendScrollBoxProps {
     translation: TFunction<"translation", undefined>,
     theme: string,
     style: object,
-    navigation: any
+    navigation: any,
+    userInfo: userInfoInterfaceI
 }
 const FriendFilter  = {
     ALL: "ALL",
     NEW_ACCESS: "NEW_ACCESS"
 }
+export interface ISectionFriendData{
+    title: string,
+    data: IUserResultSearch[]
 
-function FriendScrollBox({translation : t, theme, style, navigation} : FriendScrollBoxProps){
+}
+
+function FriendScrollBox({translation : t, theme, style, navigation, userInfo} : FriendScrollBoxProps){
     const [friendFilterSelected, setFriendFilterSelected] = useState<string>(FriendFilter.ALL)
-    const [indexPopupSelected, setIndexPopupSelected] = useState<number>(-1)
+    const [indexPopupSelected, setIndexPopupSelected] = useState<string | null>(null)
     const refLocationYPopupSelected = useRef<number>(0)
-    const sectionData = [
-        {
-            title: "A",
-            data: [
-                {
-                    userId: 1,
-                    name: "Au Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                },
-                {
-                    userId: 2,
-                    name: "Au Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                }
-            ]
-        },
-        {
-            title: "B",
-            data: [
-                {   
-                    userId: 3,
-                    name: "Bau Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                },
-                {
-                    userId: 4,
-                    name: "Bau Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                },
-                {
-                    userId: 5,
-                    name: "Bau Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                },
-                {
-                    userId: 6,
-                    name: "Bau Tran",
-                    avatar: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
-                }
-            ]
-        }
-    ]
+    const [sectionFriendList, setSectionFriendList] = useState<ISectionFriendData[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
-    function renderFriendItem({item, index} : {item: any, index: number}){
+    async function getFriendList(){
+        try {
+            setIsLoading(true)
+            const response = await fetch(LINK_GET_MY_FRIENDS, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userInfo.accessToken}`
+                }
+            })
+            if (response.ok){
+                const data = await response.json()
+                const finalData = classificationFriendListByName(data.friends as IUserResultSearch[])
+                setSectionFriendList(finalData)
+            } else {
+                setSectionFriendList([]);
+            }
+        } catch (error) {
+            console.log("error", error)
+            setSectionFriendList([]);
+        }
+        setIsLoading(false)
+    }
+    function classificationFriendListByName(friendList: IUserResultSearch[]){
+        const sectionData: ISectionFriendData[] = []
+        
+        friendList.forEach((friend) => {
+            const firstChar = friend.name[0].toUpperCase()
+            const index = sectionData.findIndex((section) => section.title === firstChar)
+            if(index !== -1){
+                sectionData[index].data.push(friend)
+            }else{
+                sectionData.push({
+                    title: firstChar,
+                    data: [friend]
+                })
+            }
+        })
+        return sectionData;
+    }
+
+    useEffect(()=>{
+        getFriendList()
+    }, [])
+
+    function renderFriendItem({item , index} : {item: IUserResultSearch, index: number}){
         return (
             <TouchableOpacity
                 style={[
                     styles.contactDetailFriendItemBox,
                     {
-                        zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                        zIndex: indexPopupSelected == item._id
                         ?
                         200
                         :
@@ -363,7 +384,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     style={[
                         styles.contactDetailFriendItemActionsBox,
                         {
-                            zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                            zIndex: indexPopupSelected == item._id
                             ?
                             200
                             :
@@ -403,7 +424,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     </TouchableOpacity>
 
                     <Tooltip
-                        isVisible={indexPopupSelected === Number.parseInt((index + "" + item?.userId))}
+                        isVisible={indexPopupSelected == item._id}
                         placement='top'
                         backgroundColor='transparent'
                         contentStyle={[
@@ -417,7 +438,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                         content={
                             <OutsidePressHandler
                                 onOutsidePress={() => {
-                                    setIndexPopupSelected(-1)
+                                    setIndexPopupSelected(null)
                                     refLocationYPopupSelected.current = 0
                                 }}
                                 style={[
@@ -428,7 +449,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                                     :
                                     commonStyles.darkFourBackground,
                                     {
-                                        zIndex: indexPopupSelected === Number.parseInt((index + "" + item?.userId))
+                                        zIndex: indexPopupSelected == item._id
                                         ?
                                         200
                                         :
@@ -532,7 +553,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                     >
                         <TouchableOpacity
                                 onPress={(evt)=>{
-                                    setIndexPopupSelected(Number.parseInt((index + "" + item?.userId)))
+                                    setIndexPopupSelected(item._id)
                                     refLocationYPopupSelected.current = evt.nativeEvent.pageY
                                 }}
                             
@@ -811,7 +832,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                         >{t("searchDetailContactMachineContactDesc")}</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={[
                         styles.contactDetailFriendAnotherActionBtn
                     ]}
@@ -853,7 +874,7 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                             ]}
                         >{t("searchDetailContactBirthdayScheduleDesc")}</Text>
                     </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
             <View
                 style={[
@@ -1225,8 +1246,13 @@ function FriendScrollBox({translation : t, theme, style, navigation} : FriendScr
                 <SectionList
                     style={{
                         paddingHorizontal: 20,
+                       
                     }}
-                    sections={sectionData}
+                    contentContainerStyle={{
+                        paddingBottom: 130
+                    }}
+                   
+                    sections={sectionFriendList}
                     keyExtractor={(item, index) => "" + index}
                     renderItem={({item, index}) => renderFriendItem({item, index})}
                     renderSectionHeader={({section: {title}}) => (
@@ -1248,16 +1274,61 @@ interface GroupScrollBoxProps {
     translation: TFunction<"translation", undefined>,
     theme: string,
     style: object,
-    navigation: any
+    navigation: any,
+    userInfo: userInfoInterfaceI
 }
 
-function GroupScrollBox({translation: t, theme, style, navigation} : GroupScrollBoxProps){
+function GroupScrollBox({translation: t, theme, style, navigation, userInfo} : GroupScrollBoxProps){
+    const [myGroups, setMyGroups] = useState<IGroupConversation[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+
+    async function getMyGroupList(){
+        try {
+            const response = await fetch(LINK_GROUP, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userInfo.accessToken}`
+                },
+
+            })
+            if (response.ok){
+                const data = await response.json()
+                setMyGroups(data as IGroupConversation[])
+            } else {
+                setMyGroups([])
+            }
+        } catch (error) {
+            console.log("error", error)
+            setMyGroups([])
+        }
+
+    }
+    useEffect(()=>{
+        getMyGroupList()
+    }, [])
+
+    // function handleNavigateToGroupDetail(group: IGroupConversation){
+    //     try {
+    //         setIsLoading(true)
+
+    //     } catch (error) {
+    //         console.log("error", error)            
+    //     }
+    //     setIsLoading(false)
+    // }
+
     return (
         <View
             style={[
                 style
             ]}
         >
+            <Spinner
+                visible={isLoading}
+                textContent={t("loading")}
+                color='#fff'
+            />
             <TouchableOpacity
                 style={[
                     styles.contactDetailFriendCreateNewGroupBtn,
@@ -1358,8 +1429,93 @@ function GroupScrollBox({translation: t, theme, style, navigation} : GroupScroll
                         >{t("searchDetailGroupFilterLastAccess")}</Text>
                     </TouchableOpacity>
                 </View>
-                <View>
-                    <TouchableOpacity
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                        paddingBottom: 110
+                    }}
+                >
+                    {
+                        myGroups.map((group) => {
+                            return (
+                                <TouchableOpacity
+                                    
+                                    style={[
+                                        styles.contactDetailGroupItemBox
+                                    ]}
+                                    key={group._id}
+                                    onPress={()=>{
+                                        handleNavigateToChatDetail(group, setIsLoading, userInfo, navigation)
+                                    }}
+                                >
+                                    {
+                                        group.picture
+                                        ?
+                                        <Image
+                                        source={{uri: group.picture}}
+                                        style={[
+                                            styles.contactDetailGroupItemAvatar
+                                        ]}
+                                    />
+                                        :
+                                        CreateGroupAvatarWhenAvatarIsEmpty(group)
+                                    }
+                                    <View
+                                        style={[
+                                            styles.contactDetailGroupItemContentBox
+                                        ]}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.contactDetailGroupItemFirstTitleBox
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.contactDetailGroupItemFirstTitleLeftText,
+                                                    theme ===  lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >{group.name}</Text>
+                                            <Text
+                                                style={[
+                                                    styles.contactDetailGroupItemFirstTitleRightText,
+                                                    theme ===  lightMode
+                                                    ?
+                                                    commonStyles.lightTertiaryText
+                                                    :
+                                                    commonStyles.darkTertiaryText
+                                                ]}
+                                            >{
+                                                handleConvertDateStrToDateFormat(group.updatedAt)
+                                            }</Text>
+                                        </View>
+                                        <View>
+                                            <Text
+                                                lineBreakMode='tail'
+                                                numberOfLines={1}
+                                                style={[
+                                                    styles.contactDetailGroupItemSecondPreviewText,
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightPrimaryText
+                                                    :
+                                                    commonStyles.darkPrimaryText
+                                                ]}
+                                            >
+                                                
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            )
+                        })
+                    }
+    
+                    {/* <TouchableOpacity
                         style={[
                             styles.contactDetailGroupItemBox
                         ]}
@@ -1418,248 +1574,9 @@ function GroupScrollBox({translation: t, theme, style, navigation} : GroupScroll
                                 </Text>
                             </View>
                         </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightTertiaryText
-                                        :
-                                        commonStyles.darkTertiaryText
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightTertiaryText
-                                        :
-                                        commonStyles.darkTertiaryText
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightTertiaryText
-                                        :
-                                        commonStyles.darkTertiaryText
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.contactDetailGroupItemBox
-                        ]}
-                    >
-                        <Image
-                            source={{uri: "https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"}}
-                            style={[
-                                styles.contactDetailGroupItemAvatar
-                            ]}
-                        />
-                        <View
-                            style={[
-                                styles.contactDetailGroupItemContentBox
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.contactDetailGroupItemFirstTitleBox
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleLeftText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >Big-Data</Text>
-                                <Text
-                                    style={[
-                                        styles.contactDetailGroupItemFirstTitleRightText,
-                                        theme ===  lightMode
-                                        ?
-                                        commonStyles.lightTertiaryText
-                                        :
-                                        commonStyles.darkTertiaryText
-                                    ]}
-                                >29/01</Text>
-                            </View>
-                            <View>
-                                <Text
-                                    lineBreakMode='tail'
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.contactDetailGroupItemSecondPreviewText,
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightPrimaryText
-                                        :
-                                        commonStyles.darkPrimaryText
-                                    ]}
-                                >
-                                    Văn Nam: Bán acc clone dsmp lv63 6ttc9 aaasdasdasdasdasdas
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                    </TouchableOpacity> */}
+                    
+                </ScrollView>
             </View>
         </View>
     )

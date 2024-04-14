@@ -36,3 +36,16 @@ export function getAccurancyDateVN(date) {
     const utcPlus7Time = new Date(utcTime + utcPlus7Offset);
     return utcPlus7Time.toISOString();
 }
+
+export function handleConvertDateStrToDateFormat(dateStr) {
+    const date = new Date(getAccurancyDateVN(dateStr));
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Month is zero-based, so add 1
+    const year = date.getFullYear();
+    const addLeadingZero = (num) => (num < 10 ? `0${num}` : num);
+    const formattedDay = addLeadingZero(day);
+    const formattedMonth = addLeadingZero(month);
+
+
+    return `${formattedDay}/${formattedMonth}/${year}`;
+}

@@ -1,79 +1,118 @@
-import { View, Text, StatusBar, SafeAreaView, TouchableOpacity, Image, ScrollView, SectionList, FlatList } from 'react-native'
-import { useSelector } from 'react-redux'
-import { IRootState } from '../../redux_toolkit/store'
-import { useTranslation } from 'react-i18next'
-import { styles } from './styles'
-import { lightMode } from '../../redux_toolkit/slices/theme.slice'
-import commonStyles from '../../CommonStyles/commonStyles'
-import { useEffect, useState } from 'react'
-import { TFunction } from 'i18next'
-import ReadMore from '@fawazahmed/react-native-read-more'
-import { LINK_REQUEST_FRIEND_LIST, LINK_REQUEST_FRIEND_WAIT_RESPONSE, LINK_REVOCATION_REQUEST_FRIEND } from '@env'
-import { IRequestFriendSent } from '../../configs/interfaces'
-import { getAccurancyDateVN } from '../../utils/date'
-import { io } from 'socket.io-client'
+import {
+    View,
+    Text,
+    StatusBar,
+    SafeAreaView,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+} from "react-native";
+import { useSelector } from "react-redux";
+import { IRootState } from "../../redux_toolkit/store";
+import { useTranslation } from "react-i18next";
+import { styles } from "./styles";
+import { lightMode } from "../../redux_toolkit/slices/theme.slice";
+import commonStyles from "../../CommonStyles/commonStyles";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { TFunction } from "i18next";
+import ReadMore from "@fawazahmed/react-native-read-more";
+import {
+    LINK_GET_ADD_FRIEND_ACCEPT,
+    LINK_GET_ADD_FRIEND_REJECT,
+    LINK_REQUEST_FRIEND_LIST,
+    LINK_REQUEST_FRIEND_WAIT_RESPONSE,
+    LINK_REVOCATION_REQUEST_FRIEND,
+} from "@env";
+import {
+    IReceivedRequestFriendList,
+    IRequestFriendList,
+} from "../../configs/interfaces";
+import {
+    handleConvertDateStrToDateFormat,
+} from "../../utils/date";
+import { io, Socket } from "socket.io-client";
+import Spinner from "react-native-loading-spinner-overlay";
+import { socket } from "../../configs/socket-io";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { userInfoInterfaceI } from "../../redux_toolkit/slices/userInfo.slice";
 
 interface AddFriendInvitationProps {
-    navigation: any
+    navigation: any;
 }
 const TypeFilter = {
     RECEIVED: "RECEIVED",
-    SENT: "SENT"
-}
-export default function AddFriendInvitation({navigation}: AddFriendInvitationProps) {
-    const theme = useSelector((state: IRootState) => state.theme.theme)
-    const {t} = useTranslation();
-    const [typeFilterSelected, setTypeFilterSelected] = useState(TypeFilter.RECEIVED)
+    SENT: "SENT",
+};
+export default function AddFriendInvitation({
+    navigation,
+}: AddFriendInvitationProps) {
+    const theme = useSelector((state: IRootState) => state.theme.theme);
+    const { t } = useTranslation();
+    const [typeFilterSelected, setTypeFilterSelected] = useState(
+        TypeFilter.RECEIVED
+    );
+    const userInfo = useSelector((state: IRootState) => state.userInfo);
+
+    useEffect(()=>{
+        function onConnect(){
+            console.log("Connected Socket")
+            socket.emit("online", userInfo.user?._id);
+        }
+
+        if (socket.connected){
+
+        } else {
+            socket.on("connect", onConnect);
+
+        }
+        return () => {
+            socket.off("connect", onConnect);
+            socket.disconnect();
+        }
+    }, [])
 
     return (
         <View
             style={[
                 styles.addFriendInvitationWrapper,
                 theme === lightMode
-                ?
-                commonStyles.lightPrimaryBackground
-                :
-                commonStyles.darkPrimaryBackground
-
+                    ? commonStyles.lightPrimaryBackground
+                    : commonStyles.darkPrimaryBackground,
             ]}
         >
-            <StatusBar/>
-            <SafeAreaView
-                style={[
-                    styles.addFriendInvitationContainer,
-                ]}
-            >
+            <StatusBar />
+            <SafeAreaView style={[styles.addFriendInvitationContainer]}>
                 <View
                     style={[
                         styles.addFriendInvitationHeader,
                         {
                             borderBottomColor:
-                            theme === lightMode
-                            ?
-                            commonStyles.chatNavbarBorderBottomColorLight.color
-                            :
-                            commonStyles.chatNavbarBorderBottomColorDark.color
-                        }
+                                theme === lightMode
+                                    ? commonStyles
+                                          .chatNavbarBorderBottomColorLight
+                                          .color
+                                    : commonStyles
+                                          .chatNavbarBorderBottomColorDark
+                                          .color,
+                        },
                     ]}
                 >
                     <TouchableOpacity
-                        onPress={()=> navigation.goBack()}
-                        style={[
-                            styles.addFriendInvitationHeaderBackButton,
-                        ]}
+                        onPress={() => navigation.goBack()}
+                        style={[styles.addFriendInvitationHeaderBackButton]}
                     >
                         <Image
                             source={require("../../assets/arrow-left-s-line-icon.png")}
                             style={[
                                 styles.addFriendInvitationHeaderIconImage,
                                 {
-                                    tintColor :
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
+                                    tintColor:
+                                        theme === lightMode
+                                            ? commonStyles.lightPrimaryText
+                                                  .color
+                                            : commonStyles.darkPrimaryText
+                                                  .color,
+                                },
                             ]}
                         />
                     </TouchableOpacity>
@@ -81,34 +120,33 @@ export default function AddFriendInvitation({navigation}: AddFriendInvitationPro
                         style={[
                             styles.addFriendInvitationHeaderTitle,
                             {
-                                color :
-                                theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText.color
-                                :
-                                commonStyles.darkPrimaryText.color
-                            }
+                                color:
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText.color
+                                        : commonStyles.darkPrimaryText.color,
+                            },
                         ]}
-                    >{t("searchDetailContactAddFriendInvitation")}</Text>
+                    >
+                        {t("searchDetailContactAddFriendInvitation")}
+                    </Text>
                     <TouchableOpacity
-                        onPress={()=> navigation.navigate("AddFriendInvitationSetting")}
-                        style={[
-                            styles.addFriendInvitationHeaderSettingButton,
-                           
-                        ]}
+                        onPress={() =>
+                            navigation.navigate("AddFriendInvitationSetting")
+                        }
+                        style={[styles.addFriendInvitationHeaderSettingButton]}
                     >
                         <Image
                             source={require("../../assets/settings-icon-bottom-tab.png")}
                             style={[
                                 styles.addFriendInvitationHeaderIconImage,
                                 {
-                                    tintColor :
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
+                                    tintColor:
+                                        theme === lightMode
+                                            ? commonStyles.lightPrimaryText
+                                                  .color
+                                            : commonStyles.darkPrimaryText
+                                                  .color,
+                                },
                             ]}
                         />
                     </TouchableOpacity>
@@ -118,189 +156,243 @@ export default function AddFriendInvitation({navigation}: AddFriendInvitationPro
                         styles.addFriendInvitationChooseTypeBox,
                         {
                             borderBottomColor:
-                            theme === lightMode
-                            ?
-                            commonStyles.chatNavbarBorderBottomColorLight.color
-                            :
-                            commonStyles.chatNavbarBorderBottomColorDark.color
-                        }
+                                theme === lightMode
+                                    ? commonStyles
+                                          .chatNavbarBorderBottomColorLight
+                                          .color
+                                    : commonStyles
+                                          .chatNavbarBorderBottomColorDark
+                                          .color,
+                        },
                     ]}
                 >
                     <TouchableOpacity
-                        onPress={()=> setTypeFilterSelected(TypeFilter.RECEIVED)}
+                        onPress={() =>
+                            setTypeFilterSelected(TypeFilter.RECEIVED)
+                        }
                         style={[
                             styles.addFriendInvitationChooseTypeItem,
                             typeFilterSelected === TypeFilter.RECEIVED
-                            ?
-                            styles.addFriendInvitationChooseTypeItemActive
-                            : null
+                                ? styles.addFriendInvitationChooseTypeItemActive
+                                : null,
                         ]}
                     >
                         <Text
                             style={[
                                 styles.addFriendInvitationChooseTypeItemText,
                                 {
-                                    fontWeight: 
-                                    typeFilterSelected === TypeFilter.RECEIVED
-                                    ? "500" : "400"
+                                    fontWeight:
+                                        typeFilterSelected ===
+                                        TypeFilter.RECEIVED
+                                            ? "500"
+                                            : "400",
                                 },
                                 theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
                             ]}
-                        >{t("addFriendInvitationReceivedTitle")}</Text>
+                        >
+                            {`${t("addFriendInvitationReceivedTitle")}`}
+                            
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        onPress={()=> setTypeFilterSelected(TypeFilter.SENT)}
+                        onPress={() => setTypeFilterSelected(TypeFilter.SENT)}
                         style={[
                             styles.addFriendInvitationChooseTypeItem,
                             typeFilterSelected === TypeFilter.SENT
-                            ?
-                            styles.addFriendInvitationChooseTypeItemActive
-                            : null
+                                ? styles.addFriendInvitationChooseTypeItemActive
+                                : null,
                         ]}
                     >
                         <Text
                             style={[
                                 styles.addFriendInvitationChooseTypeItemText,
                                 {
-                                    fontWeight: 
-                                    typeFilterSelected === TypeFilter.SENT
-                                    ? "500" : "400"
+                                    fontWeight:
+                                        typeFilterSelected === TypeFilter.SENT
+                                            ? "500"
+                                            : "400",
                                 },
                                 theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
                             ]}
-                        >{t("addFriendInvitationSentTitle")}</Text>
+                        >
+                            {`${t("addFriendInvitationSentTitle")}`}
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <ScrollView>
-                    {
-                        typeFilterSelected === TypeFilter.RECEIVED
-                        &&
+                    {typeFilterSelected === TypeFilter.RECEIVED && (
                         <AddFriendInvitationReceivedList
                             theme={theme}
                             translation={t}
+                            socket={socket}
+                            userInfo={userInfo}
+                           
                         />
-                    }
-                    {
-                        typeFilterSelected === TypeFilter.SENT
-                        &&
+                    )}
+                    {typeFilterSelected === TypeFilter.SENT && (
                         <AddFriendInvitationSentList
                             theme={theme}
                             translation={t}
+                            socket={socket}
+                            userInfo={userInfo}
+                           
                         />
-                    }
+                    )}
                 </ScrollView>
             </SafeAreaView>
         </View>
-    )
+    );
 }
-interface   AddFriendInvitationReceivedListProps {
-    theme: string,
-    translation: TFunction<"translation", undefined>
+interface AddFriendInvitationReceivedListProps {
+    theme: string;
+    translation: TFunction<"translation", undefined>;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    userInfo: userInfoInterfaceI;
 }
 
-function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvitationReceivedListProps) {
-    const [requestReceived, setRequestReceived] = useState([])
-    const userInfo = useSelector((state: IRootState) => state.userInfo)
-    
-    useEffect(()=>{
-        async function fetchRequestReceived(){
-            try {
-                const response = await fetch(LINK_REQUEST_FRIEND_WAIT_RESPONSE, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + userInfo.accessToken
-                    }
-    
-                })
-                if (response.ok){
-                    const data = await response.json()
-                    console.log(data)
-                } else {
-                    setRequestReceived([])
-                }
-            } catch (error) {
-                console.log(error)
-                setRequestReceived([])
+function AddFriendInvitationReceivedList({
+    theme,
+    translation: t,
+    socket,
+    userInfo,
+}: AddFriendInvitationReceivedListProps) {
+    const [requestReceived, setRequestReceived] = useState<
+        IReceivedRequestFriendList[]
+    >([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    async function fetchRequestReceived() {
+        try {
+            setIsLoading(true);
+            const response = await fetch(LINK_REQUEST_FRIEND_WAIT_RESPONSE, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setRequestReceived(data as IReceivedRequestFriendList[]);
+            } else {
+                setRequestReceived([]);
             }
-        }   
-        fetchRequestReceived()
-    }, [])
-
-    const sectionData = [
-        {
-            title: "12-2023",
-            data: [
-                {
-                    userID: 1,
-                    name: "John Doe",
-                    avatar: "https://www.w3schools.com/w3images/avatar2.png",
-                    date: "02/12/2023",
-                    relation: "Từ Bạn cùng nhóm",
-                    message: "Chào bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?"
-                }
-            ]
+        } catch (error) {
+            console.log(error);
+            setRequestReceived([]);
         }
-    ]
+        setIsLoading(false);
+    }
 
-    function renderSectionItem({item, index}: {item: any, index: number}) {
+    useEffect(() => {
+        fetchRequestReceived();
+    }, []);
+
+    async function handleAcceptRequest(item: IReceivedRequestFriendList) {
+        try {
+            console.log("Accept friend link", LINK_GET_ADD_FRIEND_ACCEPT);
+            const response = await fetch(LINK_GET_ADD_FRIEND_ACCEPT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + userInfo.accessToken
+                },
+                body: JSON.stringify({friendId: item.sender_id._id})
+            })
+            if (response.ok){
+                console.log("Accept friend success", item.sender_id._id);
+                const data = await response.json();
+                console.log("Accept friend success", JSON.stringify(data));
+                // socket.emit("acceptFriend", item.sender_id._id);
+                setRequestReceived(requestReceived.filter((request) => request._id !== item._id));
+            } else {
+                console.log("Error status: " + response.status);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async function handleDeclineRequest(item: IReceivedRequestFriendList) {
+        try {
+            const response = await fetch(LINK_GET_ADD_FRIEND_REJECT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + userInfo.accessToken
+                },
+                body: JSON.stringify({friendId: item.sender_id._id})
+            })
+            if (response.ok){
+
+                setRequestReceived(requestReceived.filter((request) => request._id !== item._id));
+            } else {
+                console.log("Error status: " + response.status);
+            }
+        } catch (error) {
+            
+        }
+    }
+
+    function renderSectionItem({
+        item,
+        index,
+    }: {
+        item: IReceivedRequestFriendList;
+        index: number;
+    }) {
         return (
-            <View key={index}
-                    style={[
-                        styles.addFriendInvitationReceivedItemSection
-                    ]}
+            <>
+                <View
+                    key={index}
+                    style={[styles.addFriendInvitationReceivedItemSection]}
                 >
                     <Image
-                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                        style={[
-                            styles.addFriendInvitationAvatarImage,
-                        ]}
+                        source={{
+                            uri: item.sender_id.avatar,
+                        }}
+                        style={[styles.addFriendInvitationAvatarImage]}
                     />
                     <View
                         style={[
-                            styles.addFriendInvitationReceivedItemMainContent
+                            styles.addFriendInvitationReceivedItemMainContent,
                         ]}
                     >
                         <Text
                             style={[
                                 styles.addFriendInvitationReceivedItemRealName,
                                 theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText
-                                :
-                                commonStyles.darkPrimaryText
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
                             ]}
-                        >John Doe</Text>
+                        >
+                            {item.sender_id.name}
+                        </Text>
                         <Text
                             style={[
                                 styles.addFriendInvitationReceivedItemAddDate,
                                 theme === lightMode
-                                ?
-                                commonStyles.lightTertiaryText
-                                :
-                                commonStyles.darkTertiaryText
+                                    ? commonStyles.lightTertiaryText
+                                    : commonStyles.darkTertiaryText,
                             ]}
-                        >02/12/2023</Text>
+                        >
+                            {handleConvertDateStrToDateFormat(item.createdAt)}
+                        </Text>
                         <View
                             style={[
                                 styles.addFriendInvitationReceivedItemMessageBox,
                                 {
                                     borderColor:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
-                                }
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color,
+                                },
                             ]}
                         >
                             <ReadMore
@@ -310,672 +402,618 @@ function AddFriendInvitationReceivedList({theme, translation: t}: AddFriendInvit
                                 style={[
                                     styles.addFriendInvitationReceivedMessage,
                                     theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText
-                                    :
-                                    commonStyles.darkSecondaryText
+                                        ? commonStyles.lightSecondaryText
+                                        : commonStyles.darkSecondaryText,
                                 ]}
                                 seeMoreStyle={{
-                                    fontWeight: "500",      
+                                    fontWeight: "500",
                                     color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color,
                                 }}
                                 seeLessStyle={{
                                     fontWeight: "500",
                                     color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightSecondaryText.color
-                                    :
-                                    commonStyles.darkSecondaryText.color
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color,
                                 }}
                             >
-                                Chào bạn, mình muốn kết bạn với bạn, mình muốn kết bạn với bạn, bạn có muốn kết bạn với mình không?
+                                {item.message}
                             </ReadMore>
                         </View>
                         <View
                             style={[
-                                styles.addFriendInvitationReceivedItemActionBox
+                                styles.addFriendInvitationReceivedItemActionBox,
                             ]}
                         >
                             <TouchableOpacity
+                                onPress={() => handleDeclineRequest(item)}
                                 style={[
                                     styles.addFriendInvitationReceivedItemActionItem,
                                     {
                                         backgroundColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.chatNavbarBorderBottomColorLight.color
-                                        :
-                                        commonStyles.chatNavbarBorderBottomColorDark.color
-                                    }
+                                            theme === lightMode
+                                                ? commonStyles
+                                                      .chatNavbarBorderBottomColorLight
+                                                      .color
+                                                : commonStyles
+                                                      .chatNavbarBorderBottomColorDark
+                                                      .color,
+                                    },
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.addFriendInvitationReceivedItemActionItemText,
                                         theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText
-                                        :
-                                        commonStyles.darkSecondaryText
-                                        
+                                            ? commonStyles.lightSecondaryText
+                                            : commonStyles.darkSecondaryText,
                                     ]}
-                                >{t("addFriendInvitationDecline")}</Text>
+                                >
+                                    {t("addFriendInvitationDecline")}
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
+                                onPress={()=> handleAcceptRequest(item)}
                                 style={[
                                     styles.addFriendInvitationReceivedItemActionItem,
-                                    commonStyles.primaryColorBackground
+                                    commonStyles.primaryColorBackground,
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.addFriendInvitationReceivedItemActionItemText,
-                                        commonStyles.primaryColor
+                                        commonStyles.primaryColor,
                                     ]}
-                                >{t("addFriendInvitationAccept")}</Text>
+                                >
+                                    {t("addFriendInvitationAccept")}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
-            </View>
-        )
+                </View>
+                <View
+                    style={[
+                        styles.addFriendInvitationReceivedBreakLine,
+                        {
+                            backgroundColor:
+                                theme === lightMode
+                                    ? commonStyles.lightTertiaryBackground
+                                          .backgroundColor
+                                    : commonStyles.darkTertiaryBackground
+                                          .backgroundColor,
+                        },
+                    ]}
+                ></View>
+            </>
+        );
     }
 
     return (
-        sectionData && sectionData.length > 0
-        ?
-        <View
-            style={[
-            ]}
-        >
-            <View
-                style={[
-                    styles.addFriendInvitationReceivedListSection
-                ]}
-            >
-                
-                <SectionList
-                    sections={sectionData}
-                    keyExtractor={(item, index) => "" + index}
-                    renderItem={renderSectionItem}
-                />
-            </View>
-
-            <View
-                style={[
-                    styles.addFriendInvitationReceivedBreakLine,
-                    {
-                        backgroundColor:
-                        theme === lightMode
-                        ?
-                        commonStyles.lightTertiaryBackground.backgroundColor
-                        :
-                        commonStyles.darkTertiaryBackground.backgroundColor
-                    }
-                ]}
-            >
-
-            </View>
-
-            <View
-                style={[
-                    styles.addFriendInvitationReceivedMayBeYouKnowBox
-                ]}
-            >
-                <Text
-                    style={[
-                        styles.addFriendInvitationReceivedMayBeYouKnowTitle,
-                        {
-                            color:
-                            theme === lightMode
-                            ?
-                            commonStyles.lightPrimaryText.color
-                            :
-                            commonStyles.darkPrimaryText.color
-                        }
-                    ]}
-                >{t("addFriendInvitationMayBeYouKnow")}</Text>
-                <ScrollView
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    style={{
-                        marginTop: 15,
-                       
-                    }}
-                    contentContainerStyle={{
-                        gap: 12
-                    }}
-                >
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedMayBeYouKnowItem,
-                            {
-                                borderColor:
-                                theme === lightMode
-                                ?
-                                commonStyles.lightSecondaryText.color
-                                :
-                                commonStyles.darkSecondaryText.color
-                            }
-                        ]}
-                    >
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
-                            ]}
-                        >
-                            <Image
-                                source={require("../../assets/close-line-icon.png")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
-                                    {
-                                        tintColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <Image
-                            source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                            style={[
-                                styles.addFriendInvitationAvatarImage,
-                            ]}
-                        />
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeKnownItemRealName,
-                                {
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
-                            ]}
-                        >John Doe</Text>
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
-                                commonStyles.primaryColorBackground
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    commonStyles.primaryColor,
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemText
-                                ]}
-                            >{t("addFriendInvitationAdd")}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedMayBeYouKnowItem,
-                            {
-                                borderColor:
-                                theme === lightMode
-                                ?
-                                commonStyles.lightSecondaryText.color
-                                :
-                                commonStyles.darkSecondaryText.color
-                            }
-                        ]}
-                    >
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
-                            ]}
-                        >
-                            <Image
-                                source={require("../../assets/close-line-icon.png")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
-                                    {
-                                        tintColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <Image
-                            source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                            style={[
-                                styles.addFriendInvitationAvatarImage,
-                            ]}
-                        />
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeKnownItemRealName,
-                                {
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
-                            ]}
-                        >John Doe</Text>
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
-                                commonStyles.primaryColorBackground
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    commonStyles.primaryColor,
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemText
-                                ]}
-                            >{t("addFriendInvitationAdd")}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedMayBeYouKnowItem,
-                            {
-                                borderColor:
-                                theme === lightMode
-                                ?
-                                commonStyles.lightSecondaryText.color
-                                :
-                                commonStyles.darkSecondaryText.color
-                            }
-                        ]}
-                    >
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
-                            ]}
-                        >
-                            <Image
-                                source={require("../../assets/close-line-icon.png")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
-                                    {
-                                        tintColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <Image
-                            source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                            style={[
-                                styles.addFriendInvitationAvatarImage,
-                            ]}
-                        />
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeKnownItemRealName,
-                                {
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
-                            ]}
-                        >John Doe</Text>
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
-                                commonStyles.primaryColorBackground
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    commonStyles.primaryColor,
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemText
-                                ]}
-                            >{t("addFriendInvitationAdd")}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View
-                        style={[
-                            styles.addFriendInvitationReceivedMayBeYouKnowItem,
-                            {
-                                borderColor:
-                                theme === lightMode
-                                ?
-                                commonStyles.lightSecondaryText.color
-                                :
-                                commonStyles.darkSecondaryText.color
-                            }
-                        ]}
-                    >
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
-                            ]}
-                        >
-                            <Image
-                                source={require("../../assets/close-line-icon.png")}
-                                style={[
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
-                                    {
-                                        tintColor:
-                                        theme === lightMode
-                                        ?
-                                        commonStyles.lightSecondaryText.color
-                                        :
-                                        commonStyles.darkSecondaryText.color
-                                    }
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <Image
-                            source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                            style={[
-                                styles.addFriendInvitationAvatarImage,
-                            ]}
-                        />
-                        <Text
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeKnownItemRealName,
-                                {
-                                    color:
-                                    theme === lightMode
-                                    ?
-                                    commonStyles.lightPrimaryText.color
-                                    :
-                                    commonStyles.darkPrimaryText.color
-                                }
-                            ]}
-                        >John Doe</Text>
-                        <TouchableOpacity
-                            style={[
-                                styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
-                                commonStyles.primaryColorBackground
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    commonStyles.primaryColor,
-                                    styles.addFriendInvitationReceivedMayBeYouKnowItemText
-                                ]}
-                            >{t("addFriendInvitationAdd")}</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </View>
-        </View>
-        :
-        <View
-            style={[
-                styles.addFriendInvitationEmptyList
-            ]}
-        >
-            <Image
-                source={require("../../assets/addInvitationEmptyListImage.png")}
-                style={[
-                    styles.addFriendInvitationEmptyListImage
-                ]}
+        <View>
+            <Spinner
+                visible={isLoading}
+                textContent={t("loading")}
+                textStyle={{ color: "#FFF" }}
             />
-            <Text style={[
-                styles.addFriendInvitationEmptyListText,
-                theme === lightMode
-                ?
-                commonStyles.lightSecondaryText
-                :
-                commonStyles.darkSecondaryText
-            ]}>{t("addFriendInvitationReceivedEmpty")}</Text>
-        </View>
-    )
+            {requestReceived && requestReceived.length > 0 ? (
+                <View style={[]}>
+                    <View
+                        style={[styles.addFriendInvitationReceivedListSection]}
+                    >
+                        {requestReceived.map((item, index) =>
+                            renderSectionItem({ item, index })
+                        )}
+                    </View>
 
+                    {/* <View
+                            style={[
+                                styles.addFriendInvitationReceivedMayBeYouKnowBox
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.addFriendInvitationReceivedMayBeYouKnowTitle,
+                                    {
+                                        color:
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText.color
+                                        :
+                                        commonStyles.darkPrimaryText.color
+                                    }
+                                ]}
+                            >{t("addFriendInvitationMayBeYouKnow")}</Text>
+                            <ScrollView
+                                horizontal={true}
+                                showsHorizontalScrollIndicator={false}
+                                style={{
+                                    marginTop: 15,
+                                   
+                                }}
+                                contentContainerStyle={{
+                                    gap: 12
+                                }}
+                            >
+                                <View
+                                    style={[
+                                        styles.addFriendInvitationReceivedMayBeYouKnowItem,
+                                        {
+                                            borderColor:
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightSecondaryText.color
+                                            :
+                                            commonStyles.darkSecondaryText.color
+                                        }
+                                    ]}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
+                                        ]}
+                                    >
+                                        <Image
+                                            source={require("../../assets/close-line-icon.png")}
+                                            style={[
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
+                                                {
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText.color
+                                                    :
+                                                    commonStyles.darkSecondaryText.color
+                                                }
+                                            ]}
+                                        />
+                                    </TouchableOpacity>
+                                    <Image
+                                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                                        style={[
+                                            styles.addFriendInvitationAvatarImage,
+                                        ]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeKnownItemRealName,
+                                            {
+                                                color:
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightPrimaryText.color
+                                                :
+                                                commonStyles.darkPrimaryText.color
+                                            }
+                                        ]}
+                                    >John Doe</Text>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
+                                            commonStyles.primaryColorBackground
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                commonStyles.primaryColor,
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemText
+                                            ]}
+                                        >{t("addFriendInvitationAdd")}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View
+                                    style={[
+                                        styles.addFriendInvitationReceivedMayBeYouKnowItem,
+                                        {
+                                            borderColor:
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightSecondaryText.color
+                                            :
+                                            commonStyles.darkSecondaryText.color
+                                        }
+                                    ]}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
+                                        ]}
+                                    >
+                                        <Image
+                                            source={require("../../assets/close-line-icon.png")}
+                                            style={[
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
+                                                {
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText.color
+                                                    :
+                                                    commonStyles.darkSecondaryText.color
+                                                }
+                                            ]}
+                                        />
+                                    </TouchableOpacity>
+                                    <Image
+                                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                                        style={[
+                                            styles.addFriendInvitationAvatarImage,
+                                        ]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeKnownItemRealName,
+                                            {
+                                                color:
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightPrimaryText.color
+                                                :
+                                                commonStyles.darkPrimaryText.color
+                                            }
+                                        ]}
+                                    >John Doe</Text>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
+                                            commonStyles.primaryColorBackground
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                commonStyles.primaryColor,
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemText
+                                            ]}
+                                        >{t("addFriendInvitationAdd")}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View
+                                    style={[
+                                        styles.addFriendInvitationReceivedMayBeYouKnowItem,
+                                        {
+                                            borderColor:
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightSecondaryText.color
+                                            :
+                                            commonStyles.darkSecondaryText.color
+                                        }
+                                    ]}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
+                                        ]}
+                                    >
+                                        <Image
+                                            source={require("../../assets/close-line-icon.png")}
+                                            style={[
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
+                                                {
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText.color
+                                                    :
+                                                    commonStyles.darkSecondaryText.color
+                                                }
+                                            ]}
+                                        />
+                                    </TouchableOpacity>
+                                    <Image
+                                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                                        style={[
+                                            styles.addFriendInvitationAvatarImage,
+                                        ]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeKnownItemRealName,
+                                            {
+                                                color:
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightPrimaryText.color
+                                                :
+                                                commonStyles.darkPrimaryText.color
+                                            }
+                                        ]}
+                                    >John Doe</Text>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
+                                            commonStyles.primaryColorBackground
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                commonStyles.primaryColor,
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemText
+                                            ]}
+                                        >{t("addFriendInvitationAdd")}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View
+                                    style={[
+                                        styles.addFriendInvitationReceivedMayBeYouKnowItem,
+                                        {
+                                            borderColor:
+                                            theme === lightMode
+                                            ?
+                                            commonStyles.lightSecondaryText.color
+                                            :
+                                            commonStyles.darkSecondaryText.color
+                                        }
+                                    ]}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButton
+                                        ]}
+                                    >
+                                        <Image
+                                            source={require("../../assets/close-line-icon.png")}
+                                            style={[
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemCloseButtonIcon,
+                                                {
+                                                    tintColor:
+                                                    theme === lightMode
+                                                    ?
+                                                    commonStyles.lightSecondaryText.color
+                                                    :
+                                                    commonStyles.darkSecondaryText.color
+                                                }
+                                            ]}
+                                        />
+                                    </TouchableOpacity>
+                                    <Image
+                                        source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
+                                        style={[
+                                            styles.addFriendInvitationAvatarImage,
+                                        ]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeKnownItemRealName,
+                                            {
+                                                color:
+                                                theme === lightMode
+                                                ?
+                                                commonStyles.lightPrimaryText.color
+                                                :
+                                                commonStyles.darkPrimaryText.color
+                                            }
+                                        ]}
+                                    >John Doe</Text>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.addFriendInvitationReceivedMayBeYouKnowItemAddButton,
+                                            commonStyles.primaryColorBackground
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                commonStyles.primaryColor,
+                                                styles.addFriendInvitationReceivedMayBeYouKnowItemText
+                                            ]}
+                                        >{t("addFriendInvitationAdd")}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </View> */}
+                </View>
+            ) : (
+                <View style={[styles.addFriendInvitationEmptyList]}>
+                    <Image
+                        source={require("../../assets/addInvitationEmptyListImage.png")}
+                        style={[styles.addFriendInvitationEmptyListImage]}
+                    />
+                    <Text
+                        style={[
+                            styles.addFriendInvitationEmptyListText,
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryText
+                                : commonStyles.darkSecondaryText,
+                        ]}
+                    >
+                        {t("addFriendInvitationReceivedEmpty")}
+                    </Text>
+                </View>
+            )}
+        </View>
+    );
 }
 
 interface AddFriendInvitationSentListProps {
-    theme: string,
-    translation: TFunction<"translation", undefined>
+    theme: string;
+    translation: TFunction<"translation", undefined>;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    userInfo: userInfoInterfaceI;
 }
-function AddFriendInvitationSentList({theme, translation : t} : AddFriendInvitationSentListProps) {
-    const [requestSent, setRequestSent] = useState<IRequestFriendSent[]>([])
-    const userInfo = useSelector((state: IRootState) => state.userInfo)
+function AddFriendInvitationSentList({
+    theme,
+    translation: t,
+    socket,
+    userInfo,
+}: AddFriendInvitationSentListProps) {
+    const [requestSent, setRequestSent] = useState<IRequestFriendList[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    async function fetchRequestSent(){
+    async function fetchRequestSent() {
         try {
+            setIsLoading(true);
             const response = await fetch(LINK_REQUEST_FRIEND_LIST, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + userInfo.accessToken
-                }
-
-            })
-            if (response.ok){
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
+            if (response.ok) {
                 const data = await response.json()
-                const newData : IRequestFriendSent[] = []
-                Array.isArray(data) && data.forEach((item: any) => {
-                    newData.push({
-                        _id: item._id,
-                        sender_id: item.sender_id,
-                        receiver_id: item.receiver_id,
-                        createdAt: item.createdAt,
-                        updatedAt: item.updatedAt,
-                        "__v": item.__v
-                    })
-                })
-                setRequestSent(newData)
+                setRequestSent(data as IRequestFriendList[]);
             } else {
-                setRequestSent([])
+                setRequestSent([]);
             }
         } catch (error) {
-            console.log(error)
-            setRequestSent([])
+            console.log(error);
+            setRequestSent([]);
+        }
+        setIsLoading(false);
+    }
+
+    useEffect(() => {
+        fetchRequestSent();
+    }, []);
+
+    async function handleUndoRequest(item: IRequestFriendList) {
+        try {
+            const response = await fetch(LINK_REVOCATION_REQUEST_FRIEND, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + userInfo.accessToken,
+                },
+                body: JSON.stringify({
+                    friendId: item.receiver_id._id,
+                }),
+            });
+            if (response.ok) {
+                fetchRequestSent();
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 
-    useEffect(()=>{
-        fetchRequestSent()
-    }, [])
-
-
-    function renderFlatItem({item , index}: {item: IRequestFriendSent, index: number}) {
-        
-        async function handleUndoRequest(){
-            try {
-                const response = await fetch(LINK_REVOCATION_REQUEST_FRIEND, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + userInfo.accessToken
-                    },
-                    body: JSON.stringify({
-                        "friendId": item.receiver_id._id
-                    })
-
-                })
-                if (response.ok){   
-                    fetchRequestSent()
-                }   
-            } catch (error) {
-                console.log(error)  
-            }
-        }
-
+    function renderFlatItem({
+        item,
+        index,
+    }: {
+        item: IRequestFriendList;
+        index: number;
+    }) {
         return (
-            <View
-                key={index}
-                style={[
-                    styles.addFriendInvitationSentFlatItem
-                ]}
-            >
-                <Image
-                    source={{uri: item.receiver_id.avatar}}
-                    style={[
-                        styles.addFriendInvitationAvatarImage,
-                    ]}
-                />
+            <>
+                <View
+                    key={index}
+                    style={[styles.addFriendInvitationSentFlatItem]}
+                >
+                    <Image
+                        source={{ uri: item.receiver_id.avatar }}
+                        style={[styles.addFriendInvitationAvatarImage]}
+                    />
+                    <View
+                        style={[styles.addFriendInvitationSentItemMainContent]}
+                    >
+                        <Text
+                            style={[
+                                styles.addFriendInvitationReceivedItemRealName,
+                                theme === lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
+                            {item.receiver_id.name}
+                        </Text>
+                        <Text
+                            style={[
+                                styles.addFriendInvitationReceivedItemAddDate,
+                                theme === lightMode
+                                    ? commonStyles.lightTertiaryText
+                                    : commonStyles.darkTertiaryText,
+                            ]}
+                        >
+                            {handleConvertDateStrToDateFormat(item.createdAt)}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        onPress={() => handleUndoRequest(item)}
+                        style={[
+                            styles.addFriendInvitationSentItemActionUndoButton,
+                            {
+                                backgroundColor:
+                                    theme === lightMode
+                                        ? commonStyles
+                                              .chatNavbarBorderBottomColorLight
+                                              .color
+                                        : commonStyles
+                                              .chatNavbarBorderBottomColorDark
+                                              .color,
+                            },
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.addFriendInvitationSentItemActionUndoButtonText,
+                                {
+                                    color:
+                                        theme === lightMode
+                                            ? commonStyles.lightPrimaryText
+                                                  .color
+                                            : commonStyles.darkPrimaryText
+                                                  .color,
+                                },
+                            ]}
+                        >
+                            {t("addFriendInvitationSentUndo")}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
                 <View
                     style={[
-                        styles.addFriendInvitationSentItemMainContent
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.addFriendInvitationReceivedItemRealName,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightPrimaryText
-                            :
-                            commonStyles.darkPrimaryText
-                        ]}
-                    >
-                        {item.receiver_id.name}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.addFriendInvitationReceivedItemAddDate,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightTertiaryText
-                            :
-                            commonStyles.darkTertiaryText
-                        ]}
-                    >
-                        {
-                            new Date(getAccurancyDateVN(item.createdAt)).toISOString().split('T')[0]
-                        }
-                    </Text>
-                </View>
-                <TouchableOpacity
-                    onPress={handleUndoRequest}
-                    style={[
-                        styles.addFriendInvitationSentItemActionUndoButton,
+                        styles.addFriendInvitationReceivedBreakLine,
                         {
                             backgroundColor:
-                            theme === lightMode
-                            ?
-                            commonStyles.chatNavbarBorderBottomColorLight.color
-                            :
-                            commonStyles.chatNavbarBorderBottomColorDark.color
-                        }
-                       
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.addFriendInvitationSentItemActionUndoButtonText,
-                            {
-                                color:
                                 theme === lightMode
-                                ?
-                                commonStyles.lightPrimaryText.color
-                                :
-                                commonStyles.darkPrimaryText.color
-                            }
-                        ]}
-                    >{t("addFriendInvitationSentUndo")}</Text>
-                </TouchableOpacity>
-            </View>
-        )
+                                    ? commonStyles.lightTertiaryBackground
+                                          .backgroundColor
+                                    : commonStyles.darkTertiaryBackground
+                                          .backgroundColor,
+                        },
+                    ]}
+                ></View>
+            </>
+        );
     }
 
     return (
-        requestSent && requestSent.length > 0
-        ?
         <View>
-            <View
-                style={[
-                    styles.addFriendInvitationSentFlatItem
-                ]}
-            >
-                <Image
-                    source={{uri: "https://www.w3schools.com/w3images/avatar2.png"}}
-                    style={[
-                        styles.addFriendInvitationAvatarImage,
-                    ]}
-                />
-                <View
-                    style={[
-                        styles.addFriendInvitationSentItemMainContent
-                    ]}
-                >
+            <Spinner
+                visible={isLoading}
+                textContent={t("loading")}
+                textStyle={{ color: "#FFF" }}
+            />
+            {requestSent && requestSent.length > 0 ? (
+                <View>
+                    {requestSent.map((item, index) =>
+                        renderFlatItem({ item, index })
+                    )}
+                </View>
+            ) : (
+                <View style={[styles.addFriendInvitationEmptyList]}>
+                    <Image
+                        source={require("../../assets/addInvitationEmptyListImage.png")}
+                        style={[styles.addFriendInvitationEmptyListImage]}
+                    />
                     <Text
                         style={[
-                            styles.addFriendInvitationReceivedItemRealName,
+                            styles.addFriendInvitationEmptyListText,
                             theme === lightMode
-                            ?
-                            commonStyles.lightPrimaryText
-                            :
-                            commonStyles.darkPrimaryText
+                                ? commonStyles.lightSecondaryText
+                                : commonStyles.darkSecondaryText,
                         ]}
                     >
-                        John Doe
-                    </Text>
-                    <Text
-                        style={[
-                            styles.addFriendInvitationReceivedItemAddDate,
-                            theme === lightMode
-                            ?
-                            commonStyles.lightTertiaryText
-                            :
-                            commonStyles.darkTertiaryText
-                        ]}
-                    >
-                        02/12/2023
+                        {t("addFriendInvitationSentEmpty")}
                     </Text>
                 </View>
-                <TouchableOpacity
-                    style={[
-                        styles.addFriendInvitationSentItemActionAddButton,
-                       
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.addFriendInvitationSentItemActionAddButtonText,
-                            
-                        ]}
-                    >{t("addFriendInvitationSentAddFriend")}</Text>
-                </TouchableOpacity>
-            </View>
-            <FlatList
-                data={requestSent}
-                keyExtractor={(item, index) => "" + index}
-                renderItem={({item, index}) => renderFlatItem({item, index})}
-            />
+            )}
         </View>
-        :
-        <View
-            style={[
-                styles.addFriendInvitationEmptyList
-            ]}
-        >
-            <Image
-                source={require("../../assets/addInvitationEmptyListImage.png")}
-                style={[
-                    styles.addFriendInvitationEmptyListImage
-                ]}
-            />
-            <Text style={[
-                styles.addFriendInvitationEmptyListText,
-                theme === lightMode
-                ?
-                commonStyles.lightSecondaryText
-                :
-                commonStyles.darkSecondaryText
-            ]}>{t("addFriendInvitationSentEmpty")}</Text>
-        </View>
-
-    )
+    );
 }

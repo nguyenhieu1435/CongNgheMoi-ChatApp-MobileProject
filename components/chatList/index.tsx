@@ -28,6 +28,8 @@ import { IConversation, IMessageItem } from "../../configs/interfaces";
 import Spinner from "react-native-loading-spinner-overlay";
 import { getAccurancyDateVN } from "../../utils/date";
 import { useIsFocused } from "@react-navigation/native";
+import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
+import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 
 type Props = {
     navigation: any;
@@ -90,7 +92,7 @@ export default function ChatList({ navigation, route }: Props) {
                         data.forEach((item: IConversation) => {
                             conversations.push(item);
                         });
-                    conversations = conversations.filter((item) => item.lastMessage);
+                    // conversations = conversations.filter((item) => item.lastMessage);
                     setMyConversations(conversations);
                 } else {
                     console.log("error get my conversations");
@@ -218,69 +220,59 @@ export default function ChatList({ navigation, route }: Props) {
         }
     }
 
-    async function handleNavigateToChatDetail(conversation: IConversation) {
-        console.log("conversation id: " + conversation._id);
-        setIsLoading(true);
-        if (conversation.isGroup){
-
-        } else {
-            try {
+    // async function handleNavigateToChatDetail(conversation: IConversation) {
+    //     console.log("conversation id: " + conversation._id);
+    //     setIsLoading(true);
+    //     try {
                 
-                const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + userInfo.accessToken
-                    }
-                })
-                if (messageHistoryResponse.ok){
-                    let messageHistoryData = await messageHistoryResponse.json();
-                    // if (Array.isArray(messageHistoryData) && messageHistoryData.length > 0) {
+    //         const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
+    //             method: "GET",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 "Authorization": "Bearer " + userInfo.accessToken
+    //             }
+    //         })
+    //         if (messageHistoryResponse.ok){
+    //             let messageHistoryData = await messageHistoryResponse.json();
+    //             let newData : IMessageItem[] = []
+    //             Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
+    //                 newData.push(
+    //                     {
+    //                         _id: item._id,
+    //                         sender: item.sender,
+    //                         messages: item.messages,
+    //                         conversation: item.conversation,
+    //                         reply : item.reply,
+    //                         files: item.files,
+    //                         createdAt: getAccurancyDateVN(item.createdAt),
+    //                         updatedAt: getAccurancyDateVN(item.updatedAt),
+    //                         "__v": item.__v,
+    //                         statuses: item.statuses,
+    //                         location: item.location,
+    //                         deleted: item.deleted
+    //                     }
+    //                 )
+    //             })
+    //             setIsLoading(false);
+    //             if (messageHistoryData.length > 0){
+    //                 navigation.navigate("ChatDetail", {
+    //                     conversation: conversation,
+    //                     messages: newData.reverse()
+    //                 });
+    //             } else {
+    //                 navigation.navigate("ChatDetail", {
+    //                     conversation: conversation,
+    //                     messages: []
+    //                 });
+    //             }
+    //         }
 
-                    //     messageHistoryData = messageHistoryData.reverse()
-                    // }
-                    let newData : IMessageItem[] = []
-                    Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
-                        newData.push(
-                            {
-                                _id: item._id,
-                                sender: item.sender,
-                                messages: item.messages,
-                                conversation: item.conversation,
-                                reply : item.reply,
-                                files: item.files,
-                                createdAt: getAccurancyDateVN(item.createdAt),
-                                updatedAt: getAccurancyDateVN(item.updatedAt),
-                                "__v": item.__v,
-                                statuses: item.statuses,
-                                location: item.location,
-                                deleted: item.deleted
-                            }
-                        )
-                    })
-                    setIsLoading(false);
-                    if (messageHistoryData.length > 0){
-                        navigation.navigate("ChatDetail", {
-                            conversation: conversation,
-                            messages: newData.reverse()
-                        });
-                    } else {
-                        navigation.navigate("ChatDetail", {
-                            conversation: conversation,
-                            messages: []
-                        });
-                    }
-                }
-
-            } catch (error) {
-                console.log("error get message history");
-            }
-        }
-        setIsLoading(false);
-    }
-    function getThemName(conversation : IConversation){
-        return conversation.users.find(user => user._id != userInfo.user?._id)
-    }
+    //     } catch (error) {
+    //         console.log("error get message history");
+    //     }
+    //     setIsLoading(false);
+    // }
+    
     return (
         <View
             style={[
@@ -1183,7 +1175,7 @@ export default function ChatList({ navigation, route }: Props) {
                             myConversations.map((conversation, index) => {
                                 return (
                                     <TouchableOpacity
-                                        onPress={()=> handleNavigateToChatDetail(conversation)}
+                                        onPress={()=> handleNavigateToChatDetail(conversation, setIsLoading, userInfo, navigation)}
                                         style={[styles.chatListHistoryItem]}
                                     >
                                         <View
@@ -1191,17 +1183,43 @@ export default function ChatList({ navigation, route }: Props) {
                                                 styles.friendActiveItemImageBox,
                                             ]}
                                         >
-                                            <Image
-                                                source={{
-                                                    uri: getThemName(conversation)?.avatar,
-                                                }}
-                                                resizeMode="contain"
-                                                style={{
-                                                    width: 36,
-                                                    height: 36,
-                                                    borderRadius: 50,
-                                                }}
-                                            />
+                                            <View>
+                                                {
+                                                    !conversation.isGroup
+                                                    ?
+                                                    <Image
+                                                        source={{
+                                                            uri: conversation.picture,
+                                                        }}
+                                                        resizeMode="contain"
+                                                        style={{
+                                                            width: 36,
+                                                            height: 36,
+                                                            borderRadius: 50,
+                                                        }}
+                                                    />
+                                                    :
+                                                    <View>
+                                                        {
+                                                            conversation.picture
+                                                            ?
+                                                            <Image
+                                                                source={{
+                                                                    uri: conversation.picture,
+                                                                }}
+                                                                resizeMode="contain"
+                                                                style={{
+                                                                    width: 36,
+                                                                    height: 36,
+                                                                    borderRadius: 50,
+                                                                }}
+                                                            />
+                                                            :
+                                                            CreateGroupAvatarWhenAvatarIsEmpty(conversation)
+                                                        }
+                                                    </View>
+                                                }
+                                            </View>
                                             <View
                                                 style={[
                                                     styles.friendActiveItemIconOnline,
@@ -1234,8 +1252,9 @@ export default function ChatList({ navigation, route }: Props) {
                                                         ? commonStyles.lightPrimaryText
                                                         : commonStyles.darkPrimaryText,
                                                 ]}
+                                                numberOfLines={1}
                                             >
-                                                {getThemName(conversation)?.name}
+                                                {conversation.name}
                                             </Text>
                                             <View
                                                 style={[
@@ -1243,7 +1262,7 @@ export default function ChatList({ navigation, route }: Props) {
                                                 ]}
                                             >
                                                 {
-                                                    handleShowMessagePreview(conversation.lastMessage)
+                                                    conversation.lastMessage && handleShowMessagePreview(conversation.lastMessage)
                                                 }
                                             </View>
                                         </View>

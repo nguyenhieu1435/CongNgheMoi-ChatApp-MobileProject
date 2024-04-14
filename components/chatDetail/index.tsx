@@ -125,36 +125,23 @@ export default function ChatDetail({ navigation, route }: Props) {
         });
         return Array.from(emojis.values());
     }
-    function returnRequireImageReaction(emoji: string) {
-        switch (emoji) {
-            case "👍":
-                return require("../../assets/like-reaction.png");
-            case "😡":
-                return require("../../assets/aggry-reaction.png");
-            case "😮":
-                return require("../../assets/surprise-reaction.png");
-            case "❤":
-                return require("../../assets/heart-reaction.png");
-            case "😢":
-                return require("../../assets/sad-reaction.png");
-            default:
-                return require("../../assets/haha-reaction.png");
-        }
-    }
-    // function handleControllingSlideScroll(index: number) {
-    //     if (index === -1) {
-    //         scrollReactionRef.current?.scrollTo({
-    //             x: 0,
-    //             animated: true,
-    //         });
-    //     } else {
-    //         scrollReactionRef.current?.scrollTo({
-    //             x: (WIDTH - 30 - 16) * (index + 1),
-    //             animated: true,
-    //         });
+    // function returnRequireImageReaction(emoji: string) {
+    //     switch (emoji) {
+    //         case "👍":
+    //             return require("../../assets/like-reaction.png");
+    //         case "😡":
+    //             return require("../../assets/aggry-reaction.png");
+    //         case "😮":
+    //             return require("../../assets/surprise-reaction.png");
+    //         case "❤":
+    //             return require("../../assets/heart-reaction.png");
+    //         case "😢":
+    //             return require("../../assets/sad-reaction.png");
+    //         default:
+    //             return require("../../assets/haha-reaction.png");
     //     }
-    //     setReactionFilter(index);
     // }
+
     function handelSetPaddingBottom() {
         let height = 0;
         height = showMoreChatActions
@@ -166,67 +153,7 @@ export default function ChatDetail({ navigation, route }: Props) {
         return height;
     }
 
-    // useEffect(() => {
-    //     const bearToken =
-    //         "Bearer " + userInfo.accessToken;
-
-    //     async function fetchMessageHistory() {
-    //         try {
-    //             const response = await fetch(
-    //                 LINK_GET_MESSAGE_HISTORY + conversation._id,
-    //                 {
-    //                     method: "GET",
-    //                     headers: {
-    //                         "Content-Type": "application/json",
-    //                         Authorization: bearToken,
-    //                     },
-    //                 }
-    //             );
-    //             if (!response.ok) {
-    //                 throw new Error("Something went wrong!");
-    //             }
-    //             const data = await response.json();
-    //             if (Array.isArray(data)) {
-    //                 const newData = data.map((message) => {
-    //                     let messageItem: IMessageItem = {
-    //                         _id: message._id,
-    //                         sender: {
-    //                             _id: message.sender._id,
-    //                             name: message.sender.name,
-    //                             avatar: message.sender.avatar,
-    //                         },
-    //                         messages: message.messages,
-    //                         conversation: message.conversation,
-    //                         reply: message.reply,
-    //                         files: message.files,
-    //                         createdAt: getAccurancyDateVN(message.createdAt),
-    //                         updatedAt: getAccurancyDateVN(message.updatedAt),
-    //                         __v: message.__v,
-    //                         statuses: message.statuses,
-    //                         location: message.location,
-    //                         deleted: message.deleted,
-    //                     };
-
-    //                     return messageItem;
-    //                 });
-    //                 console.log(newData);
-    //                 setMessageHistory(newData);
-    //             } else {
-    //                 setMessageHistory([]);
-    //             }
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
-    //     fetchMessageHistory();
-    // }, []);
-
-    // function sortMessageByDateDesc(messages : IMessageItem[]) {
-    //     return messages.sort((a, b) => {
-    //         return new Date(a.createdAt) - new Date(b.createdAt);
-    //     });
-    // }
-
+  
     const handleConvertDataMessageToDateTimeline = (date: string) => {
         const objDate = new Date(getAccurancyDateVN(date));
         // if (objDate is today) return "hh:mm" or return "hh:mm dd/mm/yyyy"

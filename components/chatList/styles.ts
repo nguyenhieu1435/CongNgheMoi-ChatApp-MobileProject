@@ -107,7 +107,8 @@ export const styles = StyleSheet.create({
         fontSize: 15,
     },
     chatListHistoryMainCol: {
-        flexGrow: 1
+        flexGrow: 1,
+        flexShrink: 1,
     },
     chatListHistoryTime:{
         fontSize: 13,

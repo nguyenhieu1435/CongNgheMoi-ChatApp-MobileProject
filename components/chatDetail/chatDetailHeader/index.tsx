@@ -20,6 +20,7 @@ import { LINK_UNPIN_MESSAGE } from "@env";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
 import { socket } from "../../../configs/socket-io";
+import CreateGroupAvatarWhenAvatarIsEmpty from "../../../utils/createGroupAvatarWhenAvatarIsEmpty";
 
 interface ChatDetailHeaderProps {
     theme: string;
@@ -131,7 +132,7 @@ function ChatDetailHeader({
                 ]}
             >
                 <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={() => navigation.navigate("ChatList")}
                     style={[styles.btnGoback]}
                 >
                     <FontAwesome
@@ -148,16 +149,35 @@ function ChatDetailHeader({
                     activeOpacity={1}
                     style={[styles.chatDetailNavbarUsernameBox]}
                 >
-                    <Image
-                        source={{ uri: getUserConversation()?.avatar }}
-                        resizeMode="cover"
-                        style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 50,
-                        }}
-                    />
+                    {
+                        !conversation.isGroup
+                        ?
+                        <Image
+                            source={{ uri: conversation.picture }}
+                            resizeMode="cover"
+                            style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 50,
+                            }}
+                        />
+                        :
+                        conversation.picture
+                            ?
+                            <Image
+                                source={{ uri: conversation.picture }}
+                                resizeMode="cover"
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 50,
+                                }}
+                            />
+                            :
+                            CreateGroupAvatarWhenAvatarIsEmpty(conversation)
+                    }
                     <Text
+                        numberOfLines={1}
                         style={[
                             styles.chatDetailUsernameText,
                             theme === lightMode
@@ -165,7 +185,7 @@ function ChatDetailHeader({
                                 : commonStyles.darkPrimaryText,
                         ]}
                     >
-                        {getUserConversation()?.name}
+                        {conversation.name}
                     </Text>
                     <View
                         style={[
@@ -253,21 +273,41 @@ function ChatDetailHeader({
                         )}
                     </OutsidePressHandler>
 
-                    <TouchableOpacity>
-                        <Image
-                            source={require("../../../assets/phone-line-icon.png")}
-                            resizeMode="contain"
-                            style={{
-                                width: 23,
-                                height: 23,
-                            }}
-                            tintColor={
-                                theme === lightMode
-                                    ? commonStyles.lightSecondaryText.color
-                                    : commonStyles.darkSecondaryText.color
-                            }
-                        />
-                    </TouchableOpacity>
+                    {
+                        conversation.isGroup
+                        ?
+                        <TouchableOpacity>
+                            <Image
+                                source={require("../../../assets/user-add-line.png")}
+                                resizeMode="contain"
+                                style={{
+                                    width: 23,
+                                    height: 23,
+                                }}
+                                tintColor={
+                                    theme === lightMode
+                                        ? commonStyles.lightSecondaryText.color
+                                        : commonStyles.darkSecondaryText.color
+                                }
+                            />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity>
+                            <Image
+                                source={require("../../../assets/phone-line-icon.png")}
+                                resizeMode="contain"
+                                style={{
+                                    width: 23,
+                                    height: 23,
+                                }}
+                                tintColor={
+                                    theme === lightMode
+                                        ? commonStyles.lightSecondaryText.color
+                                        : commonStyles.darkSecondaryText.color
+                                }
+                            />
+                        </TouchableOpacity>
+                    }
 
                     <TouchableOpacity>
                         <Image

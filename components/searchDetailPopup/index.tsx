@@ -1,4 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
+import {
+    View,
+    Text,
+    ScrollView,
+    TouchableOpacity,
+    Image,
+    Alert,
+} from "react-native";
 import { styles } from "./styles";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
@@ -10,10 +17,26 @@ import { TFunction, use } from "i18next";
 import { useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import OutsidePressHandler from "react-native-outside-press";
-import { LINK_GET_MY_FRIENDS, LINK_REQUEST_ADD_FRIEND, LINK_REQUEST_FRIEND_LIST, LINK_REVOCATION_REQUEST_FRIEND, LINK_SEARCH_USER } from "@env";
-import Spinner from 'react-native-loading-spinner-overlay';
-import { IRequestFriendList } from "../../configs/interfaces";
-import { createUserSearchedTable, getDBConnection, insertUserSearched, selectTop5NewestUserSearched } from "../../utils/sqlite";
+import {
+    LINK_GET_MY_FRIENDS,
+    LINK_REQUEST_ADD_FRIEND,
+    LINK_REQUEST_FRIEND_LIST,
+    LINK_REVOCATION_REQUEST_FRIEND,
+    LINK_SEARCH_USER,
+} from "@env";
+import Spinner from "react-native-loading-spinner-overlay";
+import {
+    IRequestFriendList,
+    IUserIsMyFriendsResult,
+    IUserResultSearch,
+} from "../../configs/interfaces";
+import {
+    createUserSearchedTable,
+    getDBConnection,
+    insertUserSearched,
+    selectTop5NewestUserSearched,
+} from "../../utils/sqlite";
+import { socket } from "../../configs/socket-io";
 
 interface SearchDetailPopupProps {
     textSearch: string;
@@ -90,7 +113,7 @@ function DetailSearchPopUpSearchEmpty({
 }: DetailSearchPopUpSearchEmptyProps) {
     const [userSeached, setUserSearched] = useState<IUserResultSearch[]>([]);
 
-    useEffect(()=>{
+    useEffect(() => {
         const getUserSearchedFromSQLite = async () => {
             try {
                 const db = getDBConnection();
@@ -103,22 +126,20 @@ function DetailSearchPopUpSearchEmpty({
                         userSearched.push({
                             _id: element.userId,
                             name: element.name,
-                            avatar: element.avatar
+                            avatar: element.avatar,
                         });
                     });
                     setUserSearched(userSearched);
                 } else {
                     setUserSearched([]);
                 }
-
             } catch (error) {
                 console.log(error);
                 setUserSearched([]);
             }
-            
-        }
+        };
         getUserSearchedFromSQLite();
-    }, [])
+    }, []);
 
     return (
         <View style={[styles.detailSearchPopUpSearchEmptyWrapper]}>
@@ -155,14 +176,14 @@ function DetailSearchPopUpSearchEmpty({
                             styles.detailSearchPopUpSearchEmptyUserList
                         }
                     >
-                        {
-                            userSeached.length > 0 
-                            && 
+                        {userSeached.length > 0 &&
                             userSeached.map((user, index) => {
                                 return (
                                     <TouchableOpacity
                                         key={index}
-                                        onPress={() => console.log("Open Chat Detail")}
+                                        onPress={() =>
+                                            console.log("Open Chat Detail")
+                                        }
                                         style={[
                                             styles.detailSearchPopUpSearchEmptyUserSearched,
                                         ]}
@@ -188,8 +209,7 @@ function DetailSearchPopUpSearchEmpty({
                                         </Text>
                                     </TouchableOpacity>
                                 );
-                            })
-                        }
+                            })}
                         {/* <TouchableOpacity
                             onPress={() => console.log("Open Chat Detail")}
                             style={[
@@ -346,11 +366,7 @@ interface DetailSearchPopUpSearchNotEmptyProps {
     navigate: any;
     textSearch: string;
 }
-export interface IUserResultSearch {
-    _id: string;
-    name: string;
-    avatar: string;
-}
+
 function DetailSearchPopUpSearchNotEmpty({
     translation: t,
     theme,
@@ -358,40 +374,39 @@ function DetailSearchPopUpSearchNotEmpty({
     textSearch,
 }: DetailSearchPopUpSearchNotEmptyProps) {
     const [usersResult, setUsersResult] = useState<IUserResultSearch[]>([]);
-    const [myFriends, setMyFriends] = useState<IUserResultSearch[]>([]);
-    const [isLoading, setIsLoading] = useState(false);  
-    const [requestFriendList, setRequestFriendList] = useState<IRequestFriendList[]>([]);
+    const [myFriends, setMyFriends] = useState<IUserIsMyFriendsResult|null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [requestFriendList, setRequestFriendList] = useState<
+        IRequestFriendList[]
+    >([]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
 
-    async function getUserInRequestFriendList(){
+    async function getUserInRequestFriendList() {
         try {
             const response = await fetch(LINK_REQUEST_FRIEND_LIST, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization:
-                        "Bearer " +
-                        userInfo.accessToken,
+                    Authorization: "Bearer " + userInfo.accessToken,
                 },
             });
             if (response.ok) {
                 const data = await response.json();
-                console.log("DATA: ", data);
+                console.log("getUserInRequestFriendList-----------: ", data);
                 const arrayData: IRequestFriendList[] = [];
                 Array.isArray(data) &&
                     data.forEach((element: any) => {
-                        console.log("ELEMENT: ", element);
-                        
                         arrayData.push({
                             _id: element._id,
                             sender_id: element.sender_id,
-                            receiver_id: element.receiver_id,
+                            blockView: element.blockView,
                             createdAt: element.createdAt,
                             updatedAt: element.updatedAt,
-                            __v: element.__v
+                            receiver_id: element.receiver_id,
+                            message: element.message,
                         });
                     });
-               
+
                 return arrayData;
             } else {
                 return [];
@@ -399,24 +414,20 @@ function DetailSearchPopUpSearchNotEmpty({
         } catch (error) {
             throw error;
         }
-
     }
     async function getUserByTextSearch(textSearch: string) {
         try {
-            const response = await fetch(
-                LINK_SEARCH_USER + "=" + textSearch,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization:
-                            "Bearer " +
-                            userInfo.accessToken,
-                    },
-                }
-            );
+            const response = await fetch(LINK_SEARCH_USER + "=" + textSearch, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
             if (response.status === 200) {
                 const data: IUserResultSearch = await response.json();
+                console.log("getUserByTextSearch", data);
+
                 let arrayData: IUserResultSearch[] = [];
                 Array.isArray(data) &&
                     data.forEach((element: any) => {
@@ -440,25 +451,23 @@ function DetailSearchPopUpSearchNotEmpty({
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization:
-                        "Bearer " +
-                        userInfo.accessToken,
+                    Authorization: "Bearer " + userInfo.accessToken,
                 },
             });
             if (response.ok) {
                 const data = await response.json();
-                const arrayData: IUserResultSearch[] = [];
-                Array.isArray(data) &&
-                    data.forEach((element: any) => {
-                        arrayData.push({
-                            _id: element._id,
-                            name: element.name,
-                            avatar: element.avatar,
-                        });
-                    });
+                console.log("getUsersIsMyFriends", data);
+
+                const arrayData: IUserIsMyFriendsResult = {
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                    friends: data.friends,
+                    _id: data._id,
+                };
+
                 return arrayData;
             } else {
-                return [];
+                return null;
             }
         } catch (error) {
             throw error;
@@ -466,21 +475,18 @@ function DetailSearchPopUpSearchNotEmpty({
     }
 
     useEffect(() => {
-        
-       
-        
         const promiseAllFetchData = async () => {
             try {
-                const [usersResult, myFriends, requestFriendList] = await Promise.all([
-                    getUserByTextSearch(textSearch),
-                    getUsersIsMyFriends(),
-                    getUserInRequestFriendList()
-                ]);
+                const [usersResult, myFriends, requestFriendList] =
+                    await Promise.all([
+                        getUserByTextSearch(textSearch),
+                        getUsersIsMyFriends(),
+                        getUserInRequestFriendList(),
+                    ]);
 
                 setUsersResult(usersResult);
                 setMyFriends(myFriends);
                 setRequestFriendList(requestFriendList);
-
             } catch (error) {
                 console.log(error);
             }
@@ -489,37 +495,42 @@ function DetailSearchPopUpSearchNotEmpty({
     }, [textSearch]);
 
     function handleCheckUserIsFriend(userId: string) {
-        return myFriends.some((friend) => friend._id === userId);
+        const result = myFriends?.friends.some((friend) => friend._id === userId) || false;
+        return result;
     }
-    function checkIsRequestedFriend(userId: string){
-        return requestFriendList.some((request) => request.receiver_id._id === userId);
+    function checkIsRequestedFriend(userId: string) {
+      
+        const result = requestFriendList.some(
+            (request) => request.receiver_id?._id === userId
+        );
+        return result;
     }
-    async function handleAddFriend(userId: string){
+    async function handleAddFriend(userId: string) {
         try {
             setIsLoading(true);
             const response = await fetch(LINK_REQUEST_ADD_FRIEND, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization:
-                        "Bearer " +
-                        userInfo.accessToken,
+                    Authorization: "Bearer " + userInfo.accessToken,
                 },
                 body: JSON.stringify({
-                    friendId: userId
-                })
-            })
+                    friendId: userId,
+                    message: "Hello, I want to be your friend",
+                    blockView: false,
+                }),
+            });
             if (response.ok) {
-               
+
                 const requestFriendList = await getUserInRequestFriendList();
-
                 setRequestFriendList(requestFriendList);
-
             } else {
-                Alert.alert("Error", "Add friend failed", [{
-                    text: "OK",
-                    onPress: () => {}
-                }]);
+                Alert.alert("Error", "Add friend failed", [
+                    {
+                        text: "OK",
+                        onPress: () => {},
+                    },
+                ]);
             }
 
             setIsLoading(false);
@@ -528,31 +539,30 @@ function DetailSearchPopUpSearchNotEmpty({
         }
         setIsLoading(false);
     }
-    async function handleUndoAddFriend(userId: string){
+    async function handleUndoAddFriend(userId: string) {
         try {
             setIsLoading(true);
             const response = await fetch(LINK_REVOCATION_REQUEST_FRIEND, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization:
-                        "Bearer " +
-                        userInfo.accessToken,
+                    Authorization: "Bearer " + userInfo.accessToken,
                 },
                 body: JSON.stringify({
-                    friendId: userId
-                })
-            })
+                    friendId: userId,
+                }),
+            });
             if (response.ok) {
-               
+                socket.emit("addFriend", userId)
                 const requestFriendList = await getUserInRequestFriendList();
                 setRequestFriendList(requestFriendList);
-
             } else {
-                Alert.alert("Error", "Undo add friend failed", [{
-                    text: "OK",
-                    onPress: () => {}
-                }]);
+                Alert.alert("Error", "Undo add friend failed", [
+                    {
+                        text: "OK",
+                        onPress: () => {},
+                    },
+                ]);
             }
 
             setIsLoading(false);
@@ -561,175 +571,213 @@ function DetailSearchPopUpSearchNotEmpty({
         }
         setIsLoading(false);
     }
-    async function handleInsertUserSearchedToSQLite(user: IUserResultSearch){
+    async function handleInsertUserSearchedToSQLite(user: IUserResultSearch) {
         try {
             const db = getDBConnection();
             await createUserSearchedTable(db);
-            const resultInsert = await insertUserSearched(db, user._id, user.name, user.avatar);
+            const resultInsert = await insertUserSearched(
+                db,
+                user._id,
+                user.name,
+                user.avatar
+            );
             console.log("RESULT INSERT: ", resultInsert);
             return resultInsert;
         } catch (error) {
             throw error;
         }
     }
-    async function handleOpenChatDetail(receiverID: string){
+    async function handleOpenChatDetail(receiverID: string) {}
+
+    console.log("Sout", usersResult);
+    
+    useEffect(()=>{
+        socket.connect();
         
-    }
+        function onConnect(){
+            console.log("Connected");
+            socket.emit("online", userInfo.user?._id);
+        }
+        function onAddFriendRequest(data: any){
+
+        }
+
+        socket.on("connect", onConnect);
+
+        return () => {
+            socket.off("connect", onConnect);
+            socket.disconnect();
+        }
+    }, [])
 
     return (
         <View style={[styles.detailSearchPopUpSearchNotEmptyWrapper]}>
             <Spinner
                 visible={isLoading}
                 textContent={t("loading")}
-                textStyle={{ color: '#FFF' }}
+                textStyle={{ color: "#FFF" }}
             />
             <ScrollView
                 style={[styles.detailSearchPopUpSearchNotEmptyScrollWrapper]}
             >
-                {
-                usersResult.length > 0
-                ?
-                <View>
-                    <View
-                        style={[styles.detailSearchPopupSearchEmptyAllWrapper]}
-                    >
-                        <Text
-                            style={[
-                                styles.detailSearchPopupSearchEmptyAllTitle,
-                                theme === lightMode
-                                    ? commonStyles.lightPrimaryText
-                                    : commonStyles.darkPrimaryText,
-                            ]}
-                        >
-                            {t("searchDetailContactTitle") + " "}
-                            <Text
-                                style={[
-                                    styles.detailSearchPopupSearchEmptyAllMatchedNumber,
-                                    theme === lightMode
-                                        ? commonStyles.lightSecondaryText
-                                        : commonStyles.darkSecondaryText,
-                                ]}
-                            >
-                                {`(${usersResult.length})`}
-                            </Text>
-                        </Text>
+                {usersResult && usersResult.length > 0 ? (
+                    <View>
                         <View
                             style={[
-                                styles.detailSearchPopUpSearchNotEmptyAllContactList,
+                                styles.detailSearchPopupSearchEmptyAllWrapper,
                             ]}
                         >
-                            {usersResult.map(
-                                (user: IUserResultSearch, index) => {
-                                    return (
-                                        <TouchableOpacity
-                                            onPress={() => handleInsertUserSearchedToSQLite(user)}
-                                            key={index}
-                                            style={[
-                                                styles.detailSearchPopUpSearchNotEmptyAllContactItem,
-                                                {
-                                                    borderBottomColor:
-                                                        theme === lightMode
-                                                            ? commonStyles
-                                                                  .chatNavbarBorderBottomColorLight
-                                                                  .color
-                                                            : commonStyles
-                                                                  .chatNavbarBorderBottomColorDark
-                                                                  .color,
-                                                },
-                                            ]}
-                                        >
-                                            <Image
-                                                source={{
-                                                    uri: user.avatar,
-                                                }}
+                            <Text
+                                style={[
+                                    styles.detailSearchPopupSearchEmptyAllTitle,
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText,
+                                ]}
+                            >
+                                {t("searchDetailContactTitle") + " "}
+                                <Text
+                                    style={[
+                                        styles.detailSearchPopupSearchEmptyAllMatchedNumber,
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                            : commonStyles.darkSecondaryText,
+                                    ]}
+                                >
+                                    {`(${usersResult.length})`}
+                                </Text>
+                            </Text>
+                            <View
+                                style={[
+                                    styles.detailSearchPopUpSearchNotEmptyAllContactList,
+                                ]}
+                            >
+
+                                {usersResult.map(
+                                    (user: IUserResultSearch, index) => {
+                                        
+                                        return (
+                                            <TouchableOpacity
+                                                onPress={
+                                                    () =>
+                                                    handleInsertUserSearchedToSQLite(
+                                                        user
+                                                    )
+                                                }
+                                                key={index}
                                                 style={[
-                                                    styles.detailSearchPopUpSearchNotEmptyAllContactItemAvatar,
-                                                ]}
-                                            />
-                                            <View
-                                                style={[
-                                                    styles.detailSearchPopUpSearchNotEmptyAllContactItemContent,
+                                                    styles.detailSearchPopUpSearchNotEmptyAllContactItem,
+                                                    {
+                                                        borderBottomColor:
+                                                            theme === lightMode
+                                                                ? commonStyles
+                                                                      .chatNavbarBorderBottomColorLight
+                                                                      .color
+                                                                : commonStyles
+                                                                      .chatNavbarBorderBottomColorDark
+                                                                      .color,
+                                                    },
                                                 ]}
                                             >
+                                                <Image
+                                                    source={{
+                                                        uri: user.avatar,
+                                                    }}
+                                                    style={[
+                                                        styles.detailSearchPopUpSearchNotEmptyAllContactItemAvatar,
+                                                    ]}
+                                                />
                                                 <View
                                                     style={[
-                                                        styles.searchNotEmptyAllContactItemContentNameWrapper,
+                                                        styles.detailSearchPopUpSearchNotEmptyAllContactItemContent,
                                                     ]}
                                                 >
-                                                    <Text
+                                                    <View
                                                         style={[
-                                                            styles.searchNotEmptyAllContactItemContentNameNormal,
-                                                            theme === lightMode
-                                                                ? commonStyles.lightPrimaryText
-                                                                : commonStyles.darkPrimaryText,
+                                                            styles.searchNotEmptyAllContactItemContentNameWrapper,
                                                         ]}
                                                     >
-                                                        {user.name}
-                                                    </Text>
+                                                        <Text
+                                                            style={[
+                                                                styles.searchNotEmptyAllContactItemContentNameNormal,
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles.lightPrimaryText
+                                                                    : commonStyles.darkPrimaryText,
+                                                            ]}
+                                                        >
+                                                            {user.name}
+                                                        </Text>
+                                                    </View>
                                                 </View>
-                                            </View>
-                                            <View>
-                                                {handleCheckUserIsFriend(
-                                                    user._id
-                                                ) ? (
-                                                    <TouchableOpacity
-                                                        onPress={()=>{
-                                                            
-                                                        }}
-                                                        style={[
-                                                            styles.detailSearchPopUpSearchNotEmptyContactItemCallBtn,
-                                                        ]}
-                                                    >
-                                                        <Image
-                                                            source={require("../../assets/phone-fill-icon.png")}
+                                                <View>
+                                                    {handleCheckUserIsFriend(
+                                                        user._id
+                                                    ) ? (
+                                                        <TouchableOpacity
+                                                            onPress={() => {}}
                                                             style={[
-                                                                styles.detailSearchPopUpSearchNotEmptyContactItemCallBtnIcon,
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                ) : (
-                                                    checkIsRequestedFriend(user._id) 
-                                                    ?
-                                                    <TouchableOpacity
-                                                        onPress={()=> handleUndoAddFriend(user._id)}
-                                                        style={[
-                                                            styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendBtn,
-                                                        ]}
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendText,
+                                                                styles.detailSearchPopUpSearchNotEmptyContactItemCallBtn,
                                                             ]}
                                                         >
-                                                            {t(
-                                                                "searchDetailAddFriendTextUndo"
-                                                            )}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                    :
-                                                    <TouchableOpacity
-                                                        onPress={()=> handleAddFriend(user._id)}
-                                                        style={[
-                                                            styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendBtn,
-                                                        ]}
-                                                    >
-                                                        <Text
+                                                            <Image
+                                                                source={require("../../assets/phone-fill-icon.png")}
+                                                                style={[
+                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemCallBtnIcon,
+                                                                ]}
+                                                            />
+                                                        </TouchableOpacity>
+                                                    ) : checkIsRequestedFriend(
+                                                          user._id
+                                                      ) ? (
+                                                        <TouchableOpacity
+                                                            onPress={() =>
+                                                                handleUndoAddFriend(
+                                                                    user._id
+                                                                )
+                                                            }
                                                             style={[
-                                                                styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendText,
+                                                                styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendBtn,
                                                             ]}
                                                         >
-                                                            {t(
-                                                                "searchDetailAddFriendText"
-                                                            )}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                            </View>
-                                        </TouchableOpacity>
-                                    );
-                                }
-                            )}
-                            {/* <TouchableOpacity
+                                                            <Text
+                                                                style={[
+                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendText,
+                                                                ]}
+                                                            >
+                                                                {t(
+                                                                    "searchDetailAddFriendTextUndo"
+                                                                )}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    ) : (
+                                                        <TouchableOpacity
+                                                            onPress={() =>
+                                                                handleAddFriend(
+                                                                    user._id
+                                                                )
+                                                            }
+                                                            style={[
+                                                                styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendBtn,
+                                                            ]}
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemAddFriendText,
+                                                                ]}
+                                                            >
+                                                                {t(
+                                                                    "searchDetailAddFriendText"
+                                                                )}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                            </TouchableOpacity>
+                                        );
+                                    }
+                                )}
+                                {/* <TouchableOpacity
                                     style={[
                                         styles.detailSearchPopUpSearchNotEmptyAllContactItem,
                                         {
@@ -832,7 +880,7 @@ function DetailSearchPopUpSearchNotEmpty({
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity> */}
-                            {/* <TouchableOpacity
+                                {/* <TouchableOpacity
                                     style={[
                                         styles.detailSearchPopUpSearchNotEmptyAllContactItem,
                                         {
@@ -933,7 +981,7 @@ function DetailSearchPopUpSearchNotEmpty({
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity> */}
-                            {/* <TouchableOpacity
+                                {/* <TouchableOpacity
                                     style={[
                                         styles.detailSearchPopUpSearchNotEmptyAllContactItem,
                                         {
@@ -1011,7 +1059,7 @@ function DetailSearchPopUpSearchNotEmpty({
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity> */}
-                            {/* <TouchableOpacity
+                                {/* <TouchableOpacity
                                     style={[
                                         styles.detailSearchPopUpSearchNotEmptyAllContactItem,
                                         {
@@ -1115,8 +1163,8 @@ function DetailSearchPopUpSearchNotEmpty({
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity> */}
-                        </View>
-                        {/* <TouchableOpacity
+                            </View>
+                            {/* <TouchableOpacity
                             style={[
                                 styles.detailSearchPopUpSearchEmptyBtnSeeMore,
                             ]}
@@ -1140,37 +1188,38 @@ function DetailSearchPopUpSearchNotEmpty({
                                 }
                             />
                         </TouchableOpacity> */}
+                        </View>
                     </View>
-                </View>
-                :
-                <View
-                    style={[
-                        {
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginTop: 50,
-                        },
-                    ]}
-                >
-                    <Image
-                        source={require("../../assets/page-is-empty.png")}
-                        style={{
-                            width: 200,
-                            height: 200,
-                            resizeMode: "contain",
-                        }}
-                    />
-                    <Text
+                ) : (
+                    <View
                         style={[
-                            styles.detailSearchPopupSearchEmptyTitle,
-                            theme === lightMode
-                                ? commonStyles.lightPrimaryText
-                                : commonStyles.darkPrimaryText,
+                            {
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginTop: 50,
+                            },
                         ]}
                     >
-                        {t("searchDetailAddFriendEmptyList")}
-                    </Text>
-                </View>}
+                        <Image
+                            source={require("../../assets/page-is-empty.png")}
+                            style={{
+                                width: 200,
+                                height: 200,
+                                resizeMode: "contain",
+                            }}
+                        />
+                        <Text
+                            style={[
+                                styles.detailSearchPopupSearchEmptyTitle,
+                                theme === lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
+                            {t("searchDetailAddFriendEmptyList")}
+                        </Text>
+                    </View>
+                )}
             </ScrollView>
         </View>
     );

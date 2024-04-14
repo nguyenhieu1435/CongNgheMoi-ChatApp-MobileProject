@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     },
     addFriendInvitationReceivedListSection:{
         paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         gap: 15
     },
     addFriendInvitationReceivedItemSection:{
