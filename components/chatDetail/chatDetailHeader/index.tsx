@@ -276,7 +276,9 @@ function ChatDetailHeader({
                     {
                         conversation.isGroup
                         ?
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={()=> navigation.navigate("AddFriendIntoGroup")}
+                        >
                             <Image
                                 source={require("../../../assets/user-add-line.png")}
                                 resizeMode="contain"

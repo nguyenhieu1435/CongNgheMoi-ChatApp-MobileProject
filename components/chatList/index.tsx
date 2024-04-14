@@ -220,6 +220,13 @@ export default function ChatList({ navigation, route }: Props) {
         }
     }
 
+    function handleGetNameConversation(conversation: IConversation) {
+        if (conversation.isGroup){
+            return conversation.name;
+        } else {
+            return conversation.users.find((user) => user._id !== userInfo.user?._id)?.name;
+        }
+    }
     // async function handleNavigateToChatDetail(conversation: IConversation) {
     //     console.log("conversation id: " + conversation._id);
     //     setIsLoading(true);
@@ -1254,7 +1261,7 @@ export default function ChatList({ navigation, route }: Props) {
                                                 ]}
                                                 numberOfLines={1}
                                             >
-                                                {conversation.name}
+                                                {handleGetNameConversation(conversation)}
                                             </Text>
                                             <View
                                                 style={[

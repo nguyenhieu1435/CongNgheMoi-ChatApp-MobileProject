@@ -13,8 +13,8 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import SearchDetailPopup from '../searchDetailPopup';
 import debounce from 'debounce';
 import { userInfoInterfaceI } from '../../redux_toolkit/slices/userInfo.slice';
-import { LINK_GET_MY_FRIENDS, LINK_GROUP } from '@env';
-import { IGroupConversation, IUserResultSearch } from '../../configs/interfaces';
+import { LINK_GET_MY_CONVERSATIONS, LINK_GET_MY_FRIENDS, LINK_GROUP } from '@env';
+import { IConversation, IGroupConversation, IUserResultSearch } from '../../configs/interfaces';
 import { handleConvertDateStrToDateFormat } from '../../utils/date';
 import CreateGroupAvatarWhenAvatarIsEmpty from '../../utils/createGroupAvatarWhenAvatarIsEmpty';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -305,7 +305,7 @@ function FriendScrollBox({translation : t, theme, style, navigation, userInfo} :
 
     async function getFriendList(){
         try {
-            setIsLoading(true)
+            
             const response = await fetch(LINK_GET_MY_FRIENDS, {
                 method: "GET",
                 headers: {
@@ -324,7 +324,6 @@ function FriendScrollBox({translation : t, theme, style, navigation, userInfo} :
             console.log("error", error)
             setSectionFriendList([]);
         }
-        setIsLoading(false)
     }
     function classificationFriendListByName(friendList: IUserResultSearch[]){
         const sectionData: ISectionFriendData[] = []
@@ -347,10 +346,34 @@ function FriendScrollBox({translation : t, theme, style, navigation, userInfo} :
     useEffect(()=>{
         getFriendList()
     }, [])
+    async function handleOpenChatDetail(friend: IUserResultSearch){
+        try {
+            setIsLoading(true)
+            const conversationResponse = await fetch(LINK_GET_MY_CONVERSATIONS, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    receiverUserId: friend._id
+                })
+            })
+            if (conversationResponse.ok){
+                const conversationData = await conversationResponse.json()
+                
+                handleNavigateToChatDetail(conversationData as IConversation, setIsLoading, userInfo, navigation)
+            }
+        } catch (error) {
+            console.log("error", error)
+        }
+        setIsLoading(false)
+    }
 
     function renderFriendItem({item , index} : {item: IUserResultSearch, index: number}){
         return (
             <TouchableOpacity
+                onPress={()=> handleOpenChatDetail(item)}
                 style={[
                     styles.contactDetailFriendItemBox,
                     {
@@ -749,6 +772,11 @@ function FriendScrollBox({translation : t, theme, style, navigation, userInfo} :
                 style,
             ]}
         >
+            <Spinner
+                visible={isLoading}
+                textContent={t("loading")}
+                color='#fff'
+            />
             <View
                 style={[
                     styles.contactDetailFriendAnotherActionContainer

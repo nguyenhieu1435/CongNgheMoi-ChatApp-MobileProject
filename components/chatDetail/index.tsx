@@ -353,6 +353,13 @@ export default function ChatDetail({ navigation, route }: Props) {
         });
         setMessageHistory(newArray);
     }
+    function handleGetNameConversation(conversation: IConversation) {
+        if (conversation.isGroup){
+            return conversation.name;
+        } else {
+            return conversation.users.find((user) => user._id !== userInfo.user?._id)?.name;
+        }
+    }
     
     
     return (
@@ -549,7 +556,9 @@ export default function ChatDetail({ navigation, route }: Props) {
                                                     : commonStyles.darkTertiaryText,
                                             ]}
                                         >
-                                            {conversation.name}
+                                            {
+                                                handleGetNameConversation(conversation)
+                                            }
                                         </Text>
                                     </View>
                                 </View>

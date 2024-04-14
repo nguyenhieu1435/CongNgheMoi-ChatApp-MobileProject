@@ -217,5 +217,6 @@
     "minutes": "phút",
     "hours": "giờ",
     "day": "ngày",
-    "week": "tuần"
+    "week": "tuần",
+    "chatGroupAddMemberTitle": "Thêm thành viên"
 }

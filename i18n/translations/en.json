@@ -214,6 +214,6 @@
     "minutes": "mins",
     "hours": "hours",
     "day": "days",
-    "week": "weeks"
-    
+    "week": "weeks",
+    "chatGroupAddMemberTitle": "Add member"
 }

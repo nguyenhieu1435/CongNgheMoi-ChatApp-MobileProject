@@ -26,6 +26,7 @@ import SearchHistoryModification from './components/searchHistoryModification';
 import CreateGroup from './components/createGroup';
 import StepTwoPointFiveRegister from './components/register/stepTwoPointFiveRegister';
 import RequestAddFriend from './components/requestAddFriend';
+import AddFriendIntoGroup from './components/addFriendIntoGroup';
 
 
 const Stack = createStackNavigator();
@@ -79,6 +80,7 @@ export default function App() {
               <Stack.Screen name='SearchHistoryModification' component={SearchHistoryModification}/>
               <Stack.Screen name='CreateGroup' component={CreateGroup}/>
               <Stack.Screen name='Login' component={Login}/>
+              <Stack.Screen name='AddFriendIntoGroup' component={AddFriendIntoGroup}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

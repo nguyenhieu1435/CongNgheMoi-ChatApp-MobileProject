@@ -371,55 +371,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         }
         setIsLoading(false);
     }
-    // async function handleNavigateToChatDetail(conversation: IGroupConversation) {
-    //     try {
-                
-    //         const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
-    //             method: "GET",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 "Authorization": "Bearer " + userInfo.accessToken
-    //             }
-    //         })
-    //         if (messageHistoryResponse.ok){
-    //             let messageHistoryData = await messageHistoryResponse.json();
-    //             let newData : IMessageItem[] = []
-    //             Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
-    //                 newData.push(
-    //                     {
-    //                         _id: item._id,
-    //                         sender: item.sender,
-    //                         messages: item.messages,
-    //                         conversation: item.conversation,
-    //                         reply: item.reply,
-    //                         files: item.files,
-    //                         createdAt: getAccurancyDateVN(item.createdAt),
-    //                         updatedAt: getAccurancyDateVN(item.updatedAt),
-    //                         "__v": item.__v,
-    //                         statuses: item.statuses,
-    //                         location: item.location,
-    //                         deleted: item.deleted
-    //                     }
-    //                 )
-    //             })
-    //             setIsLoading(false);
-    //             if (messageHistoryData.length > 0){
-    //                 navigation.navigate("ChatDetail", {
-    //                     conversation: conversation,
-    //                     messages: newData.reverse()
-    //                 });
-    //             } else {
-    //                 navigation.navigate("ChatDetail", {
-    //                     conversation: conversation,
-    //                     messages: []
-    //                 });
-    //             }
-    //         }
 
-    //     } catch (error) {
-    //         console.log("error get message history");
-    //     }
-    // }
 
     function renderUserByRecent(item: IUserResultSearch, index: number) {
         return (
