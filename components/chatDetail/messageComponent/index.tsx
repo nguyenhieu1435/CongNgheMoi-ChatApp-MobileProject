@@ -127,9 +127,16 @@ function MessageComponent({
                         }
                     });
                     setMessageHistory(newMessageHistory);
+                    console.log("calling reactForMessage", {
+                        users: conversation.users,
+                        messageId: dataAfter._id,
+                        react: null,
+                        userId: userInfo.user?._id,
+                    })
                     socket.emit("reactForMessage", {
                         users: conversation.users,
                         messageId: dataAfter._id,
+                        conversationId: conversation._id,
                         react: null,
                         userId: userInfo.user?._id,
                     });
@@ -166,6 +173,7 @@ function MessageComponent({
                     socket.emit("reactForMessage", {
                         users: conversation.users,
                         messageId: dataAfter._id,
+                        conversationId: conversation._id,
                         react: emoji,
                         userId: userInfo.user?._id,
                     });

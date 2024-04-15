@@ -92,7 +92,9 @@ function ChatDetailHeader({
             });
     }
     function handleGetMessageContent(message: IMessageItem) : string {
-        if (message.messages.length > 1){
+     
+        if (message.messages.length > 0){
+            console.log("Message PINNEDaaaaaaaa: ", message);
             return message.messages
             .map(
                 (
