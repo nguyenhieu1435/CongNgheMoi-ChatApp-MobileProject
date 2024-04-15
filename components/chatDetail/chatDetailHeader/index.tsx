@@ -277,7 +277,11 @@ function ChatDetailHeader({
                         conversation.isGroup
                         ?
                         <TouchableOpacity
-                            onPress={()=> navigation.navigate("AddFriendIntoGroup")}
+                            onPress={()=> navigation.navigate("AddFriendIntoGroup", {
+                                conversation: conversation,
+                                socket: socket,
+                                setConversation: setConversation,
+                            })}
                         >
                             <Image
                                 source={require("../../../assets/user-add-line.png")}
@@ -371,40 +375,83 @@ function ChatDetailHeader({
                                     },
                                 ]}
                             >
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        navigation.navigate("ChatProfile");
-                                    }}
-                                    style={[
-                                        styles.chatDetailNavbarBaseActionMoreItem,
-                                    ]}
-                                >
-                                    <Text
+                                {
+                                    conversation.isGroup
+                                    ?
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            navigation.navigate("ManagingGroup", {
+                                                conversation: conversation,
+                                                socket: socket,
+                                                setConversation: setConversation,
+                                            });
+                                        }}
                                         style={[
-                                            theme === lightMode
-                                                ? commonStyles.lightTertiaryText
-                                                : commonStyles.darkTertiaryText,
-                                            styles.navbarActionMoreItemText,
+                                            styles.chatDetailNavbarBaseActionMoreItem,
                                         ]}
                                     >
-                                        {t("chatDetaildMoreViewProfileTitle")}
-                                    </Text>
-                                    <Image
-                                        source={require("../../../assets/user-chatlist-bottom-tab.png")}
-                                        resizeMode="contain"
-                                        style={{
-                                            width: 17,
-                                            height: 17,
+                                        <Text
+                                            style={[
+                                                theme === lightMode
+                                                    ? commonStyles.lightTertiaryText
+                                                    : commonStyles.darkTertiaryText,
+                                                styles.navbarActionMoreItemText,
+                                            ]}
+                                        >
+                                            {t("chatDetaildMoreViewSettingGroup")}
+                                        </Text>
+                                        <Image
+                                            source={require("../../../assets/settings-4-line-icon.png")}
+                                            resizeMode="contain"
+                                            style={{
+                                                width: 17,
+                                                height: 17,
+                                            }}
+                                            tintColor={
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                        .lightSecondaryText.color
+                                                    : commonStyles.darkSecondaryText
+                                                        .color
+                                            }
+                                        />
+                                    </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            navigation.navigate("ChatProfile");
                                         }}
-                                        tintColor={
-                                            theme === lightMode
-                                                ? commonStyles
-                                                      .lightSecondaryText.color
-                                                : commonStyles.darkSecondaryText
-                                                      .color
-                                        }
-                                    />
-                                </TouchableOpacity>
+                                        style={[
+                                            styles.chatDetailNavbarBaseActionMoreItem,
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                theme === lightMode
+                                                    ? commonStyles.lightTertiaryText
+                                                    : commonStyles.darkTertiaryText,
+                                                styles.navbarActionMoreItemText,
+                                            ]}
+                                        >
+                                            {t("chatDetaildMoreViewProfileTitle")}
+                                        </Text>
+                                        <Image
+                                            source={require("../../../assets/user-chatlist-bottom-tab.png")}
+                                            resizeMode="contain"
+                                            style={{
+                                                width: 17,
+                                                height: 17,
+                                            }}
+                                            tintColor={
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                        .lightSecondaryText.color
+                                                    : commonStyles.darkSecondaryText
+                                                        .color
+                                            }
+                                        />
+                                    </TouchableOpacity>
+                                }
                                 <TouchableOpacity
                                     style={[
                                         styles.chatDetailNavbarBaseActionMoreItem,

@@ -27,6 +27,8 @@ import CreateGroup from './components/createGroup';
 import StepTwoPointFiveRegister from './components/register/stepTwoPointFiveRegister';
 import RequestAddFriend from './components/requestAddFriend';
 import AddFriendIntoGroup from './components/addFriendIntoGroup';
+import { ManagingGroup } from './components/managingGroup';
+import ShowMembersInGroup from './components/showMembersInGroup';
 
 
 const Stack = createStackNavigator();
@@ -81,6 +83,8 @@ export default function App() {
               <Stack.Screen name='CreateGroup' component={CreateGroup}/>
               <Stack.Screen name='Login' component={Login}/>
               <Stack.Screen name='AddFriendIntoGroup' component={AddFriendIntoGroup}/>
+              <Stack.Screen name='ManagingGroup' component={ManagingGroup}/>
+              <Stack.Screen name='ShowMembersInGroup' component={ShowMembersInGroup}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

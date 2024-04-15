@@ -297,6 +297,14 @@ export default function ChatDetail({ navigation, route }: Props) {
             })
             setMessageHistory(newMessageHistory);
         }
+        function onAddOrUpdateConversation({conversation }: {conversation : IConversation}){
+            setConversation(conversation);
+        }
+        function onRemovedFromGroup({conversationId} : {conversationId: string}){
+            if (conversation._id === conversationId){
+                navigation.navigate("PrimaryBottomTab");
+            }
+        }
 
         socket.on("connect", onConnect)
         socket.on("receivedMessage", onReceivedMessage)
@@ -306,6 +314,8 @@ export default function ChatDetail({ navigation, route }: Props) {
         socket.on("pinMessage", onPinMessage)
         socket.on("unpinMessage", onUnpinMessage)
         socket.on("reactForMessage", onReactForMessage)
+        socket.on("addOrUpdateConversation", onAddOrUpdateConversation)
+        socket.on("removeUserFromConversation", onRemovedFromGroup)
 
         return () => {
             socket.off("connect", onConnect);
@@ -316,6 +326,8 @@ export default function ChatDetail({ navigation, route }: Props) {
             socket.off("pinMessage", onPinMessage);
             socket.off("unpinMessage", onUnpinMessage);
             socket.off("reactForMessage", onReactForMessage);
+            socket.off("addOrUpdateConversation", onAddOrUpdateConversation);
+            socket.off("removeUserFromConversation", onRemovedFromGroup);
             socket.disconnect();
         }
         

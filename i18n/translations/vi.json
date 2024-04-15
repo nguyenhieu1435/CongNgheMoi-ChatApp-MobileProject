@@ -110,6 +110,7 @@
     "chatDetailSendTextPlaceholder": "Nhập tin nhắn...",
     "chatDetailReadyUploadTitle": "Đã sẵn sàng để tải lên!",
     "chatDetaildMoreViewProfileTitle": "Xem trang cá nhân",
+    "chatDetaildMoreViewSettingGroup": "Thiết lập nhóm",
     "chatDetailMoreMuteTitle": "Tắt thông báo",
     "chatDetailMoreDeleteTitle": "Xóa cuộc trò chuyện",
     "chatDetailMorePinTitle": "Ghim tin nhắn",
@@ -218,5 +219,18 @@
     "hours": "giờ",
     "day": "ngày",
     "week": "tuần",
-    "chatGroupAddMemberTitle": "Thêm thành viên"
+    "chatGroupAddMemberTitle": "Thêm thành viên",
+    "managingGroupTitle": "Tùy chọn",
+    "managingGroupAddMember": "Thêm thành viên",
+    "managingGroupShowMembers": "Xem thành viên",
+    "showMemberInGroupTitle": "Quản lý thành viên",
+    "showMemberInGroupMemberNumber": "Thành viên",
+    "showMemberInGroupYou": "Bạn",
+    "showMemberInGroupAdmin": "Nhóm trưởng",
+    "showMemberInGroupDeputy": "Phó nhóm trưởng",
+    "showMemberRemoveMember": "Xóa thành viên",
+    "showMemberGrantAdmin": "Bổ nhiệm làm nhóm trưởng",
+    "showMemberGrantDeputy": "Bổ nhiệm làm phó nhóm trưởng",
+    "showMemberRemoveDeputy": "Hủy bổ nhiệm phó nhóm trưởng"
+
 }

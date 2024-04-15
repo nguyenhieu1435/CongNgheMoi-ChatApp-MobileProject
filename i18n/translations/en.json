@@ -110,6 +110,7 @@
     "chatDetailSendTextPlaceholder": "Enter Message...",
     "chatDetailReadyUploadTitle": "Ready to upload!",
     "chatDetaildMoreViewProfileTitle": "View profile",
+    "chatDetaildMoreViewSettingGroup": "Group settings",
     "chatDetailMoreMuteTitle": "Muted",
     "chatDetailMoreDeleteTitle": "Delete",
     "chatDetailMorePinTitle": "Pin the message",
@@ -215,5 +216,17 @@
     "hours": "hours",
     "day": "days",
     "week": "weeks",
-    "chatGroupAddMemberTitle": "Add member"
+    "chatGroupAddMemberTitle": "Add member",
+    "managingGroupTitle": "Options",
+    "managingGroupAddMember": "Add member",
+    "managingGroupShowMembers": "Show members",
+    "showMemberInGroupTitle": "Manage members",
+    "showMemberInGroupMemberNumber": "Members",
+    "showMemberInGroupYou": "You",
+    "showMemberInGroupAdmin": "Admin",
+    "showMemberInGroupDeputy": "Deputy",
+    "showMemberRemoveMember": "Remove member",
+    "showMemberGrantAdmin": "Grant admin",
+    "showMemberGrantDeputy": "Grant deputy",
+    "showMemberRemoveDeputy": "Remove deputy"
 }
