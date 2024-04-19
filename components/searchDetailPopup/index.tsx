@@ -457,7 +457,9 @@ function DetailSearchPopUpSearchNotEmpty({
             if (response.ok) {
                 const data = await response.json();
                 console.log("getUsersIsMyFriends", data);
-
+                if (data === null){
+                    return null;
+                }
                 const arrayData: IUserIsMyFriendsResult = {
                     createdAt: data.createdAt,
                     updatedAt: data.updatedAt,

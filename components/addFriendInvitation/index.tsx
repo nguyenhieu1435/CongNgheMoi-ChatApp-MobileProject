@@ -98,7 +98,7 @@ export default function AddFriendInvitation({
                     ]}
                 >
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => navigation.navigate("Contacts")}
                         style={[styles.addFriendInvitationHeaderBackButton]}
                     >
                         <Image

@@ -17,7 +17,7 @@ import { lightMode } from "../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../CommonStyles/commonStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
-import { IConversation, IGroupConversation, IUserResultSearch } from "../../configs/interfaces";
+import { IConversation, IGroupConversation, IUserInConversation, IUserResultSearch } from "../../configs/interfaces";
 import { LINK_GET_MY_FRIENDS, LINK_GROUP } from "@env";
 import classificationFriendListByName from "../../utils/classificationFriendByName";
 import { CustomRadioButton } from "../register/stepFourRegister";
@@ -158,7 +158,7 @@ export default function AddFriendIntoGroup({
     async function handleAddFriendIntoGroup() {
         try {
             setIsLoading(true);
-            const userIds = selectedFriends.map((user) => user._id);
+            let userIds = selectedFriends.map((user) => user._id);
             const response = await fetch(`${LINK_GROUP}/${conversation._id}/users`, {
                 method: "POST",
                 headers: {
@@ -171,11 +171,15 @@ export default function AddFriendIntoGroup({
             })
             if (response.ok){
                 const data = await response.json();
-                console.log("data response add member: ", data);
-
-                socket.emit("addOrUpdateConversation", {
+                
+                console.log("data response add member: ", {
                     conversation: data,
                     userIds: userIds
+                });
+        
+                socket.emit("addOrUpdateConversation", {
+                    conversation: data,
+                    userIds: data.users.map((item : IUserInConversation) => item._id)
                 })
                 setConversation(data as IConversation)
                 setIsLoading(false);

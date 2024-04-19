@@ -97,9 +97,15 @@ export default function ShowMembersInGroup({
                     role: "owner"
                 })
             })
+
             if (response.ok){
                 console.log("Grant admin role to user successfully")
-                const data = await response.json();
+                let data = await response.json();
+                data = data as IConversation
+                socket.emit("addOrUpdateConversation", {
+                    conversation: data as IConversation,
+                    userIds: data.users.map((item : IUserInConversation) => item._id)
+                })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
                 setConversation(data as IConversation)
@@ -125,6 +131,10 @@ export default function ShowMembersInGroup({
             if (response.ok){
                 console.log("Grant deputy role to user successfully")
                 const data = await response.json();
+                socket.emit("addOrUpdateConversation", {
+                    conversation: data as IConversation,
+                    userIds: data.users.map((item : IUserInConversation) => item._id)
+                })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
                 setConversation(data as IConversation)
@@ -147,6 +157,11 @@ export default function ShowMembersInGroup({
             if (response.ok){
                 console.log("Remove deputy role to user successfully")
                 const data = await response.json();
+                socket.emit('removeUserFromConversation', { conversationId: data._id, userId: user._id })
+                socket.emit("addOrUpdateConversation", {
+                    conversation: data as IConversation,
+                    userIds: data.users.map((item : IUserInConversation) => item._id)
+                })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
                 setConversation(data as IConversation)
