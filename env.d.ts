@@ -30,4 +30,5 @@ declare module "@env" {
     export const LINK_REACT_MESSAGE: string;
     export const LINK_FORWARD_MESSAGE: string;
     export const LINK_GROUP: string;
+    export const LINK_FORWARD_MESSAGE: string;
 }

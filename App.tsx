@@ -29,6 +29,7 @@ import RequestAddFriend from './components/requestAddFriend';
 import AddFriendIntoGroup from './components/addFriendIntoGroup';
 import { ManagingGroup } from './components/managingGroup';
 import ShowMembersInGroup from './components/showMembersInGroup';
+import { dropDatabase, getDBConnection } from './utils/sqlite';
 
 
 const Stack = createStackNavigator();
@@ -37,7 +38,7 @@ export default function App() {
     // change the language follow up settings saved in the device
     // const {t, i18n} = useTranslation();
     // useEffect, i18n.changeLanguage('en')
-  
+
 
   return (
     <Provider store={store}>

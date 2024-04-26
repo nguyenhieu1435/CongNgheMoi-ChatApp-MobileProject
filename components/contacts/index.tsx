@@ -40,9 +40,7 @@ export default function Contacts({navigation} : ContactsProps) {
     const [typeFilterSelected, setTypeFilterSelected] = useState<string>(ContactTypeFilter.FRIEND)
     const userInfo = useSelector((state: IRootState) => state.userInfo)
 
-    const debounceTextSearch = useCallback(
-        debounce(setTextSearch, 500), []
-    )
+    const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
 
     return (
         <View
@@ -145,8 +143,8 @@ export default function Contacts({navigation} : ContactsProps) {
                                     : 
                                     commonStyles.darkIconColor.color
                                 }
-                                value={textSearch}
-                                onChangeText={debounceTextSearch}
+                                
+                                onChangeText={(text) => setTextSearchDebounce(text)}
                             />
                         </View>
                 </OutsidePressHandler>
@@ -298,7 +296,6 @@ export interface ISectionFriendData{
 }
 
 function FriendScrollBox({translation : t, theme, style, navigation, userInfo} : FriendScrollBoxProps){
-    const [friendFilterSelected, setFriendFilterSelected] = useState<string>(FriendFilter.ALL)
     const [indexPopupSelected, setIndexPopupSelected] = useState<string | null>(null)
     const refLocationYPopupSelected = useRef<number>(0)
     const [sectionFriendList, setSectionFriendList] = useState<ISectionFriendData[]>([])

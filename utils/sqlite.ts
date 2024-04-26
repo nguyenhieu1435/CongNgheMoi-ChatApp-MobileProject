@@ -54,7 +54,8 @@ export const createUserSearchedTable = async (db: SQLite.SQLiteDatabase) =>{
             userId TEXT PRIMARY KEY NOT NULL,
             name TEXT NOT NULL,
             avatar TEXT NOT NULL,
-            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ownerId TEXT NOT NULL
         )`, args: [] }], false)
         return resultCreateTable
     } catch (error) {
@@ -62,25 +63,25 @@ export const createUserSearchedTable = async (db: SQLite.SQLiteDatabase) =>{
     }
 }
 
-export const insertUserSearched = async (db: SQLite.SQLiteDatabase, _id: string, name: string, avatar: string) =>{
+export const insertUserSearched = async (db: SQLite.SQLiteDatabase, _id: string, name: string, avatar: string, ownerId: String) =>{
     try {
-        const exists = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE userId = ?`, args: [_id]}], false)
+        const exists = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE userId = ? and ownerId = ?`, args: [_id, ownerId]}], false)
         const obj = exists[0]
                 
         if("rows" in obj && obj.rows.length > 0){
-            await db.execAsync([{sql: `DELETE FROM user_searched WHERE userId = ?`, args: [_id]}], false)
+            await db.execAsync([{sql: `DELETE FROM user_searched WHERE userId = ? and ownerId = ?`, args: [_id, ownerId]}], false)
         }
        
-        const resultInsert = await db.execAsync([{sql: `INSERT INTO user_searched (userId, name, avatar) VALUES (?, ?, ?)`, args: [_id, name, avatar]}], false)
+        const resultInsert = await db.execAsync([{sql: `INSERT INTO user_searched (userId, name, avatar, ownerId) VALUES (?, ?, ?, ?)`, args: [_id, name, avatar, ownerId]}], false)
         return resultInsert
     } catch (error) {
         throw new Error("Error when inserting user_searched")
     }
 }
 
-export const selectTop5NewestUserSearched = async (db: SQLite.SQLiteDatabase) =>{
+export const selectTop5NewestUserSearched = async (db: SQLite.SQLiteDatabase, ownerId: String) =>{
     try {
-        const resultSelect = await db.execAsync([{sql: `SELECT * FROM user_searched ORDER BY createdAt DESC LIMIT 5`, args: []}], false)
+        const resultSelect = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE userId = ? ORDER BY createdAt DESC LIMIT 5`, args: [ownerId]}], false)
         return resultSelect
     } catch (error) {
         throw new Error("Error when selecting user_searched")

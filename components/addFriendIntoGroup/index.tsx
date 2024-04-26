@@ -27,6 +27,7 @@ import { Socket } from "socket.io-client";
 export interface ISectionMyFriend {
     title: string;
     data: IUserResultSearch[];
+    
 }
 
 export default function AddFriendIntoGroup({

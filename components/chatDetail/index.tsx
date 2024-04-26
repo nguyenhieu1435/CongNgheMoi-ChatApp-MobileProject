@@ -29,6 +29,7 @@ import {
     getAccurancyDateVN,
 } from "../../utils/date";
 import { socket } from "../../configs/socket-io";
+import ModalForwardMessage from "../modalForwardMessage";
 
 interface Props {
     navigation: any;
@@ -91,7 +92,7 @@ export default function ChatDetail({ navigation, route }: Props) {
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const ref = useRef<String>("");
-
+    const [showForwardModal, setShowForwardModal] = useState<IMessageItem | null>(null);
 
 
     function findReactionsByIndexMessageShowListReaction() {
@@ -152,6 +153,8 @@ export default function ChatDetail({ navigation, route }: Props) {
         }
         return height;
     }
+
+    console.log("ConversationID at ChatDetail: ", conversation._id)
 
   
     const handleConvertDataMessageToDateTimeline = (date: string) => {
@@ -394,6 +397,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                     conversation={conversation}
                     setConversation={setConversation}
                     socket={socket}
+                    setMessageHistory={setMessageHistory}
                 />
                 <View
                     style={[
@@ -412,6 +416,9 @@ export default function ChatDetail({ navigation, route }: Props) {
                                 animated: true,
                             })
                         }
+                        contentContainerStyle={{
+                            paddingTop: conversation.pinnedMessages.length > 0 ? 50 : 0,
+                        }}
                     >
                         {messageHistory &&
                             messageHistory.map((messageItem, index) => {
@@ -489,6 +496,7 @@ export default function ChatDetail({ navigation, route }: Props) {
                                             socket={socket}
                                             messageHistory={messageHistory}
                                             setMessageHistory={setMessageHistory}
+                                            setShowForwardModal={setShowForwardModal}
                                         />
                                     </>
                                 );
@@ -962,6 +970,15 @@ export default function ChatDetail({ navigation, route }: Props) {
                         </OutsidePressHandler>
                     </View>
                 </Modal> */}
+                {
+                    showForwardModal && (
+                        <ModalForwardMessage
+                            message={showForwardModal}
+                            setShowForwardModal={setShowForwardModal}
+                            conversation={conversation}
+                        />
+                    )
+                }
             </SafeAreaView>
         </View>
     );

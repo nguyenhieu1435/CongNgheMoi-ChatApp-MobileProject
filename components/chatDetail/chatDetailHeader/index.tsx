@@ -1,4 +1,12 @@
-import { View, Text, TouchableOpacity, Image, TextInput } from "react-native";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Image,
+    TextInput,
+    Modal,
+    Alert,
+} from "react-native";
 import { Dispatch, memo, SetStateAction, useState } from "react";
 import { styles } from "./styles";
 import commonStyles from "../../../CommonStyles/commonStyles";
@@ -16,11 +24,12 @@ import { useSelector } from "react-redux";
 import { IRootState } from "../../../redux_toolkit/store";
 import Tooltip from "react-native-walkthrough-tooltip";
 import { saveToClipboard } from "../../../utils/clipboard";
-import { LINK_UNPIN_MESSAGE } from "@env";
+import { LINK_GROUP, LINK_OPEN_CONVERSATION, LINK_UNPIN_MESSAGE } from "@env";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
 import { socket } from "../../../configs/socket-io";
 import CreateGroupAvatarWhenAvatarIsEmpty from "../../../utils/createGroupAvatarWhenAvatarIsEmpty";
+import BottomSheetLeaveGroup from "../bottomSheetLeaveGroup";
 
 interface ChatDetailHeaderProps {
     theme: string;
@@ -31,6 +40,7 @@ interface ChatDetailHeaderProps {
     conversation: IConversation;
     setConversation: Dispatch<SetStateAction<IConversation>>;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    setMessageHistory: Dispatch<SetStateAction<IMessageItem[]>>;
 }
 
 function ChatDetailHeader({
@@ -41,23 +51,22 @@ function ChatDetailHeader({
     setTextSearch,
     conversation,
     setConversation,
+    setMessageHistory
 }: ChatDetailHeaderProps) {
     const [showModalSearch, setShowModalSearch] = useState(false);
     const [showMoreAction, setShowMoreAction] = useState(false);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const [isShowPinAction, setIsShowPinAction] = useState(-1);
     const [showMore, setShowMore] = useState(false);
+    const [showModalLeaveGroup, setShowModalLeaveGroup] = useState(false);
+
+
+
 
     function setTextDebounce(text: string) {
         debounce(() => {
             setTextSearch(text);
         }, 500);
-    }
-
-    function getUserConversation() {
-        return conversation.users.find(
-            (user) => user._id != userInfo.user?._id
-        );
     }
 
     function handleUnpinMessage(message: IMessageItem) {
@@ -79,7 +88,7 @@ function ChatDetailHeader({
                         pinnedMessages: newPinnedMessage,
                     });
                     console.log("calling unpin");
-                    
+
                     socket.emit("unpinMessage", {
                         users: conversation.users,
                         message: message,
@@ -91,81 +100,106 @@ function ChatDetailHeader({
                 console.log(error);
             });
     }
-    function handleGetMessageContent(message: IMessageItem) : string {
-     
-        if (message.messages.length > 0){
+    function handleGetMessageContent(message: IMessageItem): string {
+        if (message.messages.length > 0) {
             console.log("Message PINNEDaaaaaaaa: ", message);
             return message.messages
-            .map(
-                (
-                    messageDetail
-                ) => {
-                    return messageDetail.type ===
-                        "text"
+                .map((messageDetail) => {
+                    return messageDetail.type === "text"
                         ? messageDetail.content
-                        : "@" +
-                              messageDetail.content;
-                }
-            )
-            .join("")
+                        : "@" + messageDetail.content;
+                })
+                .join("");
         } else if (message.files.some((file) => file.type.includes("image"))) {
-            return t("chatDetailImageTitle")
-        } else if (message.files.some((file) => file.type.includes("video") || file.type.includes("application"))) {
-            return t("chatDetailFileTitle")
+            return t("chatDetailImageTitle");
+        } else if (
+            message.files.some(
+                (file) =>
+                    file.type.includes("video") ||
+                    file.type.includes("application")
+            )
+        ) {
+            return t("chatDetailFileTitle");
         } else {
-            return t("chatDetailFileTitle")
+            return t("chatDetailFileTitle");
+        }
+    }
+    function deleteMyConversationAlert(){
+        Alert.alert("Xác nhận xóa trò chuyện", "Bạn có chắc chắn muốn xóa trò chuyện này không?", [
+            {
+                text: "Hủy",
+                onPress: () => {},
+                style: "cancel"
+            },
+            {
+                text: "Xóa",
+                onPress: handleDeleteMyConversation
+            }
+        ])
+    }
+    async function handleDeleteMyConversation(){
+        console.log("begin delete conversation");
+        
+        try {
+            const response = await fetch(LINK_OPEN_CONVERSATION + `/${conversation._id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+            })
+            if (response.ok){
+                setShowMoreAction(false)
+                setMessageHistory([]);
+            } else {
+                const data = await response.json();
+                console.log("Failed to delete conversation", data);
+                
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 
+
     return (
-        <View style={[styles.chatDetailNavbarContainer]}>
-            <View
-                style={[
-                    styles.chatDetailNavbar,
-                    {
-                        borderBottomColor:
-                            theme === lightMode
-                                ? commonStyles.chatNavbarBorderBottomColorLight
-                                      .color
-                                : commonStyles.chatNavbarBorderBottomColorDark
-                                      .color,
-                        zIndex: 20,
-                    },
-                ]}
-            >
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("ChatList")}
-                    style={[styles.btnGoback]}
+        <>
+            <View style={[styles.chatDetailNavbarContainer]}>
+                <View
+                    style={[
+                        styles.chatDetailNavbar,
+                        {
+                            borderBottomColor:
+                                theme === lightMode
+                                    ? commonStyles
+                                          .chatNavbarBorderBottomColorLight
+                                          .color
+                                    : commonStyles
+                                          .chatNavbarBorderBottomColorDark
+                                          .color,
+                            zIndex: 20,
+                        },
+                    ]}
                 >
-                    <FontAwesome
-                        name="angle-left"
-                        size={24}
-                        color={
-                            theme === lightMode
-                                ? commonStyles.lightSecondaryText.color
-                                : commonStyles.darkSecondaryText.color
-                        }
-                    />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    activeOpacity={1}
-                    style={[styles.chatDetailNavbarUsernameBox]}
-                >
-                    {
-                        !conversation.isGroup
-                        ?
-                        <Image
-                            source={{ uri: conversation.picture }}
-                            resizeMode="cover"
-                            style={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 50,
-                            }}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("ChatList")}
+                        style={[styles.btnGoback]}
+                    >
+                        <FontAwesome
+                            name="angle-left"
+                            size={24}
+                            color={
+                                theme === lightMode
+                                    ? commonStyles.lightSecondaryText.color
+                                    : commonStyles.darkSecondaryText.color
+                            }
                         />
-                        :
-                        conversation.picture
-                            ?
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        style={[styles.chatDetailNavbarUsernameBox]}
+                    >
+                        {!conversation.isGroup ? (
                             <Image
                                 source={{ uri: conversation.picture }}
                                 resizeMode="cover"
@@ -175,780 +209,340 @@ function ChatDetailHeader({
                                     borderRadius: 50,
                                 }}
                             />
-                            :
-                            CreateGroupAvatarWhenAvatarIsEmpty(conversation)
-                    }
-                    <Text
-                        numberOfLines={1}
-                        style={[
-                            styles.chatDetailUsernameText,
-                            theme === lightMode
-                                ? commonStyles.lightPrimaryText
-                                : commonStyles.darkPrimaryText,
-                        ]}
-                    >
-                        {conversation.name}
-                    </Text>
-                    <View
-                        style={[
-                            styles.activityIcon,
-                            {
-                                backgroundColor:
-                                    commonStyles.activeOnlineColor.color,
-                            },
-                        ]}
-                    ></View>
-                </TouchableOpacity>
-
-                <View style={[styles.chatDetailNavbarBaseActions]}>
-                    <OutsidePressHandler
-                        onOutsidePress={() => {
-                            setShowModalSearch(false);
-                        }}
-                        style={[styles.chatDetailNavbarBaseActionItemBox]}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {
-                                setShowModalSearch(!showModalSearch);
-                            }}
-                        >
+                        ) : conversation.picture ? (
                             <Image
-                                source={require("../../../assets/search-line-icon.png")}
-                                resizeMode="contain"
+                                source={{ uri: conversation.picture }}
+                                resizeMode="cover"
                                 style={{
-                                    width: 23,
-                                    height: 23,
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 50,
                                 }}
-                                tintColor={
-                                    theme === lightMode
-                                        ? commonStyles.lightSecondaryText.color
-                                        : commonStyles.darkSecondaryText.color
-                                }
                             />
-                        </TouchableOpacity>
+                        ) : (
+                            CreateGroupAvatarWhenAvatarIsEmpty(conversation)
+                        )}
+                        <Text
+                            numberOfLines={1}
+                            style={[
+                                styles.chatDetailUsernameText,
+                                theme === lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
+                            {conversation.name}
+                        </Text>
+                        <View
+                            style={[
+                                styles.activityIcon,
+                                {
+                                    backgroundColor:
+                                        commonStyles.activeOnlineColor.color,
+                                },
+                            ]}
+                        ></View>
+                    </TouchableOpacity>
 
-                        {showModalSearch && (
-                            <View
-                                style={[
-                                    styles.chatDetailNavbarBaseActionItemPopup,
-                                    theme === lightMode
-                                        ? commonStyles.lightFourBackground
-                                        : commonStyles.darkFourBackground,
-                                    {
-                                        shadowColor: "#0F223A",
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 2,
-                                        },
-                                        shadowOpacity: 0.12,
-                                        shadowRadius: 4,
-                                        elevation: 4,
-                                    },
-                                ]}
+                    <View style={[styles.chatDetailNavbarBaseActions]}>
+                        <OutsidePressHandler
+                            onOutsidePress={() => {
+                                setShowModalSearch(false);
+                            }}
+                            style={[styles.chatDetailNavbarBaseActionItemBox]}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowModalSearch(!showModalSearch);
+                                }}
                             >
-                                <TextInput
-                                    placeholder={t(
-                                        "chatDetailSearchPlaceholder"
-                                    )}
-                                    value={textSearch}
-                                    onChangeText={(text) =>
-                                        setTextDebounce(text)
-                                    }
-                                    placeholderTextColor={
+                                <Image
+                                    source={require("../../../assets/search-line-icon.png")}
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 23,
+                                        height: 23,
+                                    }}
+                                    tintColor={
                                         theme === lightMode
                                             ? commonStyles.lightSecondaryText
                                                   .color
                                             : commonStyles.darkSecondaryText
                                                   .color
                                     }
-                                    style={[
-                                        styles.chatDetailNavbarBaseActionItePopupInput,
-                                        theme === lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                        theme === lightMode
-                                            ? commonStyles.lightTertiaryText
-                                            : commonStyles.darkTertiaryText,
-                                    ]}
                                 />
-                            </View>
-                        )}
-                    </OutsidePressHandler>
+                            </TouchableOpacity>
 
-                    {
-                        conversation.isGroup
-                        ?
-                        <TouchableOpacity
-                            onPress={()=> navigation.navigate("AddFriendIntoGroup", {
-                                conversation: conversation,
-                                socket: socket,
-                                setConversation: setConversation,
-                            })}
-                        >
-                            <Image
-                                source={require("../../../assets/user-add-line.png")}
-                                resizeMode="contain"
-                                style={{
-                                    width: 23,
-                                    height: 23,
-                                }}
-                                tintColor={
-                                    theme === lightMode
-                                        ? commonStyles.lightSecondaryText.color
-                                        : commonStyles.darkSecondaryText.color
-                                }
-                            />
-                        </TouchableOpacity>
-                        :
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../../../assets/phone-line-icon.png")}
-                                resizeMode="contain"
-                                style={{
-                                    width: 23,
-                                    height: 23,
-                                }}
-                                tintColor={
-                                    theme === lightMode
-                                        ? commonStyles.lightSecondaryText.color
-                                        : commonStyles.darkSecondaryText.color
-                                }
-                            />
-                        </TouchableOpacity>
-                    }
-
-                    <TouchableOpacity>
-                        <Image
-                            source={require("../../../assets/vidicon-line-icon.png")}
-                            resizeMode="contain"
-                            style={{
-                                width: 23,
-                                height: 23,
-                            }}
-                            tintColor={
-                                theme === lightMode
-                                    ? commonStyles.lightSecondaryText.color
-                                    : commonStyles.darkSecondaryText.color
-                            }
-                        />
-                    </TouchableOpacity>
-
-                    <OutsidePressHandler
-                        onOutsidePress={() => {
-                            setShowMoreAction(false);
-                        }}
-                        style={[styles.chatDetailNavbarBaseActionItemBox]}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {
-                                setShowMoreAction(!showMoreAction);
-                            }}
-                        >
-                            <Image
-                                source={require("../../../assets/more-line-icon.png")}
-                                resizeMode="contain"
-                                style={{
-                                    width: 23,
-                                    height: 23,
-                                }}
-                                tintColor={
-                                    theme === lightMode
-                                        ? commonStyles.lightSecondaryText.color
-                                        : commonStyles.darkSecondaryText.color
-                                }
-                            />
-                        </TouchableOpacity>
-                        {showMoreAction && (
-                            <View
-                                style={[
-                                    styles.chatDetailNavbarBaseActionMoreItemPopup,
-                                    theme === lightMode
-                                        ? commonStyles.lightFourBackground
-                                        : commonStyles.darkFourBackground,
-                                    {
-                                        shadowColor: "#0F223A",
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 2,
-                                        },
-                                        shadowOpacity: 0.12,
-                                        shadowRadius: 4,
-                                        elevation: 4,
-                                    },
-                                ]}
-                            >
-                                {
-                                    conversation.isGroup
-                                    ?
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            navigation.navigate("ManagingGroup", {
-                                                conversation: conversation,
-                                                socket: socket,
-                                                setConversation: setConversation,
-                                            });
-                                        }}
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionMoreItem,
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                theme === lightMode
-                                                    ? commonStyles.lightTertiaryText
-                                                    : commonStyles.darkTertiaryText,
-                                                styles.navbarActionMoreItemText,
-                                            ]}
-                                        >
-                                            {t("chatDetaildMoreViewSettingGroup")}
-                                        </Text>
-                                        <Image
-                                            source={require("../../../assets/settings-4-line-icon.png")}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 17,
-                                                height: 17,
-                                            }}
-                                            tintColor={
-                                                theme === lightMode
-                                                    ? commonStyles
-                                                        .lightSecondaryText.color
-                                                    : commonStyles.darkSecondaryText
-                                                        .color
-                                            }
-                                        />
-                                    </TouchableOpacity>
-                                    :
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            navigation.navigate("ChatProfile");
-                                        }}
-                                        style={[
-                                            styles.chatDetailNavbarBaseActionMoreItem,
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                theme === lightMode
-                                                    ? commonStyles.lightTertiaryText
-                                                    : commonStyles.darkTertiaryText,
-                                                styles.navbarActionMoreItemText,
-                                            ]}
-                                        >
-                                            {t("chatDetaildMoreViewProfileTitle")}
-                                        </Text>
-                                        <Image
-                                            source={require("../../../assets/user-chatlist-bottom-tab.png")}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 17,
-                                                height: 17,
-                                            }}
-                                            tintColor={
-                                                theme === lightMode
-                                                    ? commonStyles
-                                                        .lightSecondaryText.color
-                                                    : commonStyles.darkSecondaryText
-                                                        .color
-                                            }
-                                        />
-                                    </TouchableOpacity>
-                                }
-                                <TouchableOpacity
-                                    style={[
-                                        styles.chatDetailNavbarBaseActionMoreItem,
-                                    ]}
-                                >
-                                    <Text
-                                        style={[
-                                            theme === lightMode
-                                                ? commonStyles.lightTertiaryText
-                                                : commonStyles.darkTertiaryText,
-                                            styles.navbarActionMoreItemText,
-                                        ]}
-                                    >
-                                        {t("chatDetailMoreMuteTitle")}
-                                    </Text>
-                                    <Image
-                                        source={require("../../../assets/volume-mute-line-icon.png")}
-                                        resizeMode="contain"
-                                        style={{
-                                            width: 17,
-                                            height: 17,
-                                        }}
-                                        tintColor={
-                                            theme === lightMode
-                                                ? commonStyles
-                                                      .lightSecondaryText.color
-                                                : commonStyles.darkSecondaryText
-                                                      .color
-                                        }
-                                    />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[
-                                        styles.chatDetailNavbarBaseActionMoreItem,
-                                    ]}
-                                >
-                                    <Text
-                                        style={[
-                                            theme === lightMode
-                                                ? commonStyles.lightTertiaryText
-                                                : commonStyles.darkTertiaryText,
-                                            styles.navbarActionMoreItemText,
-                                        ]}
-                                    >
-                                        {t("chatDetailMoreDeleteTitle")}
-                                    </Text>
-                                    <Image
-                                        source={require("../../../assets/delete-bin-line-icon.png")}
-                                        resizeMode="contain"
-                                        style={{
-                                            width: 17,
-                                            height: 17,
-                                        }}
-                                        tintColor={
-                                            theme === lightMode
-                                                ? commonStyles
-                                                      .lightSecondaryText.color
-                                                : commonStyles.darkSecondaryText
-                                                      .color
-                                        }
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </OutsidePressHandler>
-                </View>
-            </View>
-            {conversation.pinnedMessages &&
-                conversation.pinnedMessages.length > 0 && (
-                    <View
-                        style={[
-                            styles.pinnedMessageContainer,
-                            {
-                                backgroundColor:
-                                    theme === lightMode
-                                        ? commonStyles.lightFourBackground
-                                              .backgroundColor
-                                        : commonStyles.darkFourBackground
-                                              .backgroundColor,
-                            },
-                        ]}
-                    >
-                        {showMore ? (
-                            <View>
+                            {showModalSearch && (
                                 <View
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        justifyContent: "space-between",
-                                        gap: 10,
-                                        paddingHorizontal: 15,
-                                        paddingVertical: 5,
-                                    }}
+                                    style={[
+                                        styles.chatDetailNavbarBaseActionItemPopup,
+                                        theme === lightMode
+                                            ? commonStyles.lightFourBackground
+                                            : commonStyles.darkFourBackground,
+                                        {
+                                            shadowColor: "#0F223A",
+                                            shadowOffset: {
+                                                width: 0,
+                                                height: 2,
+                                            },
+                                            shadowOpacity: 0.12,
+                                            shadowRadius: 4,
+                                            elevation: 4,
+                                        },
+                                    ]}
                                 >
-                                    <Text
-                                        style={{
-                                            fontSize: 15,
-                                            color: commonStyles.primaryColor
-                                                .color,
-                                        }}
-                                    >
-                                        {t("chatDetailMessagePin")}
-                                    </Text>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setShowMore(!showMore);
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                fontSize: 15,
-                                                color: commonStyles.primaryColor
-                                                    .color,
-                                            }}
-                                        >
-                                            {t("chatDetailMessagePinShowless")}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {conversation.pinnedMessages.map(
-                                    (message, index) => {
-                                        return (
-                                            <View
-                                                key={index}
-                                                style={[
-                                                    styles.pinnedMessagePreviewBox,
-                                                    {
-                                                        borderBottomColor:
-                                                            theme === lightMode
-                                                                ? commonStyles
-                                                                      .chatNavbarBorderBottomColorLight
-                                                                      .color
-                                                                : commonStyles
-                                                                      .chatNavbarBorderBottomColorDark
-                                                                      .color,
-                                                    },
-                                                ]}
-                                            >
-                                                <Image
-                                                    source={require("../../../assets/icon-message-pin.png")}
-                                                    style={[
-                                                        styles.pinnedMessageIcon,
-                                                    ]}
-                                                />
-                                                <View
-                                                    style={[
-                                                        styles.pinnedContentMessageBox,
-                                                    ]}
-                                                >
-                                                    <Text numberOfLines={1}>
-                                                        {
-                                                            handleGetMessageContent(message)
-                                                        }
-                                                    </Text>
-                                                    <Text numberOfLines={1}>
-                                                        {`${t(
-                                                            "chatDetailMessageTheMessageOf"
-                                                        )} ${
-                                                            message.sender.name
-                                                        }`}
-                                                    </Text>
-                                                </View>
-                                                <View
-                                                    style={[
-                                                        styles.pinnedMessageOtherActionBox,
-                                                    ]}
-                                                >
-                                                    <Tooltip
-                                                        content={
-                                                            <View
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        theme ===
-                                                                        lightMode
-                                                                            ? commonStyles
-                                                                                  .lightFourBackground
-                                                                                  .backgroundColor
-                                                                            : commonStyles
-                                                                                  .darkFourBackground
-                                                                                  .backgroundColor,
-                                                                    width: 150,
-                                                                }}
-                                                            >
-                                                                <TouchableOpacity
-                                                                    style={[
-                                                                        styles.itemInMessageFromOpponentPopupAction,
-                                                                    ]}
-                                                                    onPress={() => {
-                                                                        saveToClipboard(
-                                                                            message
-                                                                        );
-                                                                        setIsShowPinAction(
-                                                                            index
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <Text
-                                                                        style={[
-                                                                            styles.itemInMessageFromOpponentPopupActionText,
-                                                                            {
-                                                                                color:
-                                                                                    theme ===
-                                                                                    lightMode
-                                                                                        ? commonStyles
-                                                                                              .lightPrimaryText
-                                                                                              .color
-                                                                                        : commonStyles
-                                                                                              .darkPrimaryText
-                                                                                              .color,
-                                                                            },
-                                                                        ]}
-                                                                    >
-                                                                        {t(
-                                                                            "chatDetailMessageCopyAction"
-                                                                        )}
-                                                                    </Text>
-                                                                </TouchableOpacity>
-                                                                <TouchableOpacity
-                                                                    style={[
-                                                                        styles.itemInMessageFromOpponentPopupAction,
-                                                                    ]}
-                                                                    onPress={() =>
-                                                                        handleUnpinMessage(
-                                                                            message
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Text
-                                                                        style={[
-                                                                            styles.itemInMessageFromOpponentPopupActionText,
-                                                                            {
-                                                                                color:
-                                                                                    theme ===
-                                                                                    lightMode
-                                                                                        ? commonStyles
-                                                                                              .lightPrimaryText
-                                                                                              .color
-                                                                                        : commonStyles
-                                                                                              .darkPrimaryText
-                                                                                              .color,
-                                                                            },
-                                                                        ]}
-                                                                    >
-                                                                        {t(
-                                                                            "chatDetailMessageUnpinAction"
-                                                                        )}
-                                                                    </Text>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        }
-                                                        isVisible={
-                                                            isShowPinAction ===
-                                                            index
-                                                        }
-                                                        backgroundColor="transparent"
-                                                        placement="bottom"
-                                                        showChildInTooltip={
-                                                            false
-                                                        }
-                                                        contentStyle={[
-                                                            {
-                                                                shadowColor:
-                                                                    "#171717",
-                                                                shadowOffset: {
-                                                                    width: 0,
-                                                                    height: 3,
-                                                                },
-                                                                shadowOpacity: 0.4,
-                                                                shadowRadius: 2,
-                                                                elevation: 3,
-                                                                zIndex: 10,
-                                                            },
-                                                            theme === lightMode
-                                                                ? commonStyles.lightFourBackground
-                                                                : commonStyles.darkFourBackground,
-                                                        ]}
-                                                        onClose={() => {
-                                                            setIsShowPinAction(
-                                                                -1
-                                                            );
-                                                        }}
-                                                        arrowSize={{
-                                                            width: 0,
-                                                            height: 0,
-                                                        }}
-                                                        arrowStyle={{
-                                                            borderTopColor:
-                                                                theme ===
-                                                                lightMode
-                                                                    ? commonStyles
-                                                                          .lightFourBackground
-                                                                          .backgroundColor
-                                                                    : commonStyles
-                                                                          .darkFourBackground
-                                                                          .backgroundColor,
-                                                        }}
-                                                    >
-                                                        <TouchableOpacity
-                                                            onPress={() => {
-                                                                setIsShowPinAction(
-                                                                    index
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                source={require("../../../assets/more-line-icon.png")}
-                                                                style={[
-                                                                    styles.pinnedMessageMoreActionImg,
-                                                                ]}
-                                                                tintColor={
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles
-                                                                              .lightSecondaryText
-                                                                              .color
-                                                                        : commonStyles
-                                                                              .darkSecondaryText
-                                                                              .color
-                                                                }
-                                                            />
-                                                        </TouchableOpacity>
-                                                    </Tooltip>
-                                                </View>
-                                            </View>
-                                        );
-                                    }
-                                )}
-                            </View>
-                        ) : (
-                            <View
-                                style={[
-                                    styles.pinnedMessagePreviewBox,
-                                    {
-                                        borderBottomColor:
+                                    <TextInput
+                                        placeholder={t(
+                                            "chatDetailSearchPlaceholder"
+                                        )}
+                                        value={textSearch}
+                                        onChangeText={(text) =>
+                                            setTextDebounce(text)
+                                        }
+                                        placeholderTextColor={
                                             theme === lightMode
                                                 ? commonStyles
-                                                      .chatNavbarBorderBottomColorLight
+                                                      .lightSecondaryText.color
+                                                : commonStyles.darkSecondaryText
                                                       .color
-                                                : commonStyles
-                                                      .chatNavbarBorderBottomColorDark
-                                                      .color,
-                                    },
-                                ]}
+                                        }
+                                        style={[
+                                            styles.chatDetailNavbarBaseActionItePopupInput,
+                                            theme === lightMode
+                                                ? commonStyles.lightTertiaryBackground
+                                                : commonStyles.darkTertiaryBackground,
+                                            theme === lightMode
+                                                ? commonStyles.lightTertiaryText
+                                                : commonStyles.darkTertiaryText,
+                                        ]}
+                                    />
+                                </View>
+                            )}
+                        </OutsidePressHandler>
+
+                        {conversation.isGroup ? (
+                            <TouchableOpacity
+                                onPress={() =>
+                                    navigation.navigate("AddFriendIntoGroup", {
+                                        conversation: conversation,
+                                        socket: socket,
+                                        setConversation: setConversation,
+                                    })
+                                }
                             >
                                 <Image
-                                    source={require("../../../assets/icon-message-pin.png")}
-                                    style={[styles.pinnedMessageIcon]}
+                                    source={require("../../../assets/user-add-line.png")}
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 23,
+                                        height: 23,
+                                    }}
+                                    tintColor={
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color
+                                    }
                                 />
-                                <View style={[styles.pinnedContentMessageBox]}>
-                                    <Text numberOfLines={1}>
-                                        {
-                                            handleGetMessageContent(
-                                                conversation.pinnedMessages[0]
-                                            )
-                                        }
-                                    </Text>
-                                    <Text numberOfLines={1}>
-                                        {`${t(
-                                            "chatDetailMessageTheMessageOf"
-                                        )} ${
-                                            conversation.pinnedMessages[0]
-                                                .sender.name
-                                        }`}
-                                    </Text>
-                                </View>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../../../assets/phone-line-icon.png")}
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 23,
+                                        height: 23,
+                                    }}
+                                    tintColor={
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color
+                                    }
+                                />
+                            </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity>
+                            <Image
+                                source={require("../../../assets/vidicon-line-icon.png")}
+                                resizeMode="contain"
+                                style={{
+                                    width: 23,
+                                    height: 23,
+                                }}
+                                tintColor={
+                                    theme === lightMode
+                                        ? commonStyles.lightSecondaryText.color
+                                        : commonStyles.darkSecondaryText.color
+                                }
+                            />
+                        </TouchableOpacity>
+
+                        <OutsidePressHandler
+                            onOutsidePress={() => {
+                                setShowMoreAction(false);
+                            }}
+                            style={[styles.chatDetailNavbarBaseActionItemBox]}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowMoreAction(!showMoreAction);
+                                }}
+                            >
+                                <Image
+                                    source={require("../../../assets/more-line-icon.png")}
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 23,
+                                        height: 23,
+                                    }}
+                                    tintColor={
+                                        theme === lightMode
+                                            ? commonStyles.lightSecondaryText
+                                                  .color
+                                            : commonStyles.darkSecondaryText
+                                                  .color
+                                    }
+                                />
+                            </TouchableOpacity>
+                            {showMoreAction && (
                                 <View
-                                    style={[styles.pinnedMessageOtherActionBox]}
+                                    style={[
+                                        styles.chatDetailNavbarBaseActionMoreItemPopup,
+                                        theme === lightMode
+                                            ? commonStyles.lightFourBackground
+                                            : commonStyles.darkFourBackground,
+                                        {
+                                            shadowColor: "#0F223A",
+                                            shadowOffset: {
+                                                width: 0,
+                                                height: 2,
+                                            },
+                                            shadowOpacity: 0.12,
+                                            shadowRadius: 4,
+                                            elevation: 4,
+                                        },
+                                    ]}
                                 >
-                                    <Tooltip
-                                        content={
-                                            <View
-                                                style={{
-                                                    backgroundColor:
+                                    {conversation.isGroup ? (
+                                        <>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    navigation.navigate(
+                                                        "ManagingGroup",
+                                                        {
+                                                            conversation:
+                                                                conversation,
+                                                            socket: socket,
+                                                            setConversation:
+                                                                setConversation,
+                                                        }
+                                                    );
+                                                }}
+                                                style={[
+                                                    styles.chatDetailNavbarBaseActionMoreItem,
+                                                ]}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        theme === lightMode
+                                                            ? commonStyles.lightTertiaryText
+                                                            : commonStyles.darkTertiaryText,
+                                                        styles.navbarActionMoreItemText,
+                                                    ]}
+                                                >
+                                                    {t(
+                                                        "chatDetaildMoreViewSettingGroup"
+                                                    )}
+                                                </Text>
+                                                <Image
+                                                    source={require("../../../assets/settings-4-line-icon.png")}
+                                                    resizeMode="contain"
+                                                    style={{
+                                                        width: 17,
+                                                        height: 17,
+                                                    }}
+                                                    tintColor={
                                                         theme === lightMode
                                                             ? commonStyles
-                                                                  .lightFourBackground
-                                                                  .backgroundColor
+                                                                  .lightSecondaryText
+                                                                  .color
                                                             : commonStyles
-                                                                  .darkFourBackground
-                                                                  .backgroundColor,
-                                                    width: 150,
-                                                }}
-                                            >
-                                                <TouchableOpacity
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupAction,
-                                                    ]}
-                                                    onPress={() => {
-                                                        saveToClipboard(
-                                                            conversation
-                                                                .pinnedMessages[0]
-                                                        );
-                                                        setIsShowPinAction(0);
-                                                    }}
-                                                >
-                                                    <Text
-                                                        style={[
-                                                            styles.itemInMessageFromOpponentPopupActionText,
-                                                            {
-                                                                color:
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles
-                                                                              .lightPrimaryText
-                                                                              .color
-                                                                        : commonStyles
-                                                                              .darkPrimaryText
-                                                                              .color,
-                                                            },
-                                                        ]}
-                                                    >
-                                                        {t(
-                                                            "chatDetailMessageCopyAction"
-                                                        )}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity
-                                                    style={[
-                                                        styles.itemInMessageFromOpponentPopupAction,
-                                                    ]}
-                                                    onPress={() =>
-                                                        handleUnpinMessage(
-                                                            conversation
-                                                                .pinnedMessages[0]
-                                                        )
+                                                                  .darkSecondaryText
+                                                                  .color
                                                     }
+                                                />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => setShowModalLeaveGroup(true)}
+                                                style={[
+                                                    styles.chatDetailNavbarBaseActionMoreItem,
+                                                ]}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        theme === lightMode
+                                                            ? commonStyles.lightTertiaryText
+                                                            : commonStyles.darkTertiaryText,
+                                                        styles.navbarActionMoreItemText,
+                                                    ]}
                                                 >
-                                                    <Text
-                                                        style={[
-                                                            styles.itemInMessageFromOpponentPopupActionText,
-                                                            {
-                                                                color:
-                                                                    theme ===
-                                                                    lightMode
-                                                                        ? commonStyles
-                                                                              .lightPrimaryText
-                                                                              .color
-                                                                        : commonStyles
-                                                                              .darkPrimaryText
-                                                                              .color,
-                                                            },
-                                                        ]}
-                                                    >
-                                                        {t(
-                                                            "chatDetailMessageUnpinAction"
-                                                        )}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        }
-                                        isVisible={isShowPinAction == 0}
-                                        backgroundColor="transparent"
-                                        placement="bottom"
-                                        showChildInTooltip={false}
-                                        contentStyle={[
-                                            {
-                                                shadowColor: "#171717",
-                                                shadowOffset: {
-                                                    width: 0,
-                                                    height: 3,
-                                                },
-                                                shadowOpacity: 0.4,
-                                                shadowRadius: 2,
-                                                elevation: 3,
-                                                zIndex: 10,
-                                            },
-                                            theme === lightMode
-                                                ? commonStyles.lightFourBackground
-                                                : commonStyles.darkFourBackground,
-                                        ]}
-                                        onClose={() => {
-                                            setIsShowPinAction(-1);
-                                        }}
-                                        arrowSize={{ width: 0, height: 0 }}
-                                        arrowStyle={{
-                                            borderTopColor:
-                                                theme === lightMode
-                                                    ? commonStyles
-                                                          .lightFourBackground
-                                                          .backgroundColor
-                                                    : commonStyles
-                                                          .darkFourBackground
-                                                          .backgroundColor,
-                                        }}
-                                    >
+                                                    {t("chatDetailLeaveGroup")}
+                                                </Text>
+                                                <Image
+                                                    source={require("../../../assets/user_leave_group.png")}
+                                                    resizeMode="contain"
+                                                    style={{
+                                                        width: 17,
+                                                        height: 17,
+                                                    }}
+                                                    tintColor={
+                                                        theme === lightMode
+                                                            ? commonStyles
+                                                                  .lightSecondaryText
+                                                                  .color
+                                                            : commonStyles
+                                                                  .darkSecondaryText
+                                                                  .color
+                                                    }
+                                                />
+                                            </TouchableOpacity>
+                                        </>
+                                    ) : (
                                         <TouchableOpacity
                                             onPress={() => {
-                                                setIsShowPinAction(0);
+                                                navigation.navigate(
+                                                    "ChatProfile"
+                                                );
                                             }}
+                                            style={[
+                                                styles.chatDetailNavbarBaseActionMoreItem,
+                                            ]}
                                         >
-                                            <Image
-                                                source={require("../../../assets/more-line-icon.png")}
+                                            <Text
                                                 style={[
-                                                    styles.pinnedMessageMoreActionImg,
+                                                    theme === lightMode
+                                                        ? commonStyles.lightTertiaryText
+                                                        : commonStyles.darkTertiaryText,
+                                                    styles.navbarActionMoreItemText,
                                                 ]}
+                                            >
+                                                {t(
+                                                    "chatDetaildMoreViewProfileTitle"
+                                                )}
+                                            </Text>
+                                            <Image
+                                                source={require("../../../assets/user-chatlist-bottom-tab.png")}
+                                                resizeMode="contain"
+                                                style={{
+                                                    width: 17,
+                                                    height: 17,
+                                                }}
                                                 tintColor={
                                                     theme === lightMode
                                                         ? commonStyles
@@ -960,49 +554,589 @@ function ChatDetailHeader({
                                                 }
                                             />
                                         </TouchableOpacity>
-                                    </Tooltip>
-                                    {conversation.pinnedMessages.length > 1 && (
-                                        <TouchableOpacity
+                                    )}
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.chatDetailNavbarBaseActionMoreItem,
+                                        ]}
+                                    >
+                                        <Text
                                             style={[
-                                                styles.pinnedMessageSeeMorePinMessageBtn,
+                                                theme === lightMode
+                                                    ? commonStyles.lightTertiaryText
+                                                    : commonStyles.darkTertiaryText,
+                                                styles.navbarActionMoreItemText,
                                             ]}
+                                        >
+                                            {t("chatDetailMoreMuteTitle")}
+                                        </Text>
+                                        <Image
+                                            source={require("../../../assets/volume-mute-line-icon.png")}
+                                            resizeMode="contain"
+                                            style={{
+                                                width: 17,
+                                                height: 17,
+                                            }}
+                                            tintColor={
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                          .lightSecondaryText
+                                                          .color
+                                                    : commonStyles
+                                                          .darkSecondaryText
+                                                          .color
+                                            }
+                                        />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.chatDetailNavbarBaseActionMoreItem,
+                                        ]}
+                                        onPress={deleteMyConversationAlert}
+                                    >
+                                        <Text
+                                            style={[
+                                                theme === lightMode
+                                                    ? commonStyles.lightTertiaryText
+                                                    : commonStyles.darkTertiaryText,
+                                                styles.navbarActionMoreItemText,
+                                            ]}
+                                        >
+                                            {t("chatDetailMoreDeleteTitle")}
+                                        </Text>
+                                        <Image
+                                            source={require("../../../assets/delete-bin-line-icon.png")}
+                                            resizeMode="contain"
+                                            style={{
+                                                width: 17,
+                                                height: 17,
+                                            }}
+                                            tintColor={
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                          .lightSecondaryText
+                                                          .color
+                                                    : commonStyles
+                                                          .darkSecondaryText
+                                                          .color
+                                            }
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </OutsidePressHandler>
+                    </View>
+                </View>
+                {conversation.pinnedMessages &&
+                    conversation.pinnedMessages.length > 0 && (
+                        <View
+                            style={[
+                                styles.pinnedMessageContainer,
+                                {
+                                    backgroundColor:
+                                        theme === lightMode
+                                            ? commonStyles.lightFourBackground
+                                                  .backgroundColor
+                                            : commonStyles.darkFourBackground
+                                                  .backgroundColor,
+                                },
+                            ]}
+                        >
+                            {showMore ? (
+                                <View>
+                                    <View
+                                        style={{
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            gap: 10,
+                                            paddingHorizontal: 15,
+                                            paddingVertical: 5,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 15,
+                                                color: commonStyles.primaryColor
+                                                    .color,
+                                            }}
+                                        >
+                                            {t("chatDetailMessagePin")}
+                                        </Text>
+                                        <TouchableOpacity
                                             onPress={() => {
                                                 setShowMore(!showMore);
                                             }}
                                         >
                                             <Text
-                                                style={[
-                                                    {
-                                                        color: commonStyles
-                                                            .primaryColor.color,
-                                                    },
-                                                ]}
-                                            >
-                                                {`${
-                                                    conversation.pinnedMessages
-                                                        .length - 1
-                                                } ${t(
-                                                    "chatDetailMoreActionPin"
-                                                )}`}
-                                            </Text>
-                                            <Image
-                                                source={require("../../../assets/arrow-down-s-line-icon.png")}
                                                 style={{
-                                                    width: 17,
-                                                    height: 17,
-                                                    tintColor:
-                                                        commonStyles
-                                                            .primaryColor.color,
+                                                    fontSize: 15,
+                                                    color: commonStyles
+                                                        .primaryColor.color,
                                                 }}
-                                            />
+                                            >
+                                                {t(
+                                                    "chatDetailMessagePinShowless"
+                                                )}
+                                            </Text>
                                         </TouchableOpacity>
+                                    </View>
+                                    {conversation.pinnedMessages.map(
+                                        (message, index) => {
+                                            return (
+                                                <View
+                                                    key={index}
+                                                    style={[
+                                                        styles.pinnedMessagePreviewBox,
+                                                        {
+                                                            borderBottomColor:
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles
+                                                                          .chatNavbarBorderBottomColorLight
+                                                                          .color
+                                                                    : commonStyles
+                                                                          .chatNavbarBorderBottomColorDark
+                                                                          .color,
+                                                        },
+                                                    ]}
+                                                >
+                                                    <Image
+                                                        source={require("../../../assets/icon-message-pin.png")}
+                                                        style={[
+                                                            styles.pinnedMessageIcon,
+                                                        ]}
+                                                    />
+                                                    <View
+                                                        style={[
+                                                            styles.pinnedContentMessageBox,
+                                                        ]}
+                                                    >
+                                                        <Text numberOfLines={1}>
+                                                            {handleGetMessageContent(
+                                                                message
+                                                            )}
+                                                        </Text>
+                                                        <Text numberOfLines={1}>
+                                                            {`${t(
+                                                                "chatDetailMessageTheMessageOf"
+                                                            )} ${
+                                                                message.sender
+                                                                    .name
+                                                            }`}
+                                                        </Text>
+                                                    </View>
+                                                    <View
+                                                        style={[
+                                                            styles.pinnedMessageOtherActionBox,
+                                                        ]}
+                                                    >
+                                                        <Tooltip
+                                                            content={
+                                                                <View
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            theme ===
+                                                                            lightMode
+                                                                                ? commonStyles
+                                                                                      .lightFourBackground
+                                                                                      .backgroundColor
+                                                                                : commonStyles
+                                                                                      .darkFourBackground
+                                                                                      .backgroundColor,
+                                                                        width: 150,
+                                                                    }}
+                                                                >
+                                                                    <TouchableOpacity
+                                                                        style={[
+                                                                            styles.itemInMessageFromOpponentPopupAction,
+                                                                        ]}
+                                                                        onPress={() => {
+                                                                            saveToClipboard(
+                                                                                message
+                                                                            );
+                                                                            setIsShowPinAction(
+                                                                                index
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <Text
+                                                                            style={[
+                                                                                styles.itemInMessageFromOpponentPopupActionText,
+                                                                                {
+                                                                                    color:
+                                                                                        theme ===
+                                                                                        lightMode
+                                                                                            ? commonStyles
+                                                                                                  .lightPrimaryText
+                                                                                                  .color
+                                                                                            : commonStyles
+                                                                                                  .darkPrimaryText
+                                                                                                  .color,
+                                                                                },
+                                                                            ]}
+                                                                        >
+                                                                            {t(
+                                                                                "chatDetailMessageCopyAction"
+                                                                            )}
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+                                                                    <TouchableOpacity
+                                                                        style={[
+                                                                            styles.itemInMessageFromOpponentPopupAction,
+                                                                        ]}
+                                                                        onPress={() =>
+                                                                            handleUnpinMessage(
+                                                                                message
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <Text
+                                                                            style={[
+                                                                                styles.itemInMessageFromOpponentPopupActionText,
+                                                                                {
+                                                                                    color:
+                                                                                        theme ===
+                                                                                        lightMode
+                                                                                            ? commonStyles
+                                                                                                  .lightPrimaryText
+                                                                                                  .color
+                                                                                            : commonStyles
+                                                                                                  .darkPrimaryText
+                                                                                                  .color,
+                                                                                },
+                                                                            ]}
+                                                                        >
+                                                                            {t(
+                                                                                "chatDetailMessageUnpinAction"
+                                                                            )}
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            }
+                                                            isVisible={
+                                                                isShowPinAction ===
+                                                                index
+                                                            }
+                                                            backgroundColor="transparent"
+                                                            placement="bottom"
+                                                            showChildInTooltip={
+                                                                false
+                                                            }
+                                                            contentStyle={[
+                                                                {
+                                                                    shadowColor:
+                                                                        "#171717",
+                                                                    shadowOffset:
+                                                                        {
+                                                                            width: 0,
+                                                                            height: 3,
+                                                                        },
+                                                                    shadowOpacity: 0.4,
+                                                                    shadowRadius: 2,
+                                                                    elevation: 3,
+                                                                    zIndex: 10,
+                                                                },
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles.lightFourBackground
+                                                                    : commonStyles.darkFourBackground,
+                                                            ]}
+                                                            onClose={() => {
+                                                                setIsShowPinAction(
+                                                                    -1
+                                                                );
+                                                            }}
+                                                            arrowSize={{
+                                                                width: 0,
+                                                                height: 0,
+                                                            }}
+                                                            arrowStyle={{
+                                                                borderTopColor:
+                                                                    theme ===
+                                                                    lightMode
+                                                                        ? commonStyles
+                                                                              .lightFourBackground
+                                                                              .backgroundColor
+                                                                        : commonStyles
+                                                                              .darkFourBackground
+                                                                              .backgroundColor,
+                                                            }}
+                                                        >
+                                                            <TouchableOpacity
+                                                                onPress={() => {
+                                                                    setIsShowPinAction(
+                                                                        index
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <Image
+                                                                    source={require("../../../assets/more-line-icon.png")}
+                                                                    style={[
+                                                                        styles.pinnedMessageMoreActionImg,
+                                                                    ]}
+                                                                    tintColor={
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles
+                                                                                  .lightSecondaryText
+                                                                                  .color
+                                                                            : commonStyles
+                                                                                  .darkSecondaryText
+                                                                                  .color
+                                                                    }
+                                                                />
+                                                            </TouchableOpacity>
+                                                        </Tooltip>
+                                                    </View>
+                                                </View>
+                                            );
+                                        }
                                     )}
                                 </View>
-                            </View>
-                        )}
-                    </View>
-                )}
-        </View>
+                            ) : (
+                                <View
+                                    style={[
+                                        styles.pinnedMessagePreviewBox,
+                                        {
+                                            borderBottomColor:
+                                                theme === lightMode
+                                                    ? commonStyles
+                                                          .chatNavbarBorderBottomColorLight
+                                                          .color
+                                                    : commonStyles
+                                                          .chatNavbarBorderBottomColorDark
+                                                          .color,
+                                        },
+                                    ]}
+                                >
+                                    <Image
+                                        source={require("../../../assets/icon-message-pin.png")}
+                                        style={[styles.pinnedMessageIcon]}
+                                    />
+                                    <View
+                                        style={[styles.pinnedContentMessageBox]}
+                                    >
+                                        <Text numberOfLines={1}>
+                                            {handleGetMessageContent(
+                                                conversation.pinnedMessages[0]
+                                            )}
+                                        </Text>
+                                        <Text numberOfLines={1}>
+                                            {`${t(
+                                                "chatDetailMessageTheMessageOf"
+                                            )} ${
+                                                conversation.pinnedMessages[0]
+                                                    .sender.name
+                                            }`}
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.pinnedMessageOtherActionBox,
+                                        ]}
+                                    >
+                                        <Tooltip
+                                            content={
+                                                <View
+                                                    style={{
+                                                        backgroundColor:
+                                                            theme === lightMode
+                                                                ? commonStyles
+                                                                      .lightFourBackground
+                                                                      .backgroundColor
+                                                                : commonStyles
+                                                                      .darkFourBackground
+                                                                      .backgroundColor,
+                                                        width: 150,
+                                                    }}
+                                                >
+                                                    <TouchableOpacity
+                                                        style={[
+                                                            styles.itemInMessageFromOpponentPopupAction,
+                                                        ]}
+                                                        onPress={() => {
+                                                            saveToClipboard(
+                                                                conversation
+                                                                    .pinnedMessages[0]
+                                                            );
+                                                            setIsShowPinAction(
+                                                                0
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.itemInMessageFromOpponentPopupActionText,
+                                                                {
+                                                                    color:
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles
+                                                                                  .lightPrimaryText
+                                                                                  .color
+                                                                            : commonStyles
+                                                                                  .darkPrimaryText
+                                                                                  .color,
+                                                                },
+                                                            ]}
+                                                        >
+                                                            {t(
+                                                                "chatDetailMessageCopyAction"
+                                                            )}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        style={[
+                                                            styles.itemInMessageFromOpponentPopupAction,
+                                                        ]}
+                                                        onPress={() =>
+                                                            handleUnpinMessage(
+                                                                conversation
+                                                                    .pinnedMessages[0]
+                                                            )
+                                                        }
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.itemInMessageFromOpponentPopupActionText,
+                                                                {
+                                                                    color:
+                                                                        theme ===
+                                                                        lightMode
+                                                                            ? commonStyles
+                                                                                  .lightPrimaryText
+                                                                                  .color
+                                                                            : commonStyles
+                                                                                  .darkPrimaryText
+                                                                                  .color,
+                                                                },
+                                                            ]}
+                                                        >
+                                                            {t(
+                                                                "chatDetailMessageUnpinAction"
+                                                            )}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            isVisible={isShowPinAction == 0}
+                                            backgroundColor="transparent"
+                                            placement="bottom"
+                                            showChildInTooltip={false}
+                                            contentStyle={[
+                                                {
+                                                    shadowColor: "#171717",
+                                                    shadowOffset: {
+                                                        width: 0,
+                                                        height: 3,
+                                                    },
+                                                    shadowOpacity: 0.4,
+                                                    shadowRadius: 2,
+                                                    elevation: 3,
+                                                    zIndex: 10,
+                                                },
+                                                theme === lightMode
+                                                    ? commonStyles.lightFourBackground
+                                                    : commonStyles.darkFourBackground,
+                                            ]}
+                                            onClose={() => {
+                                                setIsShowPinAction(-1);
+                                            }}
+                                            arrowSize={{ width: 0, height: 0 }}
+                                            arrowStyle={{
+                                                borderTopColor:
+                                                    theme === lightMode
+                                                        ? commonStyles
+                                                              .lightFourBackground
+                                                              .backgroundColor
+                                                        : commonStyles
+                                                              .darkFourBackground
+                                                              .backgroundColor,
+                                            }}
+                                        >
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setIsShowPinAction(0);
+                                                }}
+                                            >
+                                                <Image
+                                                    source={require("../../../assets/more-line-icon.png")}
+                                                    style={[
+                                                        styles.pinnedMessageMoreActionImg,
+                                                    ]}
+                                                    tintColor={
+                                                        theme === lightMode
+                                                            ? commonStyles
+                                                                  .lightSecondaryText
+                                                                  .color
+                                                            : commonStyles
+                                                                  .darkSecondaryText
+                                                                  .color
+                                                    }
+                                                />
+                                            </TouchableOpacity>
+                                        </Tooltip>
+                                        {conversation.pinnedMessages.length >
+                                            1 && (
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.pinnedMessageSeeMorePinMessageBtn,
+                                                ]}
+                                                onPress={() => {
+                                                    setShowMore(!showMore);
+                                                }}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        {
+                                                            color: commonStyles
+                                                                .primaryColor
+                                                                .color,
+                                                        },
+                                                    ]}
+                                                >
+                                                    {`${
+                                                        conversation
+                                                            .pinnedMessages
+                                                            .length - 1
+                                                    } ${t(
+                                                        "chatDetailMoreActionPin"
+                                                    )}`}
+                                                </Text>
+                                                <Image
+                                                    source={require("../../../assets/arrow-down-s-line-icon.png")}
+                                                    style={{
+                                                        width: 17,
+                                                        height: 17,
+                                                        tintColor:
+                                                            commonStyles
+                                                                .primaryColor
+                                                                .color,
+                                                    }}
+                                                />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                </View>
+                            )}
+                        </View>
+                    )}
+            </View>
+            
+            {
+                showModalLeaveGroup
+                &&
+                <BottomSheetLeaveGroup
+                    conversation={conversation}
+                    visible={showModalLeaveGroup}
+                    setVisible={setShowModalLeaveGroup}
+                    currentUser={userInfo}
+                    navigation={navigation}
+                    socket={socket}
+                />
+            }
+        </>
     );
 }
 

@@ -112,13 +112,14 @@ function DetailSearchPopUpSearchEmpty({
     navigate,
 }: DetailSearchPopUpSearchEmptyProps) {
     const [userSeached, setUserSearched] = useState<IUserResultSearch[]>([]);
+    const userInfo = useSelector((state: IRootState) => state.userInfo);
 
     useEffect(() => {
         const getUserSearchedFromSQLite = async () => {
             try {
                 const db = getDBConnection();
                 const table = await createUserSearchedTable(db);
-                const result = await selectTop5NewestUserSearched(db);
+                const result = await selectTop5NewestUserSearched(db, userInfo.user?._id || "0");
                 const obj = result[0];
                 if ("rows" in obj) {
                     const userSearched: IUserResultSearch[] = [];
@@ -581,7 +582,8 @@ function DetailSearchPopUpSearchNotEmpty({
                 db,
                 user._id,
                 user.name,
-                user.avatar
+                user.avatar,
+                userInfo.user?._id || "0"
             );
             console.log("RESULT INSERT: ", resultInsert);
             return resultInsert;
@@ -591,8 +593,6 @@ function DetailSearchPopUpSearchNotEmpty({
     }
     async function handleOpenChatDetail(receiverID: string) {}
 
-    console.log("Sout", usersResult);
-    
     useEffect(()=>{
         socket.connect();
         

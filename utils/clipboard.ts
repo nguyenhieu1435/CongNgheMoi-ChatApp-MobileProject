@@ -1,4 +1,4 @@
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from "expo-clipboard"
 
 import { IMessageItem } from '../configs/interfaces';
 

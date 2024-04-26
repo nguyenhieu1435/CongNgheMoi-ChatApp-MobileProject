@@ -111,6 +111,7 @@
     "chatDetailReadyUploadTitle": "Đã sẵn sàng để tải lên!",
     "chatDetaildMoreViewProfileTitle": "Xem trang cá nhân",
     "chatDetaildMoreViewSettingGroup": "Thiết lập nhóm",
+    "chatDetailLeaveGroup": "Rời nhóm",
     "chatDetailMoreMuteTitle": "Tắt thông báo",
     "chatDetailMoreDeleteTitle": "Xóa cuộc trò chuyện",
     "chatDetailMorePinTitle": "Ghim tin nhắn",
@@ -123,6 +124,10 @@
     "chatDetailMessageTheMessageOf": "Tin nhắn của",
     "chatDetailMessagePin": "Đã gim",
     "chatDetailMessagePinShowless": "Ẩn bớt",
+    "chatDetailBottomSheetYieldRoleTitle": "Chọn trưởng nhóm mới trước khi rời",
+    "chatDetailBottomSheetYieldRoleChooseAndNextTitle": "Chọn và tiếp tục",
+    "chatDetailBottomSheetLeavingGroupTitle": "Rời nhóm và xóa trò chuyện này?",
+    "chatDetailBottomSheetLeavingInSilent": "Rời nhóm trong im lặng",
     "chatProfileAboutTitle": "Giới thiệu",
     "chatProfileAboutName": "Tên",
     "chatProfileAboutEmail": "Email/ Số điện thoại",
@@ -231,6 +236,7 @@
     "showMemberRemoveMember": "Xóa thành viên",
     "showMemberGrantAdmin": "Bổ nhiệm làm nhóm trưởng",
     "showMemberGrantDeputy": "Bổ nhiệm làm phó nhóm trưởng",
-    "showMemberRemoveDeputy": "Hủy bổ nhiệm phó nhóm trưởng"
+    "showMemberRemoveDeputy": "Hủy bổ nhiệm phó nhóm trưởng",
+    "forwardMessageTitle": "Chuyển tiếp tin nhắn"
 
 }

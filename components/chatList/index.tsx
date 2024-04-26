@@ -19,7 +19,6 @@ import { EvilIcons } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import { useCallback, useEffect, useRef, useState } from "react";
 import OutsidePressHandler from "react-native-outside-press";
-const { TypingAnimation } = require("react-native-typing-animation");
 import { Camera, requestCameraPermissionsAsync } from "expo-camera";
 import SearchDetailPopup from "../searchDetailPopup";
 import debounce from "debounce";
@@ -1303,11 +1302,18 @@ export default function ChatList({ navigation, route }: Props) {
                                                     conversation.updatedAt
                                                 )}
                                             </Text>
-                                            {/* <Text
+                                            {
+                                                conversation.unreadMessageCount > 0
+                                                &&
+                                                <Text
                                                 style={[
                                                     styles.chatListHistoryMsgNumber
                                                 ]}
-                                            >02</Text> */}
+                                                >
+                                                    {conversation.unreadMessageCount}
+                                                </Text> 
+                                            }
+                                            
                                             
                                         </View>
                                     </TouchableOpacity>
@@ -2348,7 +2354,6 @@ export default function ChatList({ navigation, route }: Props) {
                 isPressOutsideTextInput={isOutsideTextInput}
                 heightFromHeaderToInput={heightPopup}
                 setHeightFromHeaderToInput={setHeightPopup}
-
             />
         </View>
     );

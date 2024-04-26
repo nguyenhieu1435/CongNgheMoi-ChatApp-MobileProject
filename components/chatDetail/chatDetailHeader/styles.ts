@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
     },
     pinnedMessageContainer:{
         width: "100%",
-        zIndex: 20
+        zIndex: 1
     },
     pinnedMessagePreviewBox:{
         flexDirection: "row",

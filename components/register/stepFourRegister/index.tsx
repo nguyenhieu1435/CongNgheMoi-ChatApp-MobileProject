@@ -28,7 +28,7 @@ interface Props {
     route: any;
 }
 interface ICustomRadioButton {
-    value: string;
+    value: any;
     selected: boolean;
     onPress: () => void;
     style?: object;

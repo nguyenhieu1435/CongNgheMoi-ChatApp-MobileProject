@@ -57,6 +57,7 @@ interface MessageComponentProps {
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
     messageHistory: IMessageItem[];
     setMessageHistory: Dispatch<SetStateAction<IMessageItem[]>>;
+    setShowForwardModal: Dispatch<SetStateAction<IMessageItem | null>>;
 }
 
 const { height: HEIGHT, width: WIDTH } = Dimensions.get("screen");
@@ -76,6 +77,7 @@ function MessageComponent({
     socket,
     messageHistory,
     setMessageHistory,
+    setShowForwardModal
 }: MessageComponentProps) {
     const [placement, setPlacement] = useState("top");
     const [placementReaction, setPlacementReaction] = useState("top");
@@ -431,6 +433,7 @@ function MessageComponent({
                                                 setConversation={
                                                     setConversation
                                                 }
+                                                setShowForwardModal={setShowForwardModal}
                                                 socket={socket}
                                             />
                                         }

@@ -29,6 +29,7 @@ interface MessagePopupActionProps {
     conversation: IConversation;
     setConversation: Dispatch<SetStateAction<IConversation>>;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    setShowForwardModal: Dispatch<SetStateAction<IMessageItem | null>>;
 }
 
 function MessagePopupAction({
@@ -41,7 +42,8 @@ function MessagePopupAction({
     setShowMoreAction,
     conversation,
     setConversation,
-    socket
+    socket,
+    setShowForwardModal
 }: MessagePopupActionProps) {
     const [isLoading, setIsLoading] = useState(false);
     
@@ -247,6 +249,10 @@ function MessagePopupAction({
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.itemInMessageFromOpponentPopupAction]}
+                    onPress={() => {
+                        setShowMoreAction(false);
+                        setShowForwardModal(messageItem)
+                    }}
                 >
                     <Text
                         style={[

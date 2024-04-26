@@ -111,6 +111,7 @@
     "chatDetailReadyUploadTitle": "Ready to upload!",
     "chatDetaildMoreViewProfileTitle": "View profile",
     "chatDetaildMoreViewSettingGroup": "Group settings",
+    "chatDetailLeaveGroup": "Leave group",
     "chatDetailMoreMuteTitle": "Muted",
     "chatDetailMoreDeleteTitle": "Delete",
     "chatDetailMorePinTitle": "Pin the message",
@@ -123,6 +124,10 @@
     "chatDetailMessageTheMessageOf": "The message of",
     "chatDetailMessagePin": "Pinned",
     "chatDetailMessagePinShowless": "Show less",
+    "chatDetailBottomSheetYieldRoleTitle": "Choose new Admin before leaving",
+    "chatDetailBottomSheetYieldRoleChooseAndNextTitle": "Choose and continue",
+    "chatDetailBottomSheetLeavingGroupTitle": "Leaving group and delete this conversation?",
+    "chatDetailBottomSheetLeavingInSilent": "Leave in silent",
     "chatProfileAboutTitle": "About",
     "chatProfileAboutName": "Name",
     "chatProfileAboutEmail": "Email/Phone number",
@@ -228,5 +233,6 @@
     "showMemberRemoveMember": "Remove member",
     "showMemberGrantAdmin": "Grant admin",
     "showMemberGrantDeputy": "Grant deputy",
-    "showMemberRemoveDeputy": "Remove deputy"
+    "showMemberRemoveDeputy": "Remove deputy",
+    "forwardMessageTitle": "Forward the message"
 }

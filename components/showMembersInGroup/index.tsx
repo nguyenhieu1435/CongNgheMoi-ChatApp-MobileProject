@@ -39,6 +39,7 @@ export default function ShowMembersInGroup({
         useState<string>("");
     const myRole = handleGetRoleInGroup(userInfo.user?._id || "");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    
    
 
     useEffect(()=>{
@@ -48,7 +49,6 @@ export default function ShowMembersInGroup({
     }, [route.params])
 
     function handleGetRoleInGroup(userId: string) {
-
         if (conversationLocal?.admin === userId) {
             return t("showMemberInGroupAdmin");
         } else if (conversationLocal?.deputy.includes(userId)) {
@@ -288,7 +288,7 @@ export default function ShowMembersInGroup({
                 );
             }
         } else {
-            const isSelectedAdminOrDeputy = userSelectedRole === t("showMemberInGroupAdmin") || t("showMemberInGroupDeputy");
+            const isSelectedAdminOrDeputy = userSelectedRole === t("showMemberInGroupAdmin") || userSelectedRole === t("showMemberInGroupDeputy");
             if (isSelectedMe || isSelectedAdminOrDeputy){
                 return <></>;
             } else {

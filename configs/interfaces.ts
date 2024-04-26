@@ -98,15 +98,16 @@ export interface IConversation{
     bannedMembers: IUserInConversation[],
     public: boolean,
     pinnedMessages: IMessageItem[],
-    pin: boolean,
     createdAt: string,
     updatedAt: string,
     qrCode: string,
     "__v": number,
-    lastMessage ?: IMessageItem,
+    lastMessage ?: IMessageItem | null,
     pinBy: string[],
     deputy: string[],
     admin ?: string,
+    unreadMessageCount: number,
+    deleted: boolean,
 }
 
 export interface IUserInConversation{
@@ -135,4 +136,5 @@ export interface IGroupConversation{
     updatedAt: string,
     qrCode: string,
     "__v": number,
+    unreadMessageCount: number,
 }
