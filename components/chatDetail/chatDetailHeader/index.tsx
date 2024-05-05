@@ -266,7 +266,7 @@ function ChatDetailHeader({
                     >
                         {!conversation.isGroup ? (
                             <Image
-                                source={{ uri: conversation.picture }}
+                                source={{ uri: conversation.users.find((user) => user._id !== userInfo.user?._id)?.avatar}}
                                 resizeMode="cover"
                                 style={{
                                     width: 36,
@@ -297,7 +297,7 @@ function ChatDetailHeader({
                                         : commonStyles.darkPrimaryText,
                                 ]}
                             >
-                                {conversation.name}
+                                {conversation.isGroup ? conversation.name : conversation.users.find((user) => user._id !== userInfo.user?._id)?.name}
                             </Text>
                             {isConversationOnline() && (
                                 <Text

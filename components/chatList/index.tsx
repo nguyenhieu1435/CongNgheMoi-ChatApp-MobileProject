@@ -960,7 +960,7 @@ export default function ChatList({ navigation, route }: Props) {
                                                 {!conversation.isGroup ? (
                                                     <Image
                                                         source={{
-                                                            uri: conversation.picture,
+                                                            uri: conversation.users.find(item => item._id !== userInfo.user?._id)?.avatar,
                                                         }}
                                                         resizeMode="contain"
                                                         style={{
