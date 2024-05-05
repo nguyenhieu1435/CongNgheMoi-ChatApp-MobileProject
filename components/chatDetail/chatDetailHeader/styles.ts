@@ -27,12 +27,16 @@ export const styles = StyleSheet.create({
         flexGrow: 1,
         
     },
+    chatDetailUsernameTextBox:{
+        flexShrink: 1,
+        flexGrow: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5
+    },
     chatDetailUsernameText:{
         fontSize: 16,
-        fontWeight: "500",
-        flexShrink: 1,
-        flexGrow: 1
-        
+        fontWeight: "500",  
     },
     activityIcon: {
         width: 8,

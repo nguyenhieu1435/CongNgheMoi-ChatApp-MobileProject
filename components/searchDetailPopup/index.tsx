@@ -15,7 +15,6 @@ import commonStyles from "../../CommonStyles/commonStyles";
 import { useTranslation } from "react-i18next";
 import { TFunction, use } from "i18next";
 import { useEffect, useState } from "react";
-import Checkbox from "expo-checkbox";
 import OutsidePressHandler from "react-native-outside-press";
 import {
     LINK_GET_MY_FRIENDS,
@@ -143,7 +142,11 @@ function DetailSearchPopUpSearchEmpty({
     }, []);
 
     return (
-        <View style={[styles.detailSearchPopUpSearchEmptyWrapper]}>
+        <View style={[styles.detailSearchPopUpSearchEmptyWrapper, {
+            borderWidth: 1
+        }]}
+        
+        >
             <ScrollView>
                 <View
                     style={[
@@ -381,6 +384,7 @@ function DetailSearchPopUpSearchNotEmpty({
         IRequestFriendList[]
     >([]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const friendOnline = useSelector((state: IRootState) => state.onlineUserIds)
 
     async function getUserInRequestFriendList() {
         try {
@@ -598,10 +602,13 @@ function DetailSearchPopUpSearchNotEmpty({
         
         function onConnect(){
             console.log("Connected");
-            socket.emit("online", userInfo.user?._id);
+            socket.emit("online", {
+                userId: userInfo.user?._id,
+                friendIds: friendOnline.friends
+            });
         }
         function onAddFriendRequest(data: any){
-
+            
         }
 
         socket.on("connect", onConnect);

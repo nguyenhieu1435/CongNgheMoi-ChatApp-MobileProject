@@ -1,5 +1,5 @@
 import { exists, TFunction } from "i18next";
-import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, memo, SetStateAction, useEffect, useRef, useState } from "react";
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./styles";
 import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
@@ -10,12 +10,14 @@ import {
     LINK_DELETE_MESSAGE_SIDE_ALL,
     LINK_DELETE_MESSAGE_SIDE_ME,
     LINK_GET_MESSAGE_HISTORY,
+    LINK_MESSAGE_NOTIFICATION,
     LINK_PIN_MESSAGE,
 } from "@env";
 import Spinner from "react-native-loading-spinner-overlay";
 import { saveToClipboard } from "../../../utils/clipboard";
 import { Socket } from "socket.io-client";
 import {DefaultEventsMap} from "@socket.io/component-emitter";
+import { getAccurancyDateVN } from "../../../utils/date";
 
 
 interface MessagePopupActionProps {
@@ -30,6 +32,7 @@ interface MessagePopupActionProps {
     setConversation: Dispatch<SetStateAction<IConversation>>;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
     setShowForwardModal: Dispatch<SetStateAction<IMessageItem | null>>;
+    setMessageHistory: Dispatch<SetStateAction<IMessageItem[]>>;
 }
 
 function MessagePopupAction({
@@ -43,9 +46,11 @@ function MessagePopupAction({
     conversation,
     setConversation,
     socket,
-    setShowForwardModal
+    setShowForwardModal,
+    setMessageHistory
 }: MessagePopupActionProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const messageIdRef = useRef<string>("")
     
 
     async function handleDeleteSideMe() {
@@ -103,7 +108,42 @@ function MessagePopupAction({
         }
         setIsLoading(false);
     }
+    async function createPinNotification({conversationId, type, messageId}: {
+        conversationId: string,
+        type: string,
+        messageId: string
+    }) {
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId,
+                    type,
+                    messageId
+                })
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem;
+                socket.emit("sendMessage", data)
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory((prev) => [...prev, {
+                        ...data,
+                        createdAt: getAccurancyDateVN(data.createdAt),
+                        updatedAt: getAccurancyDateVN(data.updatedAt),
+                    }]);
 
+                    messageIdRef.current = data._id;
+                }
+                console.log(`Create ${type} notification success`);
+            }
+        } catch (error) {
+            console.log(`Error create ${type} notification`, error)
+        }
+    }
     function handlePinMessage(){
         setShowMoreAction(false);
         let isExist = false;
@@ -136,6 +176,11 @@ function MessagePopupAction({
                     users: conversation.users,
                     message: messageItem,
                     userId: userInfo.user?._id
+                })
+                createPinNotification({
+                    conversationId: conversation._id,
+                    type: "PIN_MESSAGE",
+                    messageId: messageItem._id
                 })
             }
         })

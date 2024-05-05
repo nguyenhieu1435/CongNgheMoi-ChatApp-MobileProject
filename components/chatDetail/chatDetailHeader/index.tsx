@@ -7,7 +7,7 @@ import {
     Modal,
     Alert,
 } from "react-native";
-import { Dispatch, memo, SetStateAction, useState } from "react";
+import { Dispatch, memo, SetStateAction, useEffect, useRef, useState } from "react";
 import { styles } from "./styles";
 import commonStyles from "../../../CommonStyles/commonStyles";
 import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
@@ -17,6 +17,7 @@ import { TFunction } from "i18next";
 import debounce from "debounce";
 import {
     IConversation,
+    IFileMessage,
     IMessageItem,
     IUserInConversation,
 } from "../../../configs/interfaces";
@@ -24,12 +25,18 @@ import { useSelector } from "react-redux";
 import { IRootState } from "../../../redux_toolkit/store";
 import Tooltip from "react-native-walkthrough-tooltip";
 import { saveToClipboard } from "../../../utils/clipboard";
-import { LINK_GROUP, LINK_OPEN_CONVERSATION, LINK_UNPIN_MESSAGE } from "@env";
+import {
+    LINK_GROUP,
+    LINK_MESSAGE_NOTIFICATION,
+    LINK_OPEN_CONVERSATION,
+    LINK_UNPIN_MESSAGE,
+} from "@env";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
 import { socket } from "../../../configs/socket-io";
 import CreateGroupAvatarWhenAvatarIsEmpty from "../../../utils/createGroupAvatarWhenAvatarIsEmpty";
 import BottomSheetLeaveGroup from "../bottomSheetLeaveGroup";
+import { getAccurancyDateVN } from "../../../utils/date";
 
 interface ChatDetailHeaderProps {
     theme: string;
@@ -51,7 +58,7 @@ function ChatDetailHeader({
     setTextSearch,
     conversation,
     setConversation,
-    setMessageHistory
+    setMessageHistory,
 }: ChatDetailHeaderProps) {
     const [showModalSearch, setShowModalSearch] = useState(false);
     const [showMoreAction, setShowMoreAction] = useState(false);
@@ -59,9 +66,10 @@ function ChatDetailHeader({
     const [isShowPinAction, setIsShowPinAction] = useState(-1);
     const [showMore, setShowMore] = useState(false);
     const [showModalLeaveGroup, setShowModalLeaveGroup] = useState(false);
-
-
-
+    const friendsOnline = useSelector(
+        (state: IRootState) => state.onlineUserIds
+    );
+    const messageIdRef = useRef<string>("");
 
     function setTextDebounce(text: string) {
         debounce(() => {
@@ -69,6 +77,45 @@ function ChatDetailHeader({
         }, 500);
     }
 
+    async function createPinNotification({
+        conversationId,
+        type,
+        messageId,
+    }: {
+        conversationId: string;
+        type: string;
+        messageId: string;
+    }) {
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId,
+                    type,
+                    messageId,
+                }),
+            });
+            if (resp.ok) {
+                const data = await resp.json() as IMessageItem;
+                socket.emit("sendMessage", data)
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory((prev) => [...prev, {
+                        ...data,
+                        createdAt: getAccurancyDateVN(data.createdAt),
+                        updatedAt: getAccurancyDateVN(data.updatedAt),
+                    }]);
+                    messageIdRef.current = data._id;
+                }
+                console.log(`Create ${type} notification success`);
+            }
+        } catch (error) {
+            console.log(`Error create ${type} notification`, error);
+        }
+    }
     function handleUnpinMessage(message: IMessageItem) {
         setIsShowPinAction(-1);
         fetch(LINK_UNPIN_MESSAGE + message._id, {
@@ -93,6 +140,11 @@ function ChatDetailHeader({
                         users: conversation.users,
                         message: message,
                         userId: userInfo.user?._id,
+                    });
+                    createPinNotification({
+                        conversationId: conversation._id,
+                        type: "UNPIN_MESSAGE",
+                        messageId: message._id,
                     });
                 }
             })
@@ -124,43 +176,56 @@ function ChatDetailHeader({
             return t("chatDetailFileTitle");
         }
     }
-    function deleteMyConversationAlert(){
-        Alert.alert("Xác nhận xóa trò chuyện", "Bạn có chắc chắn muốn xóa trò chuyện này không?", [
-            {
-                text: "Hủy",
-                onPress: () => {},
-                style: "cancel"
-            },
-            {
-                text: "Xóa",
-                onPress: handleDeleteMyConversation
-            }
-        ])
-    }
-    async function handleDeleteMyConversation(){
-        console.log("begin delete conversation");
-        
-        try {
-            const response = await fetch(LINK_OPEN_CONVERSATION + `/${conversation._id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${userInfo.accessToken}`,
+    function deleteMyConversationAlert() {
+        Alert.alert(
+            "Xác nhận xóa trò chuyện",
+            "Bạn có chắc chắn muốn xóa trò chuyện này không?",
+            [
+                {
+                    text: "Hủy",
+                    onPress: () => {},
+                    style: "cancel",
                 },
-            })
-            if (response.ok){
-                setShowMoreAction(false)
+                {
+                    text: "Xóa",
+                    onPress: handleDeleteMyConversation,
+                },
+            ]
+        );
+    }
+    async function handleDeleteMyConversation() {
+        console.log("begin delete conversation");
+
+        try {
+            const response = await fetch(
+                LINK_OPEN_CONVERSATION + `/${conversation._id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                }
+            );
+            if (response.ok) {
+                setShowMoreAction(false);
                 setMessageHistory([]);
             } else {
                 const data = await response.json();
                 console.log("Failed to delete conversation", data);
-                
             }
         } catch (error) {
             console.log(error);
         }
     }
 
+    function isConversationOnline() {
+        return conversation.users.some(
+            (user: IUserInConversation) =>
+                friendsOnline.onlineUserIds.includes(user._id) &&
+                user._id !== userInfo.user?._id
+        );
+    }
 
     return (
         <>
@@ -222,26 +287,31 @@ function ChatDetailHeader({
                         ) : (
                             CreateGroupAvatarWhenAvatarIsEmpty(conversation)
                         )}
-                        <Text
-                            numberOfLines={1}
-                            style={[
-                                styles.chatDetailUsernameText,
-                                theme === lightMode
-                                    ? commonStyles.lightPrimaryText
-                                    : commonStyles.darkPrimaryText,
-                            ]}
-                        >
-                            {conversation.name}
-                        </Text>
-                        <View
-                            style={[
-                                styles.activityIcon,
-                                {
-                                    backgroundColor:
-                                        commonStyles.activeOnlineColor.color,
-                                },
-                            ]}
-                        ></View>
+                        <View style={[styles.chatDetailUsernameTextBox]}>
+                            <Text
+                                numberOfLines={1}
+                                style={[
+                                    styles.chatDetailUsernameText,
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText,
+                                ]}
+                            >
+                                {conversation.name}
+                            </Text>
+                            {isConversationOnline() && (
+                                <Text
+                                    style={[
+                                        styles.activityIcon,
+                                        {
+                                            backgroundColor:
+                                                commonStyles.activeOnlineColor
+                                                    .color,
+                                        },
+                                    ]}
+                                ></Text>
+                            )}
+                        </View>
                     </TouchableOpacity>
 
                     <View style={[styles.chatDetailNavbarBaseActions]}>
@@ -328,6 +398,7 @@ function ChatDetailHeader({
                                         conversation: conversation,
                                         socket: socket,
                                         setConversation: setConversation,
+                                        setMessageHistory: setMessageHistory,
                                     })
                                 }
                             >
@@ -441,6 +512,8 @@ function ChatDetailHeader({
                                                             socket: socket,
                                                             setConversation:
                                                                 setConversation,
+                                                            setMessageHistory: 
+                                                                setMessageHistory,
                                                         }
                                                     );
                                                 }}
@@ -479,7 +552,9 @@ function ChatDetailHeader({
                                                 />
                                             </TouchableOpacity>
                                             <TouchableOpacity
-                                                onPress={() => setShowModalLeaveGroup(true)}
+                                                onPress={() =>
+                                                    setShowModalLeaveGroup(true)
+                                                }
                                                 style={[
                                                     styles.chatDetailNavbarBaseActionMoreItem,
                                                 ]}
@@ -517,7 +592,12 @@ function ChatDetailHeader({
                                         <TouchableOpacity
                                             onPress={() => {
                                                 navigation.navigate(
-                                                    "ChatProfile"
+                                                    "ChatOptional",
+                                                    {
+                                                        conversation:
+                                                            conversation,
+                                                        userInfo: userInfo,
+                                                    }
                                                 );
                                             }}
                                             style={[
@@ -1123,10 +1203,8 @@ function ChatDetailHeader({
                         </View>
                     )}
             </View>
-            
-            {
-                showModalLeaveGroup
-                &&
+
+            {showModalLeaveGroup && (
                 <BottomSheetLeaveGroup
                     conversation={conversation}
                     visible={showModalLeaveGroup}
@@ -1134,8 +1212,9 @@ function ChatDetailHeader({
                     currentUser={userInfo}
                     navigation={navigation}
                     socket={socket}
+                    setMessageHistory={setMessageHistory}
                 />
-            }
+            )}
         </>
     );
 }

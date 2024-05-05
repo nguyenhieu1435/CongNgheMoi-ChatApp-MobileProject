@@ -16,13 +16,14 @@ import { useTranslation } from "react-i18next";
 import { lightMode } from "../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../CommonStyles/commonStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
-import { IConversation, IGroupConversation, IUserInConversation, IUserResultSearch } from "../../configs/interfaces";
-import { LINK_GET_MY_FRIENDS, LINK_GROUP } from "@env";
+import { useEffect, useRef, useState } from "react";
+import { IConversation, IGroupConversation, IMessageItem, IUserInConversation, IUserResultSearch } from "../../configs/interfaces";
+import { LINK_GET_MY_FRIENDS, LINK_GROUP, LINK_MESSAGE_NOTIFICATION } from "@env";
 import classificationFriendListByName from "../../utils/classificationFriendByName";
 import { CustomRadioButton } from "../register/stepFourRegister";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
+import { getAccurancyDateVN } from "../../utils/date";
 
 export interface ISectionMyFriend {
     title: string;
@@ -48,9 +49,11 @@ export default function AddFriendIntoGroup({
     );
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const [isLoading, setIsLoading] = useState(false);
+    const messageIdRef = useRef<string>("");
     const conversation = route.params.conversation as IConversation;
     const socket = route.params.socket as Socket<DefaultEventsMap, DefaultEventsMap>;
     const setConversation = route.params.setConversation as React.Dispatch<React.SetStateAction<IConversation>>;
+    const setMessageHistory = route.params.setMessageHistory as React.Dispatch<React.SetStateAction<IMessageItem[]>>
 
     async function getFriendList() {
         try {
@@ -156,6 +159,43 @@ export default function AddFriendIntoGroup({
         return newSectionMyFriend;
     }
 
+    async function handleCreateAddUsersNotification({conversationId, userIds} : {
+        conversationId: string,
+        userIds: string[]
+    }){
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    userIds: userIds,
+                    type: "ADD_USERS"
+                })
+                
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem
+                socket.emit("sendMessage", data);
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory(prev => [...prev, {
+                            ...data,
+                            createdAt: getAccurancyDateVN(data.createdAt),
+                            updatedAt: getAccurancyDateVN(data.updatedAt),
+                        
+                    }])
+                    messageIdRef.current = data._id;
+                }
+                console.log("Send add users notification message success")
+            }
+        } catch (error) {
+            console.log("Send add users notification message error")
+        }
+    }
+
     async function handleAddFriendIntoGroup() {
         try {
             setIsLoading(true);
@@ -171,17 +211,23 @@ export default function AddFriendIntoGroup({
                 })
             })
             if (response.ok){
-                const data = await response.json();
+                let data = await response.json();
                 
                 console.log("data response add member: ", {
                     conversation: data,
                     userIds: userIds
                 });
-        
+
                 socket.emit("addOrUpdateConversation", {
                     conversation: data,
                     userIds: data.users.map((item : IUserInConversation) => item._id)
                 })
+                
+                handleCreateAddUsersNotification({
+                    conversationId: data._id,
+                    userIds: userIds
+                });
+        
                 setConversation(data as IConversation)
                 setIsLoading(false);
                 navigation.goBack();

@@ -8,6 +8,7 @@ export async function handleNavigateToChatDetail(conversation: IGroupConversatio
     userInfo: userInfoInterfaceI,
     navigation: any
 ) {
+    console.log("conversation:::", conversation._id);
     try {
         setIsLoading(true);
         const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
@@ -34,7 +35,8 @@ export async function handleNavigateToChatDetail(conversation: IGroupConversatio
                         "__v": item.__v,
                         statuses: item.statuses,
                         location: item.location,
-                        deleted: item.deleted
+                        deleted: item.deleted,
+                        notification: item.notification
                     }
                 )
             })

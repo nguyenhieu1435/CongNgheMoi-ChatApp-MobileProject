@@ -9,8 +9,8 @@ export default function Settings() {
     const {t} = useTranslation();
 
     return (
-        <View>
-            <Text>index</Text>
+        <View style={{alignItems: "center", justifyContent: "center", flex: 1}}>
+            <Text>Developing</Text>
         </View>
     )
 }

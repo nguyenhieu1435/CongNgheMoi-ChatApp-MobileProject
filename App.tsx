@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
 import { Provider, useSelector } from 'react-redux';
@@ -25,11 +25,11 @@ import ContactsInPhone from './components/contactsInPhone';
 import SearchHistoryModification from './components/searchHistoryModification';
 import CreateGroup from './components/createGroup';
 import StepTwoPointFiveRegister from './components/register/stepTwoPointFiveRegister';
-import RequestAddFriend from './components/requestAddFriend';
 import AddFriendIntoGroup from './components/addFriendIntoGroup';
 import { ManagingGroup } from './components/managingGroup';
 import ShowMembersInGroup from './components/showMembersInGroup';
-import { dropDatabase, getDBConnection } from './utils/sqlite';
+import ChatOptional from './components/chatDetail/chatOptional';
+import { useEffect } from 'react';
 
 
 const Stack = createStackNavigator();
@@ -86,6 +86,7 @@ export default function App() {
               <Stack.Screen name='AddFriendIntoGroup' component={AddFriendIntoGroup}/>
               <Stack.Screen name='ManagingGroup' component={ManagingGroup}/>
               <Stack.Screen name='ShowMembersInGroup' component={ShowMembersInGroup}/>
+              <Stack.Screen name='ChatOptional' component={ChatOptional}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

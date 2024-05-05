@@ -1,80 +1,88 @@
-import { useSelector } from "react-redux";
-import { IRootState } from "../../redux_toolkit/store";
-import { useTranslation } from "react-i18next";
 import {
-    Image,
-    Modal,
-    Platform,
-    ScrollView,
-    StatusBar,
-    Text,
     View,
-    TouchableOpacity
+    Text,
+    StatusBar,
+    SafeAreaView,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    Platform,
+    Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./styles";
-import commonStyles from "../../CommonStyles/commonStyles";
-import { lightMode } from "../../redux_toolkit/slices/theme.slice";
-import { IConversation, IFileMessage, IMessageItem } from "../../configs/interfaces";
-import { DefaultEventsMap } from "@socket.io/component-emitter";
-import { Socket } from "socket.io-client";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { LINK_MESSAGE } from "@env";
+import { useSelector } from "react-redux";
+import { IRootState } from "../../../redux_toolkit/store";
+import { useTranslation } from "react-i18next";
+import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
+import commonStyles from "../../../CommonStyles/commonStyles";
+import { userInfoInterfaceI } from "../../../redux_toolkit/slices/userInfo.slice";
+import { IConversation, IFileMessage } from "../../../configs/interfaces";
+import { useEffect, useState } from "react";
+import { LINK_GROUP, LINK_MESSAGE } from "@env";
 import * as FileSystem from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import ImageViewer from "react-native-image-zoom-viewer";
+import CreateGroupAvatarWhenAvatarIsEmpty from "../../../utils/createGroupAvatarWhenAvatarIsEmpty";
+import { handleNavigateToChatDetail } from "../../../utils/handleNavigateToChatDetail";
 
-export function ManagingGroup({
-    navigation,
-    route,
-}: {
+interface IChatOptionalProps {
     navigation: any;
     route: any;
-}) {
-    const userInfo = useSelector((state: IRootState) => state.userInfo);
-    const theme = useSelector((state: IRootState) => state.theme.theme);
+}
+
+export default function ChatOptional({
+    navigation,
+    route,
+}: IChatOptionalProps) {
     const { t } = useTranslation();
-    const conversation = route.params.conversation as IConversation;
-    const setMessageHistory = route.params.setMessageHistory as Dispatch<SetStateAction<IMessageItem[]>>;
-    const socket = route.params.socket as Socket<
-        DefaultEventsMap,
-        DefaultEventsMap
-    >;
-    const setConversation = route.params.setConversation as React.Dispatch<
-        React.SetStateAction<IConversation>
-    >;
+    const {
+        conversation,
+        userInfo,
+    }: { conversation: IConversation; userInfo: userInfoInterfaceI } =
+        route.params;
+    const theme = useSelector((state: IRootState) => state.theme.theme);
+
+    const userNotMe = conversation.users.find(
+        (member) => member._id !== userInfo.user?._id
+    );
     const [hideAttachmentFiles, setHideAttachmentFiles] =
         useState<boolean>(true);
     const [hideImages, setHideImages] = useState<boolean>(true);
+    const [hideCommonGroup, setHideCommonGroup] = useState<boolean>(true);
     const [attachmentFiles, setAttachmentFiles] = useState<IFileMessage[]>([]);
     const [showFullScreenImageMessage, setShowFullScreenImageMessage] =
         useState<IFileMessage | null>(null);
+    const [commonGroups, setCommonGroups] = useState<IConversation[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    async function getAllAttachmentFiles() {
-        try {
-            const resp = await fetch(
-                `${LINK_MESSAGE}/${conversation._id}/attached-files`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${userInfo.accessToken}`,
-                    },
-                }
-            );
-            if (resp.ok) {
-                console.log("Get all attachment files successfully");
-                const data = (await resp.json()) as IFileMessage[];
-                setAttachmentFiles(data);
-            }
-        } catch (error) {
-            console.log("Error when get all attachment files", error);
-            setAttachmentFiles([]);
-        }
+    function getAllAttachmentFiles() {
+        fetch(`${LINK_MESSAGE}/${conversation._id}/attached-files`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userInfo.accessToken}`,
+            },
+        })
+            .then((data) => data.json())
+            .then((data) => setAttachmentFiles(data as IFileMessage[]))
+            .catch((err) => console.log(err));
+    }
+    function getCommonGroups() {
+        fetch(`${LINK_GROUP}/mutual?userId=${userNotMe?._id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userInfo.accessToken}`,
+            },
+        })
+            .then((data) => data.json())
+            .then((data) => setCommonGroups(data as IConversation[]))
+            .catch((err) => console.log(err));
     }
 
     useEffect(() => {
         getAllAttachmentFiles();
+        getCommonGroups();
     }, []);
 
     function getAttachmentFiles() {
@@ -82,43 +90,6 @@ export function ManagingGroup({
     }
     function getAttachmentImages() {
         return attachmentFiles.filter((file) => file.type.includes("image"));
-    }
-
-    function createImageIfAvatarIsEmpty() {
-        let users = conversation.users;
-        if (users.length > 4) {
-            users = users.slice(0, 4);
-        }
-        return (
-            <View
-                style={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: 50,
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    overflow: "hidden",
-                    alignItems: "center",
-                    justifyContent: "center",
-                }}
-            >
-                {users.map((user) => {
-                    return (
-                        <Image
-                            source={{
-                                uri: user.avatar,
-                            }}
-                            style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: 50,
-                                padding: 3,
-                            }}
-                        />
-                    );
-                })}
-            </View>
-        );
     }
 
     const handleDownloadFile = async (url: string, name: string) => {
@@ -200,7 +171,7 @@ export function ManagingGroup({
                 >
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image
-                            source={require("../../assets/arrow-left-s-line-icon.png")}
+                            source={require("../../../assets/arrow-left-s-line-icon.png")}
                             style={[
                                 styles.managingGroupHeaderGoBackBtn,
                                 {
@@ -222,14 +193,11 @@ export function ManagingGroup({
                                 : commonStyles.darkPrimaryText,
                         ]}
                     >
-                        {t("managingGroupTitle")}
+                        {t("chatDetaildMoreViewProfileTitle")}
                     </Text>
                 </View>
-                <ScrollView
-                    contentContainerStyle={{
-                       
-                    }}
-                >
+
+                <ScrollView contentContainerStyle={{}}>
                     <View>
                         <View
                             style={{
@@ -238,18 +206,14 @@ export function ManagingGroup({
                             }}
                         >
                             <View>
-                                {conversation.picture ? (
-                                    <Image
-                                        source={{ uri: conversation.picture }}
-                                        style={{
-                                            width: 100,
-                                            height: 100,
-                                            borderRadius: 50,
-                                        }}
-                                    />
-                                ) : (
-                                    createImageIfAvatarIsEmpty()
-                                )}
+                                <Image
+                                    source={{ uri: userNotMe?.avatar }}
+                                    style={{
+                                        width: 100,
+                                        height: 100,
+                                        borderRadius: 50,
+                                    }}
+                                />
                             </View>
                             <View
                                 style={{
@@ -265,82 +229,11 @@ export function ManagingGroup({
                                         fontWeight: "600",
                                     }}
                                 >
-                                    {conversation.name}
+                                    {userNotMe?.name}
                                 </Text>
                             </View>
                         </View>
-                        <View
-                            style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                gap: 25,
-                                justifyContent: "center",
-                                marginTop: 15,
-                            }}
-                        >
-                            <TouchableOpacity
-                                style={{
-                                    alignItems: "center",
-                                    
-                                }}
-                                onPress={() =>
-                                    navigation.navigate("AddFriendIntoGroup", {
-                                        conversation: conversation,
-                                        socket: socket,
-                                        setConversation: setConversation,
-                                        setMessageHistory: setMessageHistory
-                                    })
-                                }
-                            >
-                                <Image
-                                    source={require("../../assets/user-add-line.png")}
-                                    style={{
-                                        width: 25,
-                                        height: 25,
-                                        resizeMode: "contain",
-                                    }}
-                                />
-                                <Text
-                                    style={{
-                                        fontSize: 16,
-                                    }}
-                                >
-                                    {t("managingGroupAddMember")}
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{
-                                    alignItems: "center",
-                                    gap: 5,
-                                }}
-                                onPress={() => {
-                                    navigation.navigate("ShowMembersInGroup", {
-                                        conversation: conversation,
-                                        socket: socket,
-                                        setConversation: setConversation,
-                                        setMessageHistory: setMessageHistory,
-                                    });
-                                }}
-                            >
-                                <Image
-                                    source={require("../../assets/group-bottom-tab.png")}
-                                    style={{
-                                        width: 25,
-                                        height: 25,
-                                        resizeMode: "contain",
-                                    }}
-                                />
-                                <Text
-                                    style={{
-                                        fontSize: 16,
-                                    }}
-                                >{`${t("managingGroupShowMembers")} (${
-                                    conversation.users.length
-                                })`}</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
-
                     <View
                         style={[
                             styles.attachmentFilesWrapper,
@@ -368,7 +261,7 @@ export function ManagingGroup({
                             ]}
                         >
                             <Image
-                                source={require("../../assets/attachment-line-icon.png")}
+                                source={require("../../../assets/attachment-line-icon.png")}
                                 style={[
                                     styles.categoryIconForAttachment,
                                     {
@@ -389,8 +282,8 @@ export function ManagingGroup({
                             <Image
                                 source={
                                     hideAttachmentFiles
-                                        ? require("../../assets/arrow-down-s-line-icon.png")
-                                        : require("../../assets/arrow-up-s-line-icon.png")
+                                        ? require("../../../assets/arrow-down-s-line-icon.png")
+                                        : require("../../../assets/arrow-up-s-line-icon.png")
                                 }
                                 style={[
                                     styles.showAndHideIcon,
@@ -437,7 +330,7 @@ export function ManagingGroup({
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../assets/file-text-fill-icon.png")}
+                                                    source={require("../../../assets/file-text-fill-icon.png")}
                                                     style={[
                                                         styles.iconForFileItem,
                                                         {
@@ -476,7 +369,7 @@ export function ManagingGroup({
                                                 }}
                                             >
                                                 <Image
-                                                    source={require("../../assets/download-2-line-icon.png")}
+                                                    source={require("../../../assets/download-2-line-icon.png")}
                                                     style={[
                                                         styles.iconDownloadFileItem,
                                                         {
@@ -524,7 +417,7 @@ export function ManagingGroup({
                             ]}
                         >
                             <Image
-                                source={require("../../assets/image-fill-icon.png")}
+                                source={require("../../../assets/image-fill-icon.png")}
                                 style={[
                                     styles.categoryIconForAttachment,
                                     {
@@ -545,8 +438,8 @@ export function ManagingGroup({
                             <Image
                                 source={
                                     hideImages
-                                        ? require("../../assets/arrow-down-s-line-icon.png")
-                                        : require("../../assets/arrow-up-s-line-icon.png")
+                                        ? require("../../../assets/arrow-down-s-line-icon.png")
+                                        : require("../../../assets/arrow-up-s-line-icon.png")
                                 }
                                 style={[
                                     styles.showAndHideIcon,
@@ -589,10 +482,15 @@ export function ManagingGroup({
                                                 ]}
                                             />
                                             <TouchableOpacity
-                                                onPress={() => handleDownloadFile(image.link, image.name)}
+                                                onPress={() =>
+                                                    handleDownloadFile(
+                                                        image.link,
+                                                        image.name
+                                                    )
+                                                }
                                             >
                                                 <Image
-                                                    source={require("../../assets/download-2-line-icon.png")}
+                                                    source={require("../../../assets/download-2-line-icon.png")}
                                                     style={[
                                                         styles.iconDownloadImgItem,
                                                         {
@@ -615,90 +513,219 @@ export function ManagingGroup({
                             </View>
                         )}
                     </View>
-                </ScrollView>
-
-                
-            </SafeAreaView>
-
-            {showFullScreenImageMessage && (
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={showFullScreenImageMessage !== null}
+                    <View
+                        style={[
+                            styles.attachmentFilesWrapper,
+                            {
+                                borderColor:
+                                    theme === lightMode
+                                        ? commonStyles
+                                              .chatNavbarBorderBottomColorLight
+                                              .color
+                                        : commonStyles
+                                              .chatNavbarBorderBottomColorDark
+                                              .color,
+                            },
+                        ]}
                     >
-                        <ImageViewer
-                            imageUrls={[
-                                { url: showFullScreenImageMessage.link },
+                        <TouchableOpacity
+                            onPress={() => setHideCommonGroup(!hideCommonGroup)}
+                            style={[
+                                styles.toggleShowAndHideBox,
+                                theme === lightMode
+                                    ? commonStyles.lightSecondaryBackground
+                                    : commonStyles.darkSecondaryBackground,
                             ]}
-                            style={{ backgroundColor: "black" }}
-                            renderIndicator={() => {
-                                return <></>;
-                            }}
-                            renderHeader={() => {
-                                return (
-                                    <View
-                                        style={[
-                                            styles.chatDetailModalImageFullscreenHeader,
-                                        ]}
-                                    >
-                                        <View
+                        >
+                            <Image
+                                source={require("../../../assets/group-line-icon.png")}
+                                style={[
+                                    styles.categoryIconForAttachment,
+                                    {
+                                        tintColor:
+                                            theme === lightMode
+                                                ? commonStyles.lightPrimaryText
+                                                      .color
+                                                : commonStyles.darkPrimaryText
+                                                      .color,
+                                    },
+                                ]}
+                            />
+                            <Text
+                                style={[styles.categoryIconForAttachmentText]}
+                            >
+                                {t("addFriendInvitationCommonGroup")}
+                            </Text>
+                            <Image
+                                source={
+                                    hideCommonGroup
+                                        ? require("../../../assets/arrow-down-s-line-icon.png")
+                                        : require("../../../assets/arrow-up-s-line-icon.png")
+                                }
+                                style={[
+                                    styles.showAndHideIcon,
+                                    {
+                                        tintColor:
+                                            theme === lightMode
+                                                ? commonStyles.lightPrimaryText
+                                                      .color
+                                                : commonStyles.darkPrimaryText
+                                                      .color,
+                                    },
+                                ]}
+                            />
+                        </TouchableOpacity>
+                        {hideCommonGroup ? null : (
+                            <View style={[styles.boxContaineAttachmentFiles]}>
+                                {commonGroups.map((group, index) => {
+                                    return (
+                                        <TouchableOpacity
                                             style={[
-                                                styles.chatDetailModalImageFullscreenHeaderLeft,
+                                                styles.contactDetailGroupItemBox,
                                             ]}
+                                            key={group._id}
+                                            onPress={() => {
+                                                handleNavigateToChatDetail(
+                                                    group,
+                                                    setIsLoading,
+                                                    userInfo,
+                                                    navigation
+                                                );
+                                            }}
                                         >
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    setShowFullScreenImageMessage(
-                                                        null
-                                                    )
-                                                }
+                                            {group.picture ? (
+                                                <Image
+                                                    source={{
+                                                        uri: group.picture,
+                                                    }}
+                                                    style={[
+                                                        styles.contactDetailGroupItemAvatar,
+                                                    ]}
+                                                />
+                                            ) : (
+                                                CreateGroupAvatarWhenAvatarIsEmpty(
+                                                    group
+                                                )
+                                            )}
+                                            <View
                                                 style={[
-                                                    styles.chatDetailModalImageFullscreenCloseBtn,
+                                                    styles.contactDetailGroupItemContentBox,
                                                 ]}
                                             >
-                                                <Image
-                                                    source={require("../../assets/arrow-left-s-line-icon.png")}
-                                                    resizeMode="contain"
-                                                    style={{
-                                                        width: 30,
-                                                        height: 30,
-                                                        tintColor:
-                                                            commonStyles
-                                                                .darkPrimaryText
-                                                                .color,
-                                                    }}
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
-                                        <View>
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    handleDownloadFile(
-                                                        showFullScreenImageMessage.link,
-                                                        showFullScreenImageMessage.name
-                                                    )
-                                                }
-                                            >
-                                                <Image
-                                                    source={require("../../assets/download-2-line-icon.png")}
-                                                    resizeMode="contain"
-                                                    style={{
-                                                        width: 30,
-                                                        height: 30,
-                                                        tintColor:
-                                                            commonStyles
-                                                                .darkPrimaryText
-                                                                .color,
-                                                    }}
-                                                />
-                                            </TouchableOpacity>
-                                        </View>
+                                                <View
+                                                    style={[
+                                                        styles.contactDetailGroupItemFirstTitleBox,
+                                                    ]}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.contactDetailGroupItemFirstTitleLeftText,
+                                                            theme === lightMode
+                                                                ? commonStyles.lightPrimaryText
+                                                                : commonStyles.darkPrimaryText,
+                                                        ]}
+                                                    >
+                                                        {group.name}
+                                                    </Text>
+                                                </View>
+                                                <View>
+                                                    <Text
+                                                        lineBreakMode="tail"
+                                                        numberOfLines={1}
+                                                        style={[
+                                                            styles.contactDetailGroupItemSecondPreviewText,
+                                                            theme === lightMode
+                                                                ? commonStyles.lightPrimaryText
+                                                                : commonStyles.darkPrimaryText,
+                                                        ]}
+                                                    ></Text>
+                                                </View>
+                                            </View>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        )}
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+            {showFullScreenImageMessage && (
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={showFullScreenImageMessage !== null}
+                >
+                    <ImageViewer
+                        imageUrls={[{ url: showFullScreenImageMessage.link }]}
+                        style={{ backgroundColor: "black" }}
+                        renderIndicator={() => {
+                            return <></>;
+                        }}
+                        renderHeader={() => {
+                            return (
+                                <View
+                                    style={[
+                                        styles.chatDetailModalImageFullscreenHeader,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.chatDetailModalImageFullscreenHeaderLeft,
+                                        ]}
+                                    >
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                setShowFullScreenImageMessage(
+                                                    null
+                                                )
+                                            }
+                                            style={[
+                                                styles.chatDetailModalImageFullscreenCloseBtn,
+                                            ]}
+                                        >
+                                            <Image
+                                                source={require("../../../assets/arrow-left-s-line-icon.png")}
+                                                resizeMode="contain"
+                                                style={{
+                                                    width: 30,
+                                                    height: 30,
+                                                    tintColor:
+                                                        commonStyles
+                                                            .darkPrimaryText
+                                                            .color,
+                                                }}
+                                            />
+                                        </TouchableOpacity>
                                     </View>
-                                );
-                            }}
-                        />
-                    </Modal>
-                )}
+                                    <View>
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                handleDownloadFile(
+                                                    showFullScreenImageMessage.link,
+                                                    showFullScreenImageMessage.name
+                                                )
+                                            }
+                                        >
+                                            <Image
+                                                source={require("../../../assets/download-2-line-icon.png")}
+                                                resizeMode="contain"
+                                                style={{
+                                                    width: 30,
+                                                    height: 30,
+                                                    tintColor:
+                                                        commonStyles
+                                                            .darkPrimaryText
+                                                            .color,
+                                                }}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            );
+                        }}
+                    />
+                </Modal>
+            )}
         </View>
     );
 }

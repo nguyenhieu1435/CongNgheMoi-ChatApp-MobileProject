@@ -19,11 +19,15 @@ import ReadMore from "@fawazahmed/react-native-read-more";
 import {
     LINK_GET_ADD_FRIEND_ACCEPT,
     LINK_GET_ADD_FRIEND_REJECT,
+    LINK_GET_MY_CONVERSATIONS,
+    LINK_MESSAGE_NOTIFICATION,
     LINK_REQUEST_FRIEND_LIST,
     LINK_REQUEST_FRIEND_WAIT_RESPONSE,
     LINK_REVOCATION_REQUEST_FRIEND,
 } from "@env";
 import {
+    IConversation,
+    IMessageItem,
     IReceivedRequestFriendList,
     IRequestFriendList,
 } from "../../configs/interfaces";
@@ -293,6 +297,30 @@ function AddFriendInvitationReceivedList({
         fetchRequestReceived();
     }, []);
 
+    async function getConversationAfterAcceptFriend(friendId: string) {
+        try {
+            const conversationResponse = await fetch(LINK_GET_MY_CONVERSATIONS, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    receiverUserId: friendId
+                })
+            })
+            if (conversationResponse.ok){
+                const conversationData = await conversationResponse.json() as IConversation
+                return conversationData._id
+            } else {
+                throw new Error("Error get conversation")
+            }
+        } catch (error) {
+            console.log("error", error)
+            throw new Error("Error get conversation")
+        }
+    }
+
     async function handleAcceptRequest(item: IReceivedRequestFriendList) {
         try {
             console.log("Accept friend link", LINK_GET_ADD_FRIEND_ACCEPT);
@@ -308,10 +336,35 @@ function AddFriendInvitationReceivedList({
                 console.log("Accept friend success", item.sender_id._id);
                 const data = await response.json();
                 console.log("Accept friend success", JSON.stringify(data));
+                const conversationId = await getConversationAfterAcceptFriend(item.sender_id._id); 
+                handleAddAcceptFriendNotification(conversationId);
+
                 // socket.emit("acceptFriend", item.sender_id._id);
                 setRequestReceived(requestReceived.filter((request) => request._id !== item._id));
             } else {
                 console.log("Error status: " + response.status);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async function handleAddAcceptFriendNotification(conversationId: string) {
+        try {
+            const resp =  await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + userInfo.accessToken
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    type: "ACCEPT_FRIEND"
+                })
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem;
+                socket.emit("sendMessage", data)
+                console.log("Send add friend notification success")
             }
         } catch (error) {
             console.log(error);

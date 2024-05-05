@@ -10,7 +10,7 @@ import {
     Modal,
 } from "react-native";
 import { styles } from "./styles";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
 import { useTranslation } from "react-i18next";
 import { lightMode } from "../../redux_toolkit/slices/theme.slice";
@@ -22,13 +22,28 @@ import OutsidePressHandler from "react-native-outside-press";
 import { Camera, requestCameraPermissionsAsync } from "expo-camera";
 import SearchDetailPopup from "../searchDetailPopup";
 import debounce from "debounce";
-import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_CONVERSATIONS, LINK_OPEN_CONVERSATION } from "@env";
-import { IConversation, IMessageItem } from "../../configs/interfaces";
+import {
+    LINK_GET_MESSAGE_HISTORY,
+    LINK_GET_MY_CONVERSATIONS,
+    LINK_GET_MY_FRIENDS,
+    LINK_OPEN_CONVERSATION,
+} from "@env";
+import {
+    IConversation,
+    IMessageItem,
+    IUserIsMyFriendsResult,
+    IUserResultSearch,
+} from "../../configs/interfaces";
 import Spinner from "react-native-loading-spinner-overlay";
 import { getAccurancyDateVN } from "../../utils/date";
 import { useIsFocused } from "@react-navigation/native";
 import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
 import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
+import {
+    updateFriends,
+    updateOnlineUserIds,
+} from "../../redux_toolkit/slices/onlineUserIds.slice";
+import { socket } from "../../configs/socket-io";
 
 type Props = {
     navigation: any;
@@ -54,6 +69,14 @@ export default function ChatList({ navigation, route }: Props) {
     const [myConversations, setMyConversations] = useState<IConversation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const isFocused = useIsFocused();
+    const dispatch = useDispatch();
+    const updateOnlineUserIdsState = useRef(false);
+    const friendsOnline = useSelector(
+        (state: IRootState) => state.onlineUserIds
+    );
+    const [friendList, setFriendList] = useState<IUserIsMyFriendsResult | null>(
+        null
+    );
 
     async function handleToggleModalScanQRCode() {
         if (showModalScanQRCode) {
@@ -70,9 +93,36 @@ export default function ChatList({ navigation, route }: Props) {
 
     const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
 
+    async function getFriendList() {
+        try {
+            const resp = await fetch(LINK_GET_MY_FRIENDS, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
+            console.log("status: ", resp.status)
+            if (resp.ok) {
+                const data = (await resp.json()) as IUserIsMyFriendsResult;
+
+                socket.emit("online", {
+                    userId: userInfo.user?._id,
+                    friendIds: data.friends.map((item) => item._id),
+                });
+                
+                setFriendList(data);
+                dispatch(updateFriends(data.friends.map((item) => item._id)));
+            }
+        } catch (error) {
+            console.log("error get my friends");
+            dispatch(updateFriends([]));
+        }
+    }
+
     useEffect(() => {
         async function getMyConversations() {
-            console.log("fetching my conversations")
+            console.log("fetching my conversations");
             try {
                 setIsLoading(true);
                 const response = await fetch(LINK_GET_MY_CONVERSATIONS, {
@@ -84,9 +134,9 @@ export default function ChatList({ navigation, route }: Props) {
                 });
                 if (response.ok) {
                     let data = await response.json();
-                    
+
                     let conversations: IConversation[] = [];
-                    
+
                     Array.isArray(data) &&
                         data.forEach((item: IConversation) => {
                             conversations.push(item);
@@ -103,9 +153,45 @@ export default function ChatList({ navigation, route }: Props) {
             }
             setIsLoading(false);
         }
-        if (isFocused && route.name === "ChatList") {
+        if (
+            isFocused &&
+            route.name === "ChatList" &&
+            updateOnlineUserIdsState.current === false
+        ) {
             getMyConversations();
         }
+    }, [route.name, isFocused]);
+
+    useEffect(() => {
+        socket.connect();
+        if (friendsOnline.friends.length === 0) {
+            getFriendList();
+        }
+        socket.emit("online", {
+            userId: userInfo.user?._id,
+            friendIds: friendsOnline.friends,
+        });
+        function onOnline(usersOnline: string[]) {
+            console.log("Users Online: ", usersOnline);
+            dispatch(updateOnlineUserIds(usersOnline));
+        }
+        function onOffline(userId: string) {
+            console.log("User Offline: ", userId);
+            dispatch(
+                updateOnlineUserIds(
+                    friendsOnline.onlineUserIds.filter(
+                        (item) => item !== userId
+                    )
+                )
+            );
+        }
+
+        socket.on("usersOnline", onOnline);
+        socket.on("userOffline", onOffline);
+        return () => {
+            socket.off("usersOnline", onOnline);
+            socket.off("userOffline", onOffline);
+        };
     }, [route.name, isFocused]);
 
     function getDateFormated(date: string) {
@@ -159,6 +245,7 @@ export default function ChatList({ navigation, route }: Props) {
                         }
                     />
                     <Text
+                        numberOfLines={1}
                         style={[
                             styles.chatListHistoryPrevContent,
                             theme === lightMode
@@ -186,6 +273,7 @@ export default function ChatList({ navigation, route }: Props) {
                         }
                     />
                     <Text
+                        numberOfLines={1}
                         style={[
                             styles.chatListHistoryPrevContent,
                             theme === lightMode
@@ -220,65 +308,54 @@ export default function ChatList({ navigation, route }: Props) {
     }
 
     function handleGetNameConversation(conversation: IConversation) {
-        if (conversation.isGroup){
+        if (conversation.isGroup) {
             return conversation.name;
         } else {
-            return conversation.users.find((user) => user._id !== userInfo.user?._id)?.name;
+            return conversation.users.find(
+                (user) => user._id !== userInfo.user?._id
+            )?.name;
         }
     }
-    // async function handleNavigateToChatDetail(conversation: IConversation) {
-    //     console.log("conversation id: " + conversation._id);
-    //     setIsLoading(true);
-    //     try {
-                
-    //         const messageHistoryResponse = await fetch(LINK_GET_MESSAGE_HISTORY + conversation._id, {
-    //             method: "GET",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 "Authorization": "Bearer " + userInfo.accessToken
-    //             }
-    //         })
-    //         if (messageHistoryResponse.ok){
-    //             let messageHistoryData = await messageHistoryResponse.json();
-    //             let newData : IMessageItem[] = []
-    //             Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
-    //                 newData.push(
-    //                     {
-    //                         _id: item._id,
-    //                         sender: item.sender,
-    //                         messages: item.messages,
-    //                         conversation: item.conversation,
-    //                         reply : item.reply,
-    //                         files: item.files,
-    //                         createdAt: getAccurancyDateVN(item.createdAt),
-    //                         updatedAt: getAccurancyDateVN(item.updatedAt),
-    //                         "__v": item.__v,
-    //                         statuses: item.statuses,
-    //                         location: item.location,
-    //                         deleted: item.deleted
-    //                     }
-    //                 )
-    //             })
-    //             setIsLoading(false);
-    //             if (messageHistoryData.length > 0){
-    //                 navigation.navigate("ChatDetail", {
-    //                     conversation: conversation,
-    //                     messages: newData.reverse()
-    //                 });
-    //             } else {
-    //                 navigation.navigate("ChatDetail", {
-    //                     conversation: conversation,
-    //                     messages: []
-    //                 });
-    //             }
-    //         }
 
-    //     } catch (error) {
-    //         console.log("error get message history");
-    //     }
-    //     setIsLoading(false);
-    // }
-    
+    function getFriendOnlineStatus() {
+       
+        if (friendList == null || friendsOnline.friends.length === 0) {
+            console.log(friendList);
+            console.log(friendsOnline);
+            
+            return [];
+        }
+      
+        return friendList.friends.filter((item) =>
+            friendsOnline.onlineUserIds.includes(item._id)
+        );
+    }
+
+    async function handleOpenChatDetail(friend: IUserResultSearch){
+        try {
+            setIsLoading(true)
+            const conversationResponse = await fetch(LINK_GET_MY_CONVERSATIONS, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    receiverUserId: friend._id
+                })
+            })
+            if (conversationResponse.ok){
+                const conversationData = await conversationResponse.json()
+                
+                handleNavigateToChatDetail(conversationData as IConversation, setIsLoading, userInfo, navigation)
+            }
+        } catch (error) {
+            console.log("error", error)
+        }
+        setIsLoading(false)
+    }
+
+
     return (
         <View
             style={[
@@ -662,8 +739,86 @@ export default function ChatList({ navigation, route }: Props) {
                         showsHorizontalScrollIndicator={false}
                         style={[styles.friendsActiveListBox]}
                     >
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
+                        {getFriendOnlineStatus().map((friendOnline, index) => {
+                            return (
+                                <TouchableOpacity
+                                    key={index}
+                                    onPress={() => handleOpenChatDetail(friendOnline)}
+                                    style={[styles.friendActiveItem]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.friendActiveItemChild,
+                                            {
+                                                width:
+                                                    (WIDTH - 40 - 16 * 3) / 4,
+                                            },
+                                        ]}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.friendActiveMainContentBox,
+                                            ]}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.friendActiveItemImageBox,
+                                                ]}
+                                            >
+                                                <Image
+                                                    source={{
+                                                        uri: friendOnline.avatar,
+                                                    }}
+                                                    resizeMode="contain"
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        borderRadius: 50,
+                                                    }}
+                                                />
+                                                <View
+                                                    style={[
+                                                        styles.friendActiveItemIconOnline,
+                                                        {
+                                                            borderColor:
+                                                                theme ==
+                                                                lightMode
+                                                                    ? commonStyles
+                                                                          .lightPrimaryBackground
+                                                                          .backgroundColor
+                                                                    : commonStyles
+                                                                          .darkPrimaryBackground
+                                                                          .backgroundColor,
+                                                        },
+                                                    ]}
+                                                ></View>
+                                            </View>
+                                            <Text
+                                                numberOfLines={1}
+                                                style={[
+                                                    styles.activeOnlineUserName,
+                                                    theme === lightMode
+                                                        ? commonStyles.lightPrimaryText
+                                                        : commonStyles.darkPrimaryText,
+                                                ]}
+                                            >
+                                                {friendOnline.name}
+                                            </Text>
+                                        </View>
+                                        <View
+                                            style={[
+                                                styles.friendActiveItemLayout,
+                                                theme == lightMode
+                                                    ? commonStyles.lightTertiaryBackground
+                                                    : commonStyles.darkTertiaryBackground,
+                                            ]}
+                                        ></View>
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
+                        {/* <TouchableOpacity
+                            onPress={() => {}}
                             style={[styles.friendActiveItem]}
                         >
                             <View
@@ -727,403 +882,8 @@ export default function ChatList({ navigation, route }: Props) {
                                     ]}
                                 ></View>
                             </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("ChatDetail")}
-                            style={[styles.friendActiveItem]}
-                        >
-                            <View
-                                style={[
-                                    styles.friendActiveItemChild,
-                                    { width: (WIDTH - 40 - 16 * 3) / 4 },
-                                ]}
-                            >
-                                <View
-                                    style={[styles.friendActiveMainContentBox]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.friendActiveItemImageBox,
-                                        ]}
-                                    >
-                                        <Image
-                                            source={{
-                                                uri: "https://avatar.iran.liara.run/public/44",
-                                            }}
-                                            resizeMode="contain"
-                                            style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 50,
-                                            }}
-                                        />
-                                        <View
-                                            style={[
-                                                styles.friendActiveItemIconOnline,
-                                                {
-                                                    borderColor:
-                                                        theme == lightMode
-                                                            ? commonStyles
-                                                                  .lightPrimaryBackground
-                                                                  .backgroundColor
-                                                            : commonStyles
-                                                                  .darkPrimaryBackground
-                                                                  .backgroundColor,
-                                                },
-                                            ]}
-                                        ></View>
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.activeOnlineUserName,
-                                            theme === lightMode
-                                                ? commonStyles.lightPrimaryText
-                                                : commonStyles.darkPrimaryText,
-                                        ]}
-                                    >
-                                        Mark
-                                    </Text>
-                                </View>
-                                <View
-                                    style={[
-                                        styles.friendActiveItemLayout,
-                                        theme == lightMode
-                                            ? commonStyles.lightTertiaryBackground
-                                            : commonStyles.darkTertiaryBackground,
-                                    ]}
-                                ></View>
-                            </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
+                        
                     </ScrollView>
                 </View>
                 <View style={[styles.chatListHistoryBox]}>
@@ -1181,7 +941,14 @@ export default function ChatList({ navigation, route }: Props) {
                             myConversations.map((conversation, index) => {
                                 return (
                                     <TouchableOpacity
-                                        onPress={()=> handleNavigateToChatDetail(conversation, setIsLoading, userInfo, navigation)}
+                                        onPress={() =>
+                                            handleNavigateToChatDetail(
+                                                conversation,
+                                                setIsLoading,
+                                                userInfo,
+                                                navigation
+                                            )
+                                        }
                                         style={[styles.chatListHistoryItem]}
                                     >
                                         <View
@@ -1190,9 +957,7 @@ export default function ChatList({ navigation, route }: Props) {
                                             ]}
                                         >
                                             <View>
-                                                {
-                                                    !conversation.isGroup
-                                                    ?
+                                                {!conversation.isGroup ? (
                                                     <Image
                                                         source={{
                                                             uri: conversation.picture,
@@ -1204,11 +969,9 @@ export default function ChatList({ navigation, route }: Props) {
                                                             borderRadius: 50,
                                                         }}
                                                     />
-                                                    :
+                                                ) : (
                                                     <View>
-                                                        {
-                                                            conversation.picture
-                                                            ?
+                                                        {conversation.picture ? (
                                                             <Image
                                                                 source={{
                                                                     uri: conversation.picture,
@@ -1220,31 +983,40 @@ export default function ChatList({ navigation, route }: Props) {
                                                                     borderRadius: 50,
                                                                 }}
                                                             />
-                                                            :
-                                                            CreateGroupAvatarWhenAvatarIsEmpty(conversation)
-                                                        }
+                                                        ) : (
+                                                            CreateGroupAvatarWhenAvatarIsEmpty(
+                                                                conversation
+                                                            )
+                                                        )}
                                                     </View>
-                                                }
+                                                )}
                                             </View>
-                                            <View
-                                                style={[
-                                                    styles.friendActiveItemIconOnline,
-                                                    {
-                                                        borderColor:
-                                                            theme == lightMode
-                                                                ? commonStyles
-                                                                      .lightPrimaryBackground
-                                                                      .backgroundColor
-                                                                : commonStyles
-                                                                      .darkPrimaryBackground
-                                                                      .backgroundColor,
-                                                        backgroundColor:
-                                                            commonStyles
-                                                                .activeOnlineColor
-                                                                .color,
-                                                    },
-                                                ]}
-                                            ></View>
+                                            {conversation.users.some((user) =>
+                                                friendsOnline.onlineUserIds.includes(
+                                                    user._id
+                                                )
+                                            ) && (
+                                                <View
+                                                    style={[
+                                                        styles.friendActiveItemIconOnline,
+                                                        {
+                                                            borderColor:
+                                                                theme ==
+                                                                lightMode
+                                                                    ? commonStyles
+                                                                          .lightPrimaryBackground
+                                                                          .backgroundColor
+                                                                    : commonStyles
+                                                                          .darkPrimaryBackground
+                                                                          .backgroundColor,
+                                                            backgroundColor:
+                                                                commonStyles
+                                                                    .activeOnlineColor
+                                                                    .color,
+                                                        },
+                                                    ]}
+                                                ></View>
+                                            )}
                                         </View>
                                         <View
                                             style={[
@@ -1260,36 +1032,45 @@ export default function ChatList({ navigation, route }: Props) {
                                                 ]}
                                                 numberOfLines={1}
                                             >
-                                                {handleGetNameConversation(conversation)}
+                                                {handleGetNameConversation(
+                                                    conversation
+                                                )}
                                             </Text>
                                             <View
                                                 style={[
                                                     styles.chatListHistoryPrevContentBox,
                                                 ]}
                                             >
-                                                {
-                                                    conversation.lastMessage && handleShowMessagePreview(conversation.lastMessage)
-                                                }
+                                                {conversation.lastMessage &&
+                                                    handleShowMessagePreview(
+                                                        conversation.lastMessage
+                                                    )}
                                             </View>
                                         </View>
                                         <View>
-                                            {
-                                                conversation.pinnedMessages.length > 0
-                                                &&
+                                            {(conversation.pinBy?.length > 0 ||
+                                                conversation.pinnedMessages
+                                                    ?.length > 0) && (
                                                 <Image
                                                     source={require("../../assets/pin-fill-icon.png")}
-                                                    style={[{
-                                                        width: 15,
-                                                        height: 15,
-                                                        marginLeft: "auto",
-                                                        tintColor: theme === lightMode
-                                                        ?
-                                                        commonStyles.lightSecondaryText.color
-                                                        :
-                                                        commonStyles.darkSecondaryText.color
-                                                    }]}
+                                                    style={[
+                                                        {
+                                                            width: 15,
+                                                            height: 15,
+                                                            marginLeft: "auto",
+                                                            tintColor:
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles
+                                                                          .lightSecondaryText
+                                                                          .color
+                                                                    : commonStyles
+                                                                          .darkSecondaryText
+                                                                          .color,
+                                                        },
+                                                    ]}
                                                 />
-                                            }
+                                            )}
                                             <Text
                                                 style={[
                                                     styles.chatListHistoryTime,
@@ -1302,19 +1083,18 @@ export default function ChatList({ navigation, route }: Props) {
                                                     conversation.updatedAt
                                                 )}
                                             </Text>
-                                            {
-                                                conversation.unreadMessageCount > 0
-                                                &&
+                                            {conversation.unreadMessageCount >
+                                                0 && (
                                                 <Text
-                                                style={[
-                                                    styles.chatListHistoryMsgNumber
-                                                ]}
+                                                    style={[
+                                                        styles.chatListHistoryMsgNumber,
+                                                    ]}
                                                 >
-                                                    {conversation.unreadMessageCount}
-                                                </Text> 
-                                            }
-                                            
-                                            
+                                                    {
+                                                        conversation.unreadMessageCount
+                                                    }
+                                                </Text>
+                                            )}
                                         </View>
                                     </TouchableOpacity>
                                 );

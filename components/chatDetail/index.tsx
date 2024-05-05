@@ -4,28 +4,25 @@ import {
     StatusBar,
     SafeAreaView,
     Image,
-    GestureResponderEvent,
-    Dimensions,
-    TouchableOpacity,
     ScrollView,
-    FlatList,
-    Modal,
 } from "react-native";
 import { styles } from "./styles";
-import { connect, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
 import { useTranslation } from "react-i18next";
 import { lightMode } from "../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../CommonStyles/commonStyles";
-import OutsidePressHandler from "react-native-outside-press";
 import { useEffect, useRef, useState } from "react";
 const { TypingAnimation } = require("react-native-typing-animation");
 import ChatDetailHeader from "./chatDetailHeader";
 import ChatDetailBottom from "./chatDetailBottom";
 import MessageComponent from "./messageComponent";
-import { IConversation, IMessageItem, IMessageStatus } from "../../configs/interfaces";
 import {
-    convertDateStrToHourMinute,
+    IConversation,
+    IMessageItem,
+    IMessageStatus,
+} from "../../configs/interfaces";
+import {
     getAccurancyDateVN,
 } from "../../utils/date";
 import { socket } from "../../configs/socket-io";
@@ -36,13 +33,6 @@ interface Props {
     route: any;
 }
 
-const { width: WIDTH, height: HEIGHT } = Dimensions.get("screen");
-
-interface DataHistoryChatsI {
-    id: number;
-    date: string;
-    conversations: DataHistoryChatMessageInterface[];
-}
 
 export interface DataHistoryChatMessageInterface {
     side: string;
@@ -92,11 +82,13 @@ export default function ChatDetail({ navigation, route }: Props) {
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const ref = useRef<String>("");
-    const [showForwardModal, setShowForwardModal] = useState<IMessageItem | null>(null);
-
+    const [showForwardModal, setShowForwardModal] =
+        useState<IMessageItem | null>(null);
+    const friendOnlines = useSelector((state : IRootState) => state.onlineUserIds)
 
     function findReactionsByIndexMessageShowListReaction() {
-        return messageHistory[indexMessageShowListReaction].statuses as IMessageStatus[];
+        return messageHistory[indexMessageShowListReaction]
+            .statuses as IMessageStatus[];
     }
 
     function removeReactionDuplicate(
@@ -154,73 +146,50 @@ export default function ChatDetail({ navigation, route }: Props) {
         return height;
     }
 
-    console.log("ConversationID at ChatDetail: ", conversation._id)
-
-  
-    const handleConvertDataMessageToDateTimeline = (date: string) => {
-        const objDate = new Date(getAccurancyDateVN(date));
-        // if (objDate is today) return "hh:mm" or return "hh:mm dd/mm/yyyy"
-        const currentDate = new Date(
-            getAccurancyDateVN(new Date().toISOString())
-        );
-
-        if (
-            currentDate.getDay() === objDate.getDay() &&
-            currentDate.getMonth() === objDate.getMonth() &&
-            currentDate.getFullYear() === objDate.getFullYear()
-        ) {
-            return convertDateStrToHourMinute(date);
-        } else {
-            if (currentDate.getFullYear() !== objDate.getFullYear()) {
-                return `${convertDateStrToHourMinute(
-                    date
-                )} ${objDate.getDate()}/${
-                    objDate.getMonth() + 1
-                }/${objDate.getFullYear()}`;
-            } else {
-                return `${convertDateStrToHourMinute(
-                    date
-                )} ${objDate.getDate()}/${objDate.getMonth() + 1}`;
-            }
-        }
-    };
+    console.log("ConversationID at ChatDetail: ", conversation._id);
 
     useEffect(() => {
-
         socket.connect();
 
-        function onConnect(){
+        function onConnect() {
             console.log("Connected Socket!");
             socket.emit("openConversation", {
                 conversation: conversation,
                 user: userInfo.user,
             });
-            socket.emit("online", userInfo.user?._id);
+            console.log("Emit online", friendOnlines.friends);
+            
+            socket.emit("online", {
+                userId: userInfo.user?._id,
+                friendIds: friendOnlines.friends,
+            });
         }
-        function onReceivedMessage(message : IMessageItem){
-           
+        function onReceivedMessage(message: IMessageItem) {
             if (ref.current !== message._id) {
-                setMessageHistory([...messageHistory, {
-                    ...message,
-                    createdAt: getAccurancyDateVN(message.createdAt),
-                    updatedAt: getAccurancyDateVN(message.updatedAt),
-                }]);
+                setMessageHistory([
+                    ...messageHistory,
+                    {
+                        ...message,
+                        createdAt: getAccurancyDateVN(message.createdAt),
+                        updatedAt: getAccurancyDateVN(message.updatedAt),
+                    },
+                ]);
                 ref.current = message._id;
             }
         }
-        function onTyping({ conversationId, userId } : any){
+        function onTyping({ conversationId, userId }: any) {
             console.log("typing", conversationId, userId);
             setIsTyping(true);
         }
-        function onStopTyping(){
+        function onStopTyping() {
             console.log("stopTyping");
             setIsTyping(false);
         }
-        function recallMessage(messageReceived: IMessageItem){
-            console.log("MESSSAGE HISTORY", messageHistory)
-            let newMessageHistory = messageHistory.map((message)=>{
-                if (messageReceived._id != message._id){
-                    if (message.reply?._id === messageReceived._id){
+        function recallMessage(messageReceived: IMessageItem) {
+            console.log("MESSSAGE HISTORY", messageHistory);
+            let newMessageHistory = messageHistory.map((message) => {
+                if (messageReceived._id != message._id) {
+                    if (message.reply?._id === messageReceived._id) {
                         message.reply = {
                             ...messageReceived,
                             deleted: "2",
@@ -233,13 +202,13 @@ export default function ChatDetail({ navigation, route }: Props) {
                         deleted: "2",
                     };
                 }
-            })
+            });
             console.log("newMessageHistory", JSON.stringify(newMessageHistory));
-            
+
             setMessageHistory(newMessageHistory as IMessageItem[]);
         }
-        function onPinMessage({message } : {message : IMessageItem}){
-            console.log("onPinMessage onPinMessage")
+        function onPinMessage({ message }: { message: IMessageItem }) {
+            console.log("onPinMessage onPinMessage");
             let newPinMessage = conversation.pinnedMessages;
             newPinMessage.pop();
             newPinMessage.unshift(message);
@@ -248,47 +217,58 @@ export default function ChatDetail({ navigation, route }: Props) {
                 pinnedMessages: newPinMessage,
             });
         }
-        function onUnpinMessage({message }: {message : IMessageItem}){
-            console.log("onUnpinMessage onUnpinMessage")
+        function onUnpinMessage({ message }: { message: IMessageItem }) {
+            console.log("onUnpinMessage onUnpinMessage");
             let newPinMessage = conversation.pinnedMessages;
-            newPinMessage = newPinMessage.filter((item) => item._id != message._id);
+            newPinMessage = newPinMessage.filter(
+                (item) => item._id != message._id
+            );
             setConversation({
                 ...conversation,
                 pinnedMessages: newPinMessage,
             });
         }
-        function onReactForMessage({conversationId, messageId, react, userId}: {
-            conversationId: string,
-            messageId: string,
-            react: string | null,
-            userId: string
-        }){
+        function onReactForMessage({
+            conversationId,
+            messageId,
+            react,
+            userId,
+        }: {
+            conversationId: string;
+            messageId: string;
+            react: string | null;
+            userId: string;
+        }) {
             const newMessageHistory = messageHistory.map((message) => {
                 if (message._id === messageId) {
                     let newStatuses = message.statuses as IMessageStatus[];
                     if (react) {
-                        const isExistReact = newStatuses.find((item) => item.user === userId);
-                        if (isExistReact){
+                        const isExistReact = newStatuses.find(
+                            (item) => item.user === userId
+                        );
+                        if (isExistReact) {
                             newStatuses = newStatuses.map((item) => {
-                                if (item.user === userId){
+                                if (item.user === userId) {
                                     return {
                                         ...item,
                                         react: react,
-                                    }
+                                    };
                                 } else {
                                     return item;
                                 }
-                            })
+                            });
                         } else {
-                            const newReact : IMessageStatus = {
+                            const newReact: IMessageStatus = {
                                 user: userId,
                                 status: "sent",
                                 react: react,
-                            }
+                            };
                             newStatuses.push(newReact);
                         }
                     } else {
-                        newStatuses = newStatuses.filter((item) => item.user !== userId);
+                        newStatuses = newStatuses.filter(
+                            (item) => item.user !== userId
+                        );
                     }
                     return {
                         ...message,
@@ -297,28 +277,36 @@ export default function ChatDetail({ navigation, route }: Props) {
                 } else {
                     return message;
                 }
-            })
+            });
             setMessageHistory(newMessageHistory);
         }
-        function onAddOrUpdateConversation({conversation }: {conversation : IConversation}){
+        function onAddOrUpdateConversation({
+            conversation,
+        }: {
+            conversation: IConversation;
+        }) {
             setConversation(conversation);
         }
-        function onRemovedFromGroup({conversationId} : {conversationId: string}){
-            if (conversation._id === conversationId){
+        function onRemovedFromGroup({
+            conversationId,
+        }: {
+            conversationId: string;
+        }) {
+            if (conversation._id === conversationId) {
                 navigation.navigate("PrimaryBottomTab");
             }
         }
 
-        socket.on("connect", onConnect)
-        socket.on("receivedMessage", onReceivedMessage)
-        socket.on("typing", onTyping)
-        socket.on("stopTyping", onStopTyping)
-        socket.on("recallMessage", recallMessage)
-        socket.on("pinMessage", onPinMessage)
-        socket.on("unpinMessage", onUnpinMessage)
-        socket.on("reactForMessage", onReactForMessage)
-        socket.on("addOrUpdateConversation", onAddOrUpdateConversation)
-        socket.on("removeUserFromConversation", onRemovedFromGroup)
+        socket.on("connect", onConnect);
+        socket.on("receivedMessage", onReceivedMessage);
+        socket.on("typing", onTyping);
+        socket.on("stopTyping", onStopTyping);
+        socket.on("recallMessage", recallMessage);
+        socket.on("pinMessage", onPinMessage);
+        socket.on("unpinMessage", onUnpinMessage);
+        socket.on("reactForMessage", onReactForMessage);
+        socket.on("addOrUpdateConversation", onAddOrUpdateConversation);
+        socket.on("removeUserFromConversation", onRemovedFromGroup);
 
         return () => {
             socket.off("connect", onConnect);
@@ -332,23 +320,20 @@ export default function ChatDetail({ navigation, route }: Props) {
             socket.off("addOrUpdateConversation", onAddOrUpdateConversation);
             socket.off("removeUserFromConversation", onRemovedFromGroup);
             socket.disconnect();
-        }
-        
+        };
     }, [messageHistory]);
 
     function handleUpdateAllMessageItem(messageId: string) {
-        const newMessages = messageHistory.map((message : IMessageItem) => {
+        const newMessages = messageHistory.map((message: IMessageItem) => {
             if (message._id == messageId) {
-                
                 const deleteMessage = {
                     ...message,
                     deleted: "2",
-                }
+                };
 
                 socket.emit("recallMessage", deleteMessage);
 
                 return deleteMessage;
-
             } else {
                 if (message.reply?._id == messageId) {
                     message.reply = {
@@ -356,10 +341,10 @@ export default function ChatDetail({ navigation, route }: Props) {
                         deleted: "2",
                     };
                 }
-                
+
                 return message;
             }
-        })
+        });
         setMessageHistory(newMessages as IMessageItem[]);
     }
     function handleRemoveMessageItem(messageId: string) {
@@ -369,14 +354,20 @@ export default function ChatDetail({ navigation, route }: Props) {
         setMessageHistory(newArray);
     }
     function handleGetNameConversation(conversation: IConversation) {
-        if (conversation.isGroup){
+        if (conversation.isGroup) {
             return conversation.name;
         } else {
-            return conversation.users.find((user) => user._id !== userInfo.user?._id)?.name;
+            return conversation.users.find(
+                (user) => user._id !== userInfo.user?._id
+            )?.name;
         }
     }
-    
-    
+    useEffect(()=>{
+        setConversation(route.params.conversation)
+        setMessageHistory(route.params.messages)
+    }, [route.params.conversation, route.params.messages])
+
+
     return (
         <View
             style={[
@@ -407,7 +398,6 @@ export default function ChatDetail({ navigation, route }: Props) {
                         },
                     ]}
                 >
-                    
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         ref={scrollViewRef}
@@ -417,62 +407,14 @@ export default function ChatDetail({ navigation, route }: Props) {
                             })
                         }
                         contentContainerStyle={{
-                            paddingTop: conversation.pinnedMessages.length > 0 ? 50 : 0,
+                            paddingTop:
+                                conversation.pinnedMessages.length > 0 ? 50 : 0,
                         }}
                     >
                         {messageHistory &&
                             messageHistory.map((messageItem, index) => {
-                                const TimeLine =
-                                    index == 0 ? (
-                                        <View key={index}></View>
-                                    ) : (
-                                        <View
-                                            style={[styles.timeLineBox]}
-                                            key={index}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.timeLineText,
-                                                    theme === lightMode
-                                                        ? commonStyles.lightTertiaryText
-                                                        : commonStyles.darkTertiaryText,
-                                                    {
-                                                        backgroundColor:
-                                                            theme === lightMode
-                                                                ? commonStyles
-                                                                      .chatNavbarBorderBottomColorLight
-                                                                      .color
-                                                                : commonStyles
-                                                                      .chatNavbarBorderBottomColorDark
-                                                                      .color,
-                                                    },
-                                                ]}
-                                            >
-                                                {messageItem.createdAt &&
-                                                    handleConvertDataMessageToDateTimeline(
-                                                        messageItem.createdAt
-                                                    )}
-                                            </Text>
-                                            <View
-                                                style={[
-                                                    styles.timeLineLine,
-                                                    {
-                                                        backgroundColor:
-                                                            theme === lightMode
-                                                                ? commonStyles
-                                                                      .chatNavbarBorderBottomColorLight
-                                                                      .color
-                                                                : commonStyles
-                                                                      .chatNavbarBorderBottomColorDark
-                                                                      .color,
-                                                    },
-                                                ]}
-                                            ></View>
-                                        </View>
-                                    );
                                 return (
                                     <>
-                                        {TimeLine}
                                         <MessageComponent
                                             id={index}
                                             data={messageItem}
@@ -495,12 +437,19 @@ export default function ChatDetail({ navigation, route }: Props) {
                                             setConversation={setConversation}
                                             socket={socket}
                                             messageHistory={messageHistory}
-                                            setMessageHistory={setMessageHistory}
-                                            setShowForwardModal={setShowForwardModal}
+                                            setMessageHistory={
+                                                setMessageHistory
+                                            }
+                                            setShowForwardModal={
+                                                setShowForwardModal
+                                            }
                                         />
                                     </>
                                 );
                             })}
+
+                        
+
                         {isTyping && (
                             <View
                                 style={[
@@ -576,9 +525,9 @@ export default function ChatDetail({ navigation, route }: Props) {
                                                     : commonStyles.darkTertiaryText,
                                             ]}
                                         >
-                                            {
-                                                handleGetNameConversation(conversation)
-                                            }
+                                            {handleGetNameConversation(
+                                                conversation
+                                            )}
                                         </Text>
                                     </View>
                                 </View>
@@ -970,15 +919,13 @@ export default function ChatDetail({ navigation, route }: Props) {
                         </OutsidePressHandler>
                     </View>
                 </Modal> */}
-                {
-                    showForwardModal && (
-                        <ModalForwardMessage
-                            message={showForwardModal}
-                            setShowForwardModal={setShowForwardModal}
-                            conversation={conversation}
-                        />
-                    )
-                }
+                {showForwardModal && (
+                    <ModalForwardMessage
+                        message={showForwardModal}
+                        setShowForwardModal={setShowForwardModal}
+                        conversation={conversation}
+                    />
+                )}
             </SafeAreaView>
         </View>
     );

@@ -10,11 +10,13 @@ declare module "@env" {
     export const LINK_VERTIFY_OTP: string;
     export const LINK_OPEN_CONVERSATION: string;
     export const LINK_GET_MESSAGE_HISTORY: string;
+    export const LINK_MESSAGE_NOTIFICATION: string;
     export const LINK_SEND_MESSAGE: string;
     export const LINK_SEARCH_USER: string;
     export const LINK_GET_MY_FRIENDS: string;
     export const LINK_REQUEST_ADD_FRIEND : string;
     export const LINK_ACCEPT_FRIEND_REQUEST : string;
+    export const LINK_DELETE_FRIEND: string;
     export const LINK_REQUEST_FRIEND_LIST : string;
     export const LINK_REVOCATION_REQUEST_FRIEND : string;
     export const LINK_GET_MY_CONVERSATIONS: string;
@@ -31,4 +33,6 @@ declare module "@env" {
     export const LINK_FORWARD_MESSAGE: string;
     export const LINK_GROUP: string;
     export const LINK_FORWARD_MESSAGE: string;
+    export const LINK_MESSAGE: string;
+    export const LINK_PHONE_BOOK: string;
 }

@@ -325,5 +325,102 @@ export const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 2
 
+    },
+    timeLineBox: {
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+    },
+    timeLineText: {
+        fontSize: 14,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 6,
+        zIndex: 1
+    },
+    timeLineLine: {
+        position: "absolute",
+        width: "100%",
+        height: 1,
+    },
+    acceptFriendNotificationWrapper: {
+        width: "100%",
+        alignItems: "center",
+        marginTop: 10
+    },
+    acceptFriendNotificationBox:{
+        width: "85%",
+        borderRadius: 25,
+    },
+    acceptFriendNotificationTopBox:{
+        position: "relative",
+    },
+    acceptFriendNotificationBg: {
+        width: "100%",
+        height: 100,
+        resizeMode: "contain",
+    },
+    acceptFriendNotificationContentBox:{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row",
+    },
+    acceptFriendNotificationAvatar:{
+        width: 60,
+        height: 60,
+        borderRadius: 45,
+       
+    },
+    acceptFriendNotificationBottomBox:{
+        paddingBottom: 25
+    },
+    acceptFriendNotificationContentText:{
+        textAlign: "center",
+        fontSize: 16,
+        fontWeight: "500"
+    },
+    groupNotificationWrapper:{
+        width: "100%",
+        alignItems: "center",
+    },
+    groupNotificationBox:{
+        width: "85%",
+        borderRadius: 25,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        marginVertical: 5
+    },
+    chatGroupAddUserAvatar:{
+        width: 35,
+        height: 35,
+        resizeMode: "contain",
+        borderRadius: 35
+    },
+    groupNotificationContentText:{
+        flexShrink: 1,
+        flexGrow: 1,
+        fontSize: 16,
+        fontWeight: "500",
+        flexWrap: "wrap"
+    },
+    groupNotificationContentChildText:{
+        fontSize: 16,
+        fontWeight: "400"
+    },
+    chatGroupAddUserKeyImg:{
+        width: 20,
+        height: 20,
+        resizeMode: "contain"
     }
 })

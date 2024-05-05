@@ -36,6 +36,9 @@ export const styles = StyleSheet.create({
     },
     friendActiveItemImageBox: {
         position: "relative",
+        width: 36,
+        height: 36,
+        borderRadius: 50,
     },
     friendActiveItemIconOnline:{
         position: "absolute",
@@ -65,7 +68,8 @@ export const styles = StyleSheet.create({
         top: 20,
     },
     friendActiveMainContentBox: {
-        zIndex: 10
+        zIndex: 10,
+        alignItems: "center"
     },
     friendActiveItem: {
         height: 75,
@@ -101,7 +105,9 @@ export const styles = StyleSheet.create({
     chatListHistoryPrevContentBox:{
         flexDirection: "row",
         gap: 4,
-        alignItems: "center"
+        alignItems: "center",
+        flexShrink: 1,
+        flexGrow: 1
     },
     chatListHistoryPrevContent:{
         fontSize: 15,

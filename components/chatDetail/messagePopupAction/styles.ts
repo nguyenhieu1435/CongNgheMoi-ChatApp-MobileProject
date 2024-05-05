@@ -26,5 +26,5 @@ export const styles = StyleSheet.create({
     itemInMessageFromOpponentPopupActionImg:{
         width: 18,
         height: 18,
-    },
+    }
 })

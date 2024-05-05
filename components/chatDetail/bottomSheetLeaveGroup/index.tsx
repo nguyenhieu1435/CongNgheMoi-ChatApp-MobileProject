@@ -10,6 +10,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import {
     IConversation,
+    IMessageItem,
     IUserInConversation,
 } from "../../../configs/interfaces";
 import BottomSheet, {
@@ -21,9 +22,10 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native-gesture-handler";
 import { CustomRadioButton } from "../../register/stepFourRegister";
 import { userInfoInterfaceI } from "../../../redux_toolkit/slices/userInfo.slice";
-import { LINK_GROUP } from "@env";
+import { LINK_GROUP, LINK_MESSAGE_NOTIFICATION } from "@env";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
+import { getAccurancyDateVN } from "../../../utils/date";
 
 interface BottomSheetLeaveGroupProps {
     conversation: IConversation;
@@ -32,6 +34,7 @@ interface BottomSheetLeaveGroupProps {
     currentUser: userInfoInterfaceI;
     navigation: any;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    setMessageHistory: React.Dispatch<React.SetStateAction<IMessageItem[]>>;
 }
 
 export default function BottomSheetLeaveGroup({
@@ -40,7 +43,8 @@ export default function BottomSheetLeaveGroup({
     setVisible,
     currentUser,
     navigation,
-    socket
+    socket,
+    setMessageHistory
 }: BottomSheetLeaveGroupProps) {
     const bottomSheetYieldRoleRef = useRef<BottomSheet>(null);
     const { t } = useTranslation();
@@ -59,6 +63,7 @@ export default function BottomSheetLeaveGroup({
     );
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [textSearch, setTextSearch] = useState<string>("")
+    const messageIdRef = useRef<string>("")
 
     async function handleGrantAdminRole(user: IUserInConversation){
         try {
@@ -82,9 +87,81 @@ export default function BottomSheetLeaveGroup({
                     conversation: data as IConversation,
                     userIds: data.users.map((item : IUserInConversation) => item._id)
                 })
+                handleCreateGrantAdminRoleNotification({
+                    conversationId: conversation._id,
+                    userIds: [user._id]
+                })
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async function handleCreateGrantAdminRoleNotification({
+        conversationId,
+        userIds
+    } : {conversationId: string, userIds: string[]}) {
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${currentUser.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    type: "CHANGE_OWNER",
+                    userIds: userIds
+                })
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem
+                socket.emit("sendMessage", data);
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory((prev) => [...prev, {
+                        ...data,
+                        createdAt: getAccurancyDateVN(data.createdAt),
+                        updatedAt: getAccurancyDateVN(data.updatedAt),
+                    }]);
+                    messageIdRef.current = data._id
+                }
+                console.log("Create grant admin role notification successfully")
+            }
+        } catch (error) {
+            console.log("Error create grant admin role notification: ", error);
+        }
+    }
+
+    async function createLeaveGroupNotification({conversationId, type} : {
+        conversationId: string, type: string
+    }){
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${currentUser.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    type: type
+                })
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem
+                socket.emit("sendMessage", data);
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory((prev) => [...prev, {
+                        ...data,
+                        createdAt: getAccurancyDateVN(data.createdAt),
+                        updatedAt: getAccurancyDateVN(data.updatedAt),
+                    }]);
+                    messageIdRef.current = data._id
+                }
+                console.log("Create leave group notification successfully")
+            }
+        } catch (error) {
+            console.log("Error create leave group notification: ", error);
         }
     }
 
@@ -93,6 +170,7 @@ export default function BottomSheetLeaveGroup({
             setIsLoading(true)
             if (userLeavingIsAdmin && userSelectedForAdminRole){
                 handleGrantAdminRole(userSelectedForAdminRole)
+
             } 
             const response = await fetch(LINK_GROUP+`/${conversation._id}/users/leave`, {
                 method: "POST",
@@ -102,7 +180,10 @@ export default function BottomSheetLeaveGroup({
                 }
             })
             if (response.ok){
-               
+                createLeaveGroupNotification({
+                    conversationId: conversation._id,
+                    type: "LEAVE_GROUP"
+                })
                 setVisible(false)
                 setIsLoading(false)
                 navigation.navigate("ChatList")

@@ -26,7 +26,7 @@ import { CustomRadioButton } from "../register/stepFourRegister";
 import EmojiPicker from "rn-emoji-keyboard";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
-import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_FRIENDS, LINK_GROUP } from "@env";
+import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_FRIENDS, LINK_GROUP, LINK_MESSAGE_NOTIFICATION } from "@env";
 import {
     IGroupConversation,
     IMessageItem,
@@ -358,10 +358,11 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                 body: formData,
             });
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.json() as IGroupConversation;
                 console.log("Result create group: ", data)
-                handleNavigateToChatDetail(data as IGroupConversation, setIsLoading, userInfo, navigation)
-
+                handleCreateAddUsersNotification({conversationId: data._id, userIds: friendsId})
+                handleNavigateToChatDetail(data, setIsLoading, userInfo, navigation)
+                
             } else {
                 const data = await response.json();
                 console.log("Error create group: ", data)
@@ -370,6 +371,32 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
             console.log(error);
         }
         setIsLoading(false);
+    }
+
+    async function handleCreateAddUsersNotification({conversationId, userIds} : {
+        conversationId: string,
+        userIds: string[]
+    }){
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    userIds: userIds,
+                    type: "ADD_USERS"
+                })
+                
+            })
+            if (resp.ok){
+                console.log("Send add users notification message success")
+            }
+        } catch (error) {
+            console.log("Send add users notification message error")
+        }
     }
 
 

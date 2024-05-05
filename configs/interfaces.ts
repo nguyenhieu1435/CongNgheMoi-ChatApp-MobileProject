@@ -8,6 +8,7 @@ export interface IFileMessage{
     link: string,
     name: string,
     type: string,
+    size: number,
 }
 export interface IMessageStatus{
     user: String;
@@ -44,6 +45,22 @@ export interface IMessageItem{
     statuses: [] | IMessageStatus[],
     location: ILocation | null,
     deleted: "0" | "1" | "2",
+    notification: null | IMessageNotification
+}
+
+export interface IMessageNotification{
+    conversations: IConversationInNotification[],
+    message: null | IMessageDetail,
+    type: string,
+    _id: string,
+    users: IMessageSender[],
+}
+
+export interface IConversationInNotification{
+    isGroup: boolean,
+    name: string,
+    users: IMessageSender[],
+    _id: string,
 }
 
 export interface ILocation{
@@ -137,4 +154,18 @@ export interface IGroupConversation{
     qrCode: string,
     "__v": number,
     unreadMessageCount: number,
+}
+export interface IUserInContact{
+    _id: string,
+    name: string,
+    avatar: string,
+    background: string,
+    gender: string,
+    alias: string,
+    isFriend: boolean
+}
+
+export interface IContactInServer{
+    contacts: IUserInContact[],
+    updatedAt: string
 }

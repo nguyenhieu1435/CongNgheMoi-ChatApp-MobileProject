@@ -134,4 +134,38 @@ export const styles = StyleSheet.create({
         height: 36,
         borderRadius: 100
     },
+    contactDetailGroupItemBox:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 13,
+        marginVertical: 10
+    },
+    contactDetailGroupItemAvatar:{
+        width: 53,
+        height: 53,
+        borderRadius: 50,
+    },
+    contactDetailGroupItemContentBox:{
+        flexGrow: 1,
+        flexShrink: 1,
+    },
+    contactDetailGroupItemFirstTitleBox:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        marginBottom: 2,
+    },
+    contactDetailGroupItemFirstTitleLeftText:{
+        fontSize: 18,
+        fontWeight: "500",
+        flexShrink: 1,
+        flexGrow: 1,
+    },
+    contactDetailGroupItemFirstTitleRightText:{
+        fontSize: 15,
+        fontWeight: "500"
+    },
+    contactDetailGroupItemSecondPreviewText:{
+        fontSize: 16,
+    },
 })

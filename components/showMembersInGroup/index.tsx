@@ -6,14 +6,15 @@ import { Image, SafeAreaView, StatusBar, Text, View } from "react-native";
 import { lightMode } from "../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../CommonStyles/commonStyles";
 import { TouchableOpacity } from "react-native";
-import { IConversation, IUserInConversation } from "../../configs/interfaces";
+import { IConversation, IMessageItem, IUserInConversation } from "../../configs/interfaces";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import Tooltip from "react-native-walkthrough-tooltip";
 import OutsidePressHandler from "react-native-outside-press";
-import { LINK_GROUP } from "@env";
+import { LINK_GROUP, LINK_MESSAGE_NOTIFICATION } from "@env";
 import Spinner from "react-native-loading-spinner-overlay";
+import { getAccurancyDateVN } from "../../utils/date";
 
 export default function ShowMembersInGroup({
     navigation,
@@ -34,11 +35,13 @@ export default function ShowMembersInGroup({
     const setConversation = route.params.setConversation as React.Dispatch<
         React.SetStateAction<IConversation>
     >;
+    const setMessageHistory = route.params.setMessageHistory as React.Dispatch<SetStateAction<IMessageItem[]>>
     const [conversationLocal, setConversationLocal] = useState<IConversation | null>(null)
     const [userIdSelectedToShowAction, setUserIdSelectedToShowAction] =
         useState<string>("");
     const myRole = handleGetRoleInGroup(userInfo.user?._id || "");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const messageIdRef = useRef<string>("");
     
    
 
@@ -69,21 +72,30 @@ export default function ShowMembersInGroup({
                 },
             })
             if (response.ok){
-                console.log("Remove user from conversation successfully")
+                console.log("Remove member from conversation successfully")
                 const data = await response.json();
                 socket.emit("removeUserFromConversation", {
                     conversationId: conversation._id,
                     userId: user._id,
                 })
+                handleCreateRoleNotification({
+                    type: "REMOVE_USER",
+                    conversationId: conversation._id,
+                    userIds: [user._id]
+                })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
                 setConversation(data as IConversation)
+            } else {
+                const data = await response.json();
+                console.log("Remove member from conversation failed", response.status, data)
             }
         } catch (error) {
             console.log(error);
         }
         setIsLoading(false);
     }
+
     async function handleGrantAdminRole(user: IUserInConversation){
         try {
             setIsLoading(true);
@@ -102,9 +114,15 @@ export default function ShowMembersInGroup({
                 console.log("Grant admin role to user successfully")
                 let data = await response.json();
                 data = data as IConversation
+                
                 socket.emit("addOrUpdateConversation", {
                     conversation: data as IConversation,
                     userIds: data.users.map((item : IUserInConversation) => item._id)
+                })
+                handleCreateRoleNotification({
+                    type: "CHANGE_OWNER",
+                    conversationId: data._id,
+                    userIds: [user._id]
                 })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
@@ -114,6 +132,40 @@ export default function ShowMembersInGroup({
             console.log(error);
         }
         setIsLoading(false);
+    }
+    async function handleCreateRoleNotification({
+        type, conversationId, userIds
+    } : {type: string, conversationId: string, userIds: string[]}) {
+        try {
+            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userInfo.accessToken}`,
+                },
+                body: JSON.stringify({
+                    conversationId: conversationId,
+                    type: type,
+                    userIds: userIds
+                })
+            })
+            if (resp.ok){
+                const data = await resp.json() as IMessageItem;
+                socket.emit("sendMessage", data);
+                if (messageIdRef.current !== data._id){
+                    setMessageHistory(prev => [...prev, {
+                            ...data,
+                            createdAt: getAccurancyDateVN(data.createdAt),
+                            updatedAt: getAccurancyDateVN(data.updatedAt),
+                        
+                    }])
+                    messageIdRef.current = data._id;
+                }
+                console.log(`Create ${type} role notification successfully`)
+            }
+        } catch (error) {
+            console.log(`Error create ${type} role notification: `, error);
+        }
     }
     async function handleGrantDeputyRole(user: IUserInConversation){
         try {
@@ -135,6 +187,11 @@ export default function ShowMembersInGroup({
                     conversation: data as IConversation,
                     userIds: data.users.map((item : IUserInConversation) => item._id)
                 })
+                handleCreateRoleNotification({
+                    type: "ADD_ADMIN",
+                    conversationId: data._id,
+                    userIds: [user._id]
+                })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)
                 setConversation(data as IConversation)
@@ -144,6 +201,8 @@ export default function ShowMembersInGroup({
         }
         setIsLoading(false);
     }
+    
+
     async function handleRemoveDeputyRole(user: IUserInConversation){
         try {
             setIsLoading(true);
@@ -161,6 +220,11 @@ export default function ShowMembersInGroup({
                 socket.emit("addOrUpdateConversation", {
                     conversation: data as IConversation,
                     userIds: data.users.map((item : IUserInConversation) => item._id)
+                })
+                handleCreateRoleNotification({
+                    type: "REMOVE_ADMIN",
+                    conversationId: data._id,
+                    userIds: [user._id]
                 })
                 setUserIdSelectedToShowAction("")
                 setConversationLocal(data as IConversation)

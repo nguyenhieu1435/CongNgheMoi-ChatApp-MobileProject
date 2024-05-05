@@ -5,7 +5,7 @@ import Contacts from '../contacts';
 import Diarys from '../diary';
 import Personal from '../personal';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { IRootState } from '../../redux_toolkit/store';
 import { useEffect, useRef, useState } from 'react';
 import commonStyles from '../../CommonStyles/commonStyles';
@@ -18,20 +18,23 @@ const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get("window")
 
 interface Props {
-    navigation: any
-    
+    navigation: any,
+    route: any
 }
 
-export default function PrimaryBottomTab({navigation} : Props) {
+export default function PrimaryBottomTab({navigation, route} : Props) {
     const {t} = useTranslation();
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { StatusBarManager } = NativeModules;
     const [statusBarHeight, setStatusBarHeight] = useState(0);
-  
 
     useEffect(() => {
-        setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT)
+        setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT);
+
+       
     }, [])
+
+    
 
     return (
         <View
