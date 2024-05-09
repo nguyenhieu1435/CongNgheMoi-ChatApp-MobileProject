@@ -35,7 +35,6 @@ import {
     insertUserSearched,
     selectTop5NewestUserSearched,
 } from "../../utils/sqlite";
-import { socket } from "../../configs/socket-io";
 
 interface SearchDetailPopupProps {
     textSearch: string;
@@ -55,6 +54,7 @@ export default function SearchDetailPopup({
     const { t } = useTranslation();
     const { navigate, goBack } = useNavigation();
     const [isPressOutsidePopup, setIsPressOutsidePopup] = useState(false);
+    
 
     return (!isPressOutsideTextInput || !isPressOutsidePopup) &&
         heightFromHeaderToInput ? (
@@ -385,6 +385,7 @@ function DetailSearchPopUpSearchNotEmpty({
     >([]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
     const friendOnline = useSelector((state: IRootState) => state.onlineUserIds)
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function getUserInRequestFriendList() {
         try {
@@ -597,27 +598,9 @@ function DetailSearchPopUpSearchNotEmpty({
     }
     async function handleOpenChatDetail(receiverID: string) {}
 
-    useEffect(()=>{
-        socket.connect();
+    // useEffect(()=>{
         
-        function onConnect(){
-            console.log("Connected");
-            socket.emit("online", {
-                userId: userInfo.user?._id,
-                friendIds: friendOnline.friends
-            });
-        }
-        function onAddFriendRequest(data: any){
-            
-        }
-
-        socket.on("connect", onConnect);
-
-        return () => {
-            socket.off("connect", onConnect);
-            socket.disconnect();
-        }
-    }, [])
+    // }, [])
 
     return (
         <View style={[styles.detailSearchPopUpSearchNotEmptyWrapper]}>

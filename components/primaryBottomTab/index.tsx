@@ -13,6 +13,10 @@ import { lightMode } from '../../redux_toolkit/slices/theme.slice';
 import Settings from '../settings';
 import { styles } from './styles';
 import { deleteTableByName, getDBConnection } from '../../utils/sqlite';
+import { LINK_GET_MY_FRIENDS } from '@env';
+import { IMessageItem, IUserIsMyFriendsResult } from '../../configs/interfaces';
+import { setSocket } from '../../redux_toolkit/slices/socketIo.slice';
+import { updateFriends } from '../../redux_toolkit/slices/onlineUserIds.slice';
 
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get("window")
@@ -27,10 +31,78 @@ export default function PrimaryBottomTab({navigation, route} : Props) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { StatusBarManager } = NativeModules;
     const [statusBarHeight, setStatusBarHeight] = useState(0);
+    const userInfo = useSelector((state : IRootState) => state.userInfo)
+    const socket = useSelector((state: IRootState) => state.socketIo.socket)
+
+    const dispatch = useDispatch();
+
 
     useEffect(() => {
+        
+
         setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT);
-    }, [])
+
+        async function connectSocket(){
+            const friends = await getFriendList();
+            dispatch(setSocket({
+                userId: userInfo.user?._id,
+                friendIds: friends
+            }))
+            dispatch(updateFriends(friends))
+
+            
+        }
+        if (!socket){
+            connectSocket()
+        } else {
+            console.log("Socket is already connected")
+            
+
+            // socket.on("receivedAddFriend", onReceivedRequestAddFriend)
+            // socket.on("onReceivedMessage", onReceivedMessage)
+            
+        }
+        return ()=> {
+            // if (socket){
+            //     socket.off("receivedAddFriend", onReceivedRequestAddFriend)
+            //     socket.off("onReceivedMessage", onReceivedMessage)
+            // }
+        }
+    }, [socket])
+
+    function onReceivedRequestAddFriend(notification: string) {
+        console.log("Received add friend: ", notification)
+
+    }
+
+    function onReceivedMessage(message : IMessageItem) {
+        console.log("Received message: ", message)
+    }
+
+    
+
+    async function getFriendList() {
+        try {
+            const resp = await fetch(LINK_GET_MY_FRIENDS, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
+            console.log("status: ", resp.status)
+            if (resp.ok) {
+                const data = (await resp.json()) as IUserIsMyFriendsResult;
+                return data.friends.map((friend) => friend._id);
+                
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.log("Error when get friend list: ", error)
+            return [];
+        }
+    }
 
     console.log("Calling at PrimaryBottomTab")
 

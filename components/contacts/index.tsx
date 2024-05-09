@@ -40,17 +40,18 @@ import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhe
 import Spinner from "react-native-loading-spinner-overlay";
 import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 import classificationFriendListByName from "../../utils/classificationFriendByName";
-import { socket } from "../../configs/socket-io";
+
 
 interface ContactsProps {
     navigation: any;
+    route: any;
 }
 const ContactTypeFilter = {
     FRIEND: "FRIEND",
     GROUP: "GROUP",
 };
 
-export default function Contacts({ navigation }: ContactsProps) {
+export default function Contacts({ navigation, route }: ContactsProps) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const refTextInputSearch = useRef<TextInput>(null);
@@ -64,6 +65,10 @@ export default function Contacts({ navigation }: ContactsProps) {
     const userInfo = useSelector((state: IRootState) => state.userInfo);
 
     const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
+
+    useEffect(()=>{
+        setTextSearch("")
+    }, [route.params])
 
     return (
         <View
@@ -251,6 +256,7 @@ export default function Contacts({ navigation }: ContactsProps) {
                             }}
                             navigation={navigation}
                             userInfo={userInfo}
+                            route={route}
                         />
                     ) : (
                         <GroupScrollBox
@@ -283,6 +289,7 @@ interface FriendScrollBoxProps {
     style: object;
     navigation: any;
     userInfo: userInfoInterfaceI;
+    route: any;
 }
 export interface ISectionFriendData {
     title: string;
@@ -294,6 +301,7 @@ function FriendScrollBox({
     style,
     navigation,
     userInfo,
+    route
 }: FriendScrollBoxProps) {
     const [indexPopupSelected, setIndexPopupSelected] = useState<string | null>(
         null
@@ -306,6 +314,7 @@ function FriendScrollBox({
     const friendOnline = useSelector(
         (state: IRootState) => state.onlineUserIds
     );
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function getFriendList() {
         try {
@@ -348,11 +357,11 @@ function FriendScrollBox({
     //     return sectionData;
     // }
     function onConnect() {
-        socket.emit("online", {
-            userId: userInfo.user?._id,
-            friendIds: friendOnline.friends,
-        });
-        console.log("connect succesfull");
+        // socket.emit("online", {
+        //     userId: userInfo.user?._id,
+        //     friendIds: friendOnline.friends,
+        // });
+        console.log("Contact layout socket connect succesfull");
         
     }
     function onReceivedDeleteFriend({ senderId }: { senderId: string }) {
@@ -369,7 +378,6 @@ function FriendScrollBox({
     }
 
     useEffect(() => {
-        socket.connect();
 
         socket.on("connect", onConnect);
         socket.on("deleteFriend", onReceivedDeleteFriend);
@@ -382,7 +390,43 @@ function FriendScrollBox({
 
     useEffect(()=>{
         getFriendList();
-    }, [])
+    }, [route.params, friendOnline])
+
+    async function handleCallFriend(friend: IUserResultSearch, type: string) {
+        try {
+            setIsLoading(true);
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: friend._id,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData = await conversationResponse.json();
+                setIsLoading(false);
+                if (type == "video") {
+                    navigation.navigate("VideoCall", {
+                        conversation: conversationData as IConversation,
+                    });
+                } else {
+                    navigation.navigate("AudioCall", {
+                        conversation: conversationData as IConversation,
+                    });
+                
+                }
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
+        setIsLoading(false);
+    }
 
     async function handleOpenChatDetail(friend: IUserResultSearch) {
         try {
@@ -466,10 +510,35 @@ function FriendScrollBox({
                     },
                 ]}
             >
-                <Image
-                    source={{ uri: item?.avatar }}
-                    style={[styles.contactDetailFriendItemAvatar]}
-                />
+                <View
+                    style={{position: "relative"}}
+                >
+                    <Image
+                        source={{ uri: item?.avatar }}
+                        style={[styles.contactDetailFriendItemAvatar]}
+                    />
+                    {
+                        friendOnline.onlineUserIds.includes(item._id) && (
+                            <View
+                                                    style={[
+                                                        styles.friendActiveItemIconOnline,
+                                                        {
+                                                            borderColor:
+                                                                theme ==
+                                                                lightMode
+                                                                    ? commonStyles
+                                                                          .lightPrimaryBackground
+                                                                          .backgroundColor
+                                                                    : commonStyles
+                                                                          .darkPrimaryBackground
+                                                                          .backgroundColor,
+                                                        },
+                                                    ]}
+                                                ></View>
+
+                        )
+                    }
+                </View>
                 <Text
                     style={[
                         styles.contactDetailFriendItemName,
@@ -488,7 +557,9 @@ function FriendScrollBox({
                         },
                     ]}
                 >
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => handleCallFriend(item, "audio")}
+                    >
                         <Image
                             source={require("../../assets/phone-line-icon.png")}
                             style={[
@@ -502,7 +573,9 @@ function FriendScrollBox({
                             ]}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => handleCallFriend(item, "video")}
+                    >
                         <Image
                             source={require("../../assets/vidicon-line-icon.png")}
                             style={[
@@ -1416,6 +1489,7 @@ function GroupScrollBox({
                 visible={isLoading}
                 textContent={t("loading")}
                 color="#fff"
+                textStyle={{color: "#fff"}}
             />
             <TouchableOpacity
                 style={[styles.contactDetailFriendCreateNewGroupBtn]}

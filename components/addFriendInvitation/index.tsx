@@ -58,21 +58,7 @@ export default function AddFriendInvitation({
     const userInfo = useSelector((state: IRootState) => state.userInfo);
 
     useEffect(()=>{
-        function onConnect(){
-            console.log("Connected Socket")
-            socket.emit("online", userInfo.user?._id);
-        }
-
-        if (socket.connected){
-
-        } else {
-            socket.on("connect", onConnect);
-
-        }
-        return () => {
-            socket.off("connect", onConnect);
-            socket.disconnect();
-        }
+        
     }, [])
 
     return (

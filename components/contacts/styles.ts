@@ -275,5 +275,15 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         shadowRadius: 2,
         elevation: 3
+    },
+    friendActiveItemIconOnline:{
+        position: "absolute",
+        right: 2,
+        bottom: 1,
+        width: 10,
+        height: 10,
+        backgroundColor: commonStyles.activeOnlineColor.color,
+        borderRadius: 50,
+        borderWidth: 2,
     }
 })

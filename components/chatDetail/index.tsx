@@ -25,7 +25,6 @@ import {
 import {
     getAccurancyDateVN,
 } from "../../utils/date";
-import { socket } from "../../configs/socket-io";
 import ModalForwardMessage from "../modalForwardMessage";
 
 interface Props {
@@ -61,6 +60,7 @@ export interface DataHistoryChatMessageReactionInterface {
 }
 
 export default function ChatDetail({ navigation, route }: Props) {
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState("");
@@ -85,6 +85,7 @@ export default function ChatDetail({ navigation, route }: Props) {
     const [showForwardModal, setShowForwardModal] =
         useState<IMessageItem | null>(null);
     const friendOnlines = useSelector((state : IRootState) => state.onlineUserIds)
+
 
     function findReactionsByIndexMessageShowListReaction() {
         return messageHistory[indexMessageShowListReaction]
@@ -149,19 +150,16 @@ export default function ChatDetail({ navigation, route }: Props) {
     console.log("ConversationID at ChatDetail: ", conversation._id);
 
     useEffect(() => {
-        socket.connect();
+        socket.emit("online", {
+            userId: userInfo.user?._id,
+            friendIds: friendOnlines.friends,
+        });
 
         function onConnect() {
-            console.log("Connected Socket!");
+            console.log("Connected Socket in chat detail!");
             socket.emit("openConversation", {
                 conversation: conversation,
                 user: userInfo.user,
-            });
-            console.log("Emit online", friendOnlines.friends);
-            
-            socket.emit("online", {
-                userId: userInfo.user?._id,
-                friendIds: friendOnlines.friends,
             });
         }
         function onReceivedMessage(message: IMessageItem) {
@@ -319,7 +317,7 @@ export default function ChatDetail({ navigation, route }: Props) {
             socket.off("reactForMessage", onReactForMessage);
             socket.off("addOrUpdateConversation", onAddOrUpdateConversation);
             socket.off("removeUserFromConversation", onRemovedFromGroup);
-            socket.disconnect();
+            // socket.disconnect();
         };
     }, [messageHistory]);
 

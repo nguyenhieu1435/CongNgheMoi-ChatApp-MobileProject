@@ -43,7 +43,7 @@ import {
     updateFriends,
     updateOnlineUserIds,
 } from "../../redux_toolkit/slices/onlineUserIds.slice";
-import { socket } from "../../configs/socket-io";
+import { schedulePushNotification } from "../../App";
 
 type Props = {
     navigation: any;
@@ -77,6 +77,8 @@ export default function ChatList({ navigation, route }: Props) {
     const [friendList, setFriendList] = useState<IUserIsMyFriendsResult | null>(
         null
     );
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
+    const messageIdRef = useRef<string | null>(null);
 
     async function handleToggleModalScanQRCode() {
         if (showModalScanQRCode) {
@@ -104,12 +106,7 @@ export default function ChatList({ navigation, route }: Props) {
             });
             console.log("status: ", resp.status)
             if (resp.ok) {
-                const data = (await resp.json()) as IUserIsMyFriendsResult;
-
-                socket.emit("online", {
-                    userId: userInfo.user?._id,
-                    friendIds: data.friends.map((item) => item._id),
-                });
+                const data = (await resp.json()) as IUserIsMyFriendsResult
                 
                 setFriendList(data);
                 dispatch(updateFriends(data.friends.map((item) => item._id)));
@@ -163,18 +160,17 @@ export default function ChatList({ navigation, route }: Props) {
     }, [route.name, isFocused]);
 
     useEffect(() => {
-        socket.connect();
         if (friendsOnline.friends.length === 0) {
             getFriendList();
         }
-        socket.emit("online", {
-            userId: userInfo.user?._id,
-            friendIds: friendsOnline.friends,
-        });
+       
         function onOnline(usersOnline: string[]) {
+
             console.log("Users Online: ", usersOnline);
+            console.log("Route name: ", route.name)
             dispatch(updateOnlineUserIds(usersOnline));
         }
+
         function onOffline(userId: string) {
             console.log("User Offline: ", userId);
             dispatch(
@@ -185,14 +181,32 @@ export default function ChatList({ navigation, route }: Props) {
                 )
             );
         }
+   
+        function onReceivedMessage(message : IMessageItem) {
+            console.log("Received message: ", message)
+            if (messageIdRef.current !== message._id){
+                
+                schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name}`)
+                messageIdRef.current = message._id
+            }
 
-        socket.on("usersOnline", onOnline);
-        socket.on("userOffline", onOffline);
+        }
+
+        
+        if (socket != null){
+            socket.on("usersOnline", onOnline);
+            socket.on("userOffline", onOffline);
+            socket.on("receivedMessage", onReceivedMessage)
+        }
         return () => {
-            socket.off("usersOnline", onOnline);
-            socket.off("userOffline", onOffline);
+            if (socket != null){
+                socket.off("usersOnline", onOnline);
+                socket.off("userOffline", onOffline);
+                socket.off("receivedMessage", onReceivedMessage)
+            }
         };
-    }, [route.name, isFocused]);
+    }, [route.name, isFocused, socket]);
+    
 
     function getDateFormated(date: string) {
         const utcDate = new Date(date);
@@ -412,10 +426,11 @@ export default function ChatList({ navigation, route }: Props) {
                                 ]}
                             >
                                 <TouchableOpacity
-                                    onPress={() =>
+                                    onPress={async () =>{
                                         setShowHeaderMoreActionPopup(
                                             !showHeaderMoreActionPopup
                                         )
+                                    }
                                     }
                                 >
                                     <Image
