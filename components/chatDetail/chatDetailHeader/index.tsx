@@ -227,6 +227,17 @@ function ChatDetailHeader({
         );
     }
 
+    function handleCallVideo(){
+        navigation.navigate("VideoCall", {
+            conversation: conversation
+        });
+    }
+    function handleCallAudio(){
+        navigation.navigate("AudioCall", {
+            conversation: conversation
+        });
+    }
+
     return (
         <>
             <View style={[styles.chatDetailNavbarContainer]}>
@@ -419,7 +430,9 @@ function ChatDetailHeader({
                                 />
                             </TouchableOpacity>
                         ) : (
-                            <TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleCallAudio}
+                            >
                                 <Image
                                     source={require("../../../assets/phone-line-icon.png")}
                                     resizeMode="contain"
@@ -438,7 +451,9 @@ function ChatDetailHeader({
                             </TouchableOpacity>
                         )}
 
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleCallVideo}
+                        >
                             <Image
                                 source={require("../../../assets/vidicon-line-icon.png")}
                                 resizeMode="contain"

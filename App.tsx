@@ -30,6 +30,8 @@ import { ManagingGroup } from './components/managingGroup';
 import ShowMembersInGroup from './components/showMembersInGroup';
 import ChatOptional from './components/chatDetail/chatOptional';
 import { useEffect } from 'react';
+import VideoCall from './components/videoCall';
+import AudioCall from './components/audioCall';
 
 
 const Stack = createStackNavigator();
@@ -38,6 +40,9 @@ export default function App() {
     // change the language follow up settings saved in the device
     // const {t, i18n} = useTranslation();
     // useEffect, i18n.changeLanguage('en')
+    useEffect(()=>{
+      console.log("abc")
+    })
 
 
   return (
@@ -87,6 +92,8 @@ export default function App() {
               <Stack.Screen name='ManagingGroup' component={ManagingGroup}/>
               <Stack.Screen name='ShowMembersInGroup' component={ShowMembersInGroup}/>
               <Stack.Screen name='ChatOptional' component={ChatOptional}/>
+              <Stack.Screen name='VideoCall' component={VideoCall}/>
+              <Stack.Screen name='AudioCall' component={AudioCall}/>
             </Stack.Navigator>
           </NavigationContainer>
         </ActionSheetProvider>

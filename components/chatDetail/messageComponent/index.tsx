@@ -37,7 +37,7 @@ import * as FileSystem from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { Modal } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
-import MapView, { Marker } from "react-native-maps";
+// import MapView, { Marker } from "react-native-maps";
 import { Video, ResizeMode } from "expo-av";
 import { useSelector } from "react-redux";
 import { IRootState } from "../../../redux_toolkit/store";
@@ -968,7 +968,7 @@ function MessageComponent({
                                                         Tin nhắn đã bị thu hồi
                                                     </Text>
                                                 ))}
-                                            {dataAfter.location && (
+                                            {/* {dataAfter.location && (
                                                 <MapView
                                                     onLongPress={handleOpenMap}
                                                     style={{
@@ -1003,7 +1003,7 @@ function MessageComponent({
                                                         }
                                                     />
                                                 </MapView>
-                                            )}
+                                            )} */}
                                             {getVideoFiles(dataAfter?.files)
                                                 ?.link && (
                                                 <Video
@@ -1592,7 +1592,7 @@ function MessageComponent({
                                                         </Text>
                                                     </View>
                                                 ))}
-                                            {dataAfter.location && (
+                                            {/* {dataAfter.location && (
                                                 <MapView
                                                     onLongPress={handleOpenMap}
                                                     style={{
@@ -1627,7 +1627,7 @@ function MessageComponent({
                                                         }
                                                     />
                                                 </MapView>
-                                            )}
+                                            )} */}
 
                                             <View
                                                 style={[

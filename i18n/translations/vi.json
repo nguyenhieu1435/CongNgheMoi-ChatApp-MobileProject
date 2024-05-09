@@ -256,6 +256,7 @@
     "unpinnedMessageNotification": " đã bỏ ghim một tin nhắn",
     "leaveGroupNotification": " đã rời khỏi nhóm",
     "image": "Hình ảnh",
-    "deleteFriendContent": "Bạn có chắc chắn muốn xóa bạn bè không?"
-
+    "deleteFriendContent": "Bạn có chắc chắn muốn xóa bạn bè không?",
+    "audioCallCallingTitle": "Đang gọi",
+    "audioCallInCallWith": "Đang gọi với"
 }

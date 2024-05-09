@@ -30,11 +30,9 @@ export default function PrimaryBottomTab({navigation, route} : Props) {
 
     useEffect(() => {
         setStatusBarHeight(Platform.OS === 'ios' ? 20 : StatusBarManager.HEIGHT);
-
-       
     }, [])
 
-    
+    console.log("Calling at PrimaryBottomTab")
 
     return (
         <View

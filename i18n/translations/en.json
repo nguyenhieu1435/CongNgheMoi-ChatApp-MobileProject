@@ -253,5 +253,7 @@
     "unpinnedMessageNotification": " unpinned a message!",
     "leaveGroupNotification": " left the group",
     "image": "Image",
-    "deleteFriendContent": "Are you sure you want to remove this friend?"
+    "deleteFriendContent": "Are you sure you want to remove this friend?",
+    "audioCallCallingTitle": "Calling",
+    "audioCallInCallWith": "In call with"
 }

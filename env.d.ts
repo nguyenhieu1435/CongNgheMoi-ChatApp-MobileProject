@@ -35,4 +35,6 @@ declare module "@env" {
     export const LINK_FORWARD_MESSAGE: string;
     export const LINK_MESSAGE: string;
     export const LINK_PHONE_BOOK: string;
+    export const EXPO_PUBLIC_STREAM_ACCESS_KEY: string;
+    export const AGORA_APP_ID: string;
 }
