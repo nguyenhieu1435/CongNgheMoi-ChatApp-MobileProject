@@ -21,6 +21,12 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
+    callingGroupContainer:{
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+        paddingHorizontal: 15,
+        paddingVertical: 15
+    },
     avatar:{
         width: 120,
         height: 120,
@@ -110,5 +116,36 @@ export const styles = StyleSheet.create({
     },
     arrowRightStyleThird:{
         opacity: 0.4
+    },
+    backToPreviousBtnImg:{
+        width: 30,
+        height: 30,
+        resizeMode: "contain",
+    },
+    backToPreviousBtnText:{
+        fontSize: 18,
+        fontWeight: "500",
+
+    },
+    userInCallContainerItem:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 15,
+        borderRadius: 30,
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        width: "100%",
+        marginBottom: 15
+    },
+    avatarInGroupCall:{
+        width: 50,
+        height: 50,
+        borderRadius: 30,
+    },
+    callingUsernameInGroup:{
+        fontSize: 17,
+        fontWeight: "500",
+        flexShrink: 1,
+        flexGrow: 1,
     }
+
 })

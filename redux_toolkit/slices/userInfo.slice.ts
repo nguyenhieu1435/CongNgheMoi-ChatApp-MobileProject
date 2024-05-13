@@ -1,23 +1,25 @@
 import {createSlice} from "@reduxjs/toolkit"
 
-export interface userInfoInterfaceI{
-    user: {
-        __v: number,
+export interface userInfoInterfaceDetailI{
+    __v: number,
         // _id is phone number or email
-        _id: string,
-        avatar: string,
-        background: string,
-        createdAt: string,
-        dateOfBirth: string,
-        deleted: boolean,
-        gender: string,
-        name: string,
-        password: string,
-        qrCode: string,
-        updatedAt: string,
-        status: string,
-        friends ?: string[] | [],
-    } | undefined,
+    _id: string,
+    avatar: string,
+    background: string,
+    createdAt: string,
+    dateOfBirth: string,
+    deleted: boolean,
+    gender: string,
+    name: string,
+    password: string,
+    qrCode: string,
+    updatedAt: string,
+    status: string,
+    friends ?: string[] | [],
+}
+
+export interface userInfoInterfaceI{
+    user: userInfoInterfaceDetailI | undefined,
     accessToken?: string | undefined,
     refreshToken?: string | undefined
 } 
@@ -41,9 +43,12 @@ const userInfoSlice = createSlice({
             if (state.user) {
                 state.user.avatar = action.payload
             }
+        },
+        updateOnlyUserInfo : (state, action)=>{
+            state.user  = action.payload
         }
     }
 })
 
 export default userInfoSlice.reducer
-export const {setUserInfo, updateAvatarImage} = userInfoSlice.actions
+export const {setUserInfo, updateAvatarImage, updateOnlyUserInfo} = userInfoSlice.actions

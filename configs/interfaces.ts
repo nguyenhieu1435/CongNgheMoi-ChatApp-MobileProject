@@ -30,6 +30,9 @@ export interface IPinnedMessageConver{
 }
 export interface IConversationInMessage{
     _id: string,
+    name: string,
+    isGroup: boolean,
+    users: IMessageSender[],
     pinnedMessages: IPinnedMessageConver[],
 }
 export interface IMessageItem{

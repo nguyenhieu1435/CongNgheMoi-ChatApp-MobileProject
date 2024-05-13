@@ -91,7 +91,7 @@ export default function StepFourRegister({ navigation, route }: Props) {
     };
 
     async function handleSaveInfoToSQLite(jsonData: any) {
-        const dbName = process.env.SQLITE_DB_NAME;
+        const dbName = SQLITE_DB_NAME;
         if (dbName) {
             const db = getDBConnection()
 

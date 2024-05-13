@@ -43,6 +43,9 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import CallIncoming from "./components/callIncoming";
+import EditProfile from "./components/editProfile";
+import ChangePassword from "./components/changePassword";
 
 const Stack = createStackNavigator();
 
@@ -232,6 +235,18 @@ export default function App() {
                             <Stack.Screen
                                 name="AudioCall"
                                 component={AudioCall}
+                            />
+                            <Stack.Screen 
+                                name="CallIncoming"
+                                component={CallIncoming}
+                            />
+                            <Stack.Screen 
+                                name="EditProfile"
+                                component={EditProfile}
+                            />
+                            <Stack.Screen
+                                name="ChangePassword"
+                                component={ChangePassword}
                             />
                         </Stack.Navigator>
                     </NavigationContainer>

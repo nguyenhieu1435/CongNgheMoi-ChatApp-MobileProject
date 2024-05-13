@@ -61,7 +61,6 @@ export default function StepFiveRegister({ navigation, route }: Props) {
             hasCameraPermission,
             setHasCameraPermission,
             isMultiple: false,
-        
         })
     }
 

@@ -31,6 +31,7 @@ import {
 import {
     IConversation,
     IMessageItem,
+    IReceivedRequestFriendList,
     IUserIsMyFriendsResult,
     IUserResultSearch,
 } from "../../configs/interfaces";
@@ -183,10 +184,13 @@ export default function ChatList({ navigation, route }: Props) {
         }
    
         function onReceivedMessage(message : IMessageItem) {
-            console.log("Received message: ", message)
+            console.log("Received message: ", JSON.stringify(message))
             if (messageIdRef.current !== message._id){
-                
-                schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name}`)
+                if (message.conversation.isGroup){
+                    schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name} trong nhóm ${message.conversation.name}`)
+                } else {
+                    schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name}`)
+                }
                 messageIdRef.current = message._id
             }
 
@@ -197,16 +201,22 @@ export default function ChatList({ navigation, route }: Props) {
             socket.on("usersOnline", onOnline);
             socket.on("userOffline", onOffline);
             socket.on("receivedMessage", onReceivedMessage)
+            socket.on("sendFriendRequest", onSendFriendRequest)
         }
         return () => {
             if (socket != null){
                 socket.off("usersOnline", onOnline);
                 socket.off("userOffline", onOffline);
                 socket.off("receivedMessage", onReceivedMessage)
+                socket.off("sendFriendRequest", onSendFriendRequest)
             }
         };
     }, [route.name, isFocused, socket]);
     
+    function onSendFriendRequest(friendRequest : IReceivedRequestFriendList){
+        console.log("Received friend request: ", friendRequest)
+        schedulePushNotification(t("notificationTitle"), `${friendRequest.sender_id.name} đã gửi yêu cầu kết bạn!`)
+    }
 
     function getDateFormated(date: string) {
         const utcDate = new Date(date);

@@ -45,11 +45,28 @@ export const styles = StyleSheet.create({
         borderBottomWidth: 1,
         paddingHorizontal: 10
     },
+    editNewAvatarBtn:{
+        position: "relative"
+    },
     personalAvatarImage:{
         width: 95,
         height: 95,
         borderRadius: 100,
         marginBottom: 10,
+        borderWidth: 2,
+    },
+    personalEditAvatarIconBox:{
+        position: "absolute",   
+        bottom: 10,
+        right: 5,
+        padding: 5,
+        borderRadius: 30
+    },
+    personalEditAvatarIcon:{
+        width: 17,
+        height: 17,
+        borderRadius: 15,
+        resizeMode: "contain",
     },
     personalUsernameText:{
         fontSize: 16,
@@ -138,6 +155,13 @@ export const styles = StyleSheet.create({
         marginBottom: 8,
         gap: 10,
     },
+    settingItem:{
+        padding: 10,
+        borderRadius: 4,
+        borderWidth: 1,
+        marginBottom: 8,
+        gap: 10,
+    },
     personalFilesItemImgBox:{
         width: 48,
         height: 48,
@@ -186,5 +210,9 @@ export const styles = StyleSheet.create({
         paddingVertical: 4,
         paddingHorizontal: 8,
         borderRadius: 4,
+    },
+    personalSettingThemeTextTitle:{
+        fontSize: 15,
+        fontWeight: "500"
     }
 })

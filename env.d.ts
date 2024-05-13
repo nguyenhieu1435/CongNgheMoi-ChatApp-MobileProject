@@ -37,4 +37,6 @@ declare module "@env" {
     export const LINK_PHONE_BOOK: string;
     export const EXPO_PUBLIC_STREAM_ACCESS_KEY: string;
     export const AGORA_APP_ID: string;
+    export const LINK_USER_METHOD: string;
+    export const LINK_AUTH_METHOD: string;
 }

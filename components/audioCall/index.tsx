@@ -24,21 +24,24 @@ import commonStyles from "../../CommonStyles/commonStyles";
 import { IConversation } from "../../configs/interfaces";
 import { useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
+import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
 
 const appId = AGORA_APP_ID;
 const token = "";
 const uid = 0;
 
-interface AudioCallProps{
-    navigation: any,
-    route: any
+interface AudioCallProps {
+    navigation: any;
+    route: any;
 }
 
-export default function AudioCall({navigation, route} : AudioCallProps) {
+export default function AudioCall({ navigation, route }: AudioCallProps) {
     const conversation = route.params.conversation as IConversation;
     const channelName = conversation._id;
-    const userInfo = useSelector((state: IRootState) => state.userInfo)
-    const opponentUser = conversation.users.find(user => user._id !== userInfo.user?._id);
+    const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const opponentUser = conversation.users.find(
+        (user) => user._id !== userInfo.user?._id
+    );
     const agoraEngineRef = useRef<IRtcEngine>(); // Agora engine instance
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
     const [remoteUid, setRemoteUid] = useState(0); // Uid of the remote user
@@ -49,8 +52,8 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
     const [waitingLayout, setWaitingLayout] = useState(true);
     const refInterval = useRef<NodeJS.Timeout | null>(null);
     const [seconds, setSeconds] = useState(0);
-
-    
+    const [quantityOfUsersInCall, setQuantityOfUsersInCall] = useState(1);
+    const wasQuantityGreaterThanEqualTwo = useRef(false);
 
     function showMessage(msg: string) {
         setMessage(msg);
@@ -94,7 +97,7 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
     useEffect(() => {
         // Initialize Agora engine when the app starts
         async function start(){
-            await setupVoiceSDKEngine(); 
+            await setupVoiceSDKEngine();
             await join();
         }
         start()
@@ -114,16 +117,22 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
                         "Successfully joined the channel " + channelName
                     );
                     setIsJoined(true);
+
                 },
                 onUserJoined: (_connection, Uid) => {
                     showMessage("Remote user joined with uid " + Uid);
                     setRemoteUid(Uid);
+                    if (quantityOfUsersInCall + 1 >= 2) {
+                        wasQuantityGreaterThanEqualTwo.current = true;
+                    }
+                    setQuantityOfUsersInCall((prev) => prev + 1);
                     setWaitingLayout(false);
                     if (!refInterval.current) {
                         refInterval.current = setInterval(() => {
                             setSeconds((prev) => prev + 1);
-                        }, 1000)
+                        }, 1000);
                     }
+
                 },
                 onUserOffline: (_connection, Uid) => {
                     showMessage("Remote user left the channel. uid: " + Uid);
@@ -131,6 +140,7 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
                     setWaitingLayout(true);
                     clearInterval(refInterval.current!);
                     setSeconds(0);
+                    setQuantityOfUsersInCall((prev) => prev - 1);
                 },
             });
             agoraEngine.initialize({
@@ -140,6 +150,14 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
             console.log(e);
         }
     };
+    
+    useEffect(()=>{
+        if (wasQuantityGreaterThanEqualTwo.current && quantityOfUsersInCall < 2 && !conversation.isGroup) {
+            handleEndCall();
+        }
+    }, [quantityOfUsersInCall])
+
+    // console.log("showMessage: ", JSON.stringify(message));
 
     function handleToggleMic() {
         agoraEngineRef.current?.enableLocalAudio(!micOn);
@@ -155,130 +173,344 @@ export default function AudioCall({navigation, route} : AudioCallProps) {
         leave();
         refInterval.current && clearInterval(refInterval.current);
         refInterval.current = null;
+        setQuantityOfUsersInCall(1);
+        wasQuantityGreaterThanEqualTwo.current = false;
         setSeconds(0);
         navigation.goBack();
     }
 
-    function formatSecondsToMinutesSeconds(totalSeconds : number) {
+    function formatSecondsToMinutesSeconds(totalSeconds: number) {
         let minutes = Math.floor(totalSeconds / 60); // Calculate whole minutes
         let seconds = totalSeconds % 60; // Calculate remaining seconds
-    
+
         // Ensure seconds are always two digits
         let formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
-    
+
         // Combine minutes and formatted seconds into mm:ss format
         let formattedTime = `${minutes}:${formattedSeconds}`;
-    
+
         return formattedTime;
     }
+
+    function renderWaitingLayout() {
+        return conversation.isGroup ? (
+            <View style={[styles.callingContainer]}>
+                {conversation.picture ? (
+                    <Image
+                        source={{
+                            uri: conversation.picture,
+                        }}
+                        style={[styles.avatar]}
+                    />
+                ) : (
+                    CreateGroupAvatarWhenAvatarIsEmpty(
+                        conversation,
+                        120,
+                        120,
+                        60
+                    )
+                )}
+                <Text
+                    style={[
+                        styles.callingTitle,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {t("audioCallCallingTitle")}
+                </Text>
+
+                <Text
+                    style={[
+                        styles.callingUsername,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {conversation.name}
+                </Text>
+            </View>
+        ) : (
+            <View style={[styles.callingContainer]}>
+                <Image
+                    source={{
+                        uri: opponentUser?.avatar,
+                    }}
+                    style={[styles.avatar]}
+                />
+                <Text
+                    style={[
+                        styles.callingTitle,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {t("audioCallCallingTitle")}
+                </Text>
+
+                <Text
+                    style={[
+                        styles.callingUsername,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {opponentUser?.name}
+                </Text>
+            </View>
+        );
+    }
+
+    function renderInCallLayout() {
+        return conversation.isGroup ? (
+            <View style={[styles.callingContainer, styles.callingGroupContainer]}>
+                <TouchableOpacity
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 5
+                    }}
+                    onPress={handleEndCall}
+                >
+                    <View>
+                        <Image
+                            source={require("../../assets/arrow-left-s-line-icon.png")}
+                            style={[
+                                styles.backToPreviousBtnImg,
+                                {
+                                    tintColor: commonStyles.darkPrimaryText.color,
+                                }
+                            ]}
+                        />
+                    </View>
+                    <Text
+                        style={[
+                            styles.backToPreviousBtnText,
+                            {
+                                color: commonStyles.darkPrimaryText.color,
+                            }
+                        ]}
+                    >{t("backToConversation")}</Text>
+                </TouchableOpacity>
+                <View
+                    style={{
+                        flexShrink: 1,
+                        flexGrow: 1,
+                        marginTop: 30,
+                        width: "100%",
+                        paddingHorizontal: 25
+                    }}
+                >
+                    <ScrollView
+                        contentContainerStyle={{
+                            width: "100%"
+                        }}
+                    >
+                        <View
+                            style={[
+                                styles.userInCallContainerItem
+                            ]}
+                        >
+                            <Image
+                                source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnfAxGV-fZxGL9elM_hQ2tp7skLeSwMyUiwo4lMm1zyA&s"}}
+                            
+                                style={[
+                                    styles.avatarInGroupCall
+                                ]}
+                            />
+                            <Text
+                                style={[
+                                    styles.callingUsernameInGroup,
+                                    {
+                                        color: commonStyles.darkPrimaryText.color,
+                                    }
+                                ]}
+                            >Nguyen Van A</Text>
+                        </View>
+                        
+                    </ScrollView>
+                </View>
+            </View>
+        ) : (
+            <View style={[styles.callingContainer]}>
+                <View style={[styles.inCallHeader]}>
+                    <Image
+                        source={{
+                            uri: userInfo.user?.avatar,
+                        }}
+                        style={[styles.avatarInCall]}
+                    />
+                    <View style={[styles.arrowRightContainer]}>
+                        <Image
+                            source={require("../../assets/arrow-right-s-line.png")}
+                            style={[
+                                styles.arrowRightStyle,
+                                styles.arrowRightStyleFirst,
+                            ]}
+                        />
+                        <Image
+                            source={require("../../assets/arrow-right-s-line.png")}
+                            style={[
+                                styles.arrowRightStyle,
+                                styles.arrowRightStyleSecond,
+                            ]}
+                        />
+                        <Image
+                            source={require("../../assets/arrow-right-s-line.png")}
+                            style={[
+                                styles.arrowRightStyle,
+                                styles.arrowRightStyleThird,
+                            ]}
+                        />
+                    </View>
+                    <Image
+                        source={{
+                            uri: opponentUser?.avatar,
+                        }}
+                        style={[styles.avatarInCall]}
+                    />
+                </View>
+
+                <Text style={[styles.inCallTitle]}>
+                    {t("audioCallInCallWith")}
+                </Text>
+
+                <Text
+                    style={[
+                        styles.callingUsername,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {opponentUser?.name}
+                </Text>
+
+                <Text
+                    style={[
+                        styles.callingUsername,
+                        {
+                            color: commonStyles.darkPrimaryText.color,
+                        },
+                    ]}
+                >
+                    {formatSecondsToMinutesSeconds(seconds)}
+                </Text>
+            </View>
+        );
+    }
+    function renderBackgroundImage() {
+        return (
+            conversation.isGroup ? (
+                conversation.picture ? (
+                    <Image
+                        source={{
+                            uri: conversation.picture,
+                        }}
+                        style={[styles.imageBackground]}
+                        blurRadius={15}
+                    />
+                )
+                :
+                (
+                    CreateGroupAvatarWhenAvatarIsEmpty(
+                        conversation,
+                        120,
+                        120,
+                        60
+                    )
+                )
+            )
+            :
+            <Image
+                source={{
+                    uri: opponentUser?.avatar,
+                }}
+                style={[styles.imageBackground]}
+                blurRadius={15}
+            />
+        )
+    }
+    console.log("conversation id: ", conversation._id)
 
     return (
         <View style={[styles.container]}>
             <StatusBar />
             <SafeAreaView style={[styles.containerSafeArea]}>
-                <Image
-                    source={{
-                        uri: opponentUser?.avatar,
-                    }}
-                    style={[styles.imageBackground]}
-                    blurRadius={15}
-                />
+                {renderBackgroundImage()}
                 {waitingLayout ? (
-                    <View style={[styles.callingContainer]}>
-                        <Image
-                            source={{
-                                uri: opponentUser?.avatar,
-                            }}
-                            style={[styles.avatar]}
-                        />
-                        <Text
-                            style={[
-                                styles.callingTitle,
-                                {
-                                    color: commonStyles.darkPrimaryText.color,
-                                },
-                            ]}
-                        >
-                            {t("audioCallCallingTitle")}
-                        </Text>
-
-                        <Text
-                            style={[
-                                styles.callingUsername,
-                                {
-                                    color: commonStyles.darkPrimaryText.color,
-                                },
-                            ]}
-                        >
-                            {opponentUser?.name}
-                        </Text>
-                    </View>
+                    renderWaitingLayout()
                 ) : (
-                    <View style={[styles.callingContainer]}>
-                        <View style={[styles.inCallHeader]}>
-                            <Image
-                                source={{
-                                    uri: userInfo.user?.avatar,
-                                }}
-                                style={[styles.avatarInCall]}
-                            />
-                            <View style={[styles.arrowRightContainer]}>
-                                <Image
-                                    source={require("../../assets/arrow-right-s-line.png")}
-                                    style={[
-                                        styles.arrowRightStyle,
-                                        styles.arrowRightStyleFirst,
-                                    ]}
-                                />
-                                <Image
-                                    source={require("../../assets/arrow-right-s-line.png")}
-                                    style={[
-                                        styles.arrowRightStyle,
-                                        styles.arrowRightStyleSecond,
-                                    ]}
-                                />
-                                <Image
-                                    source={require("../../assets/arrow-right-s-line.png")}
-                                    style={[
-                                        styles.arrowRightStyle,
-                                        styles.arrowRightStyleThird,
-                                    ]}
-                                />
-                            </View>
-                            <Image
-                                source={{
-                                    uri: opponentUser?.avatar,
-                                }}
-                                style={[styles.avatarInCall]}
-                            />
-                        </View>
+                    renderInCallLayout()
+                    // <View style={[styles.callingContainer]}>
+                    //     <View style={[styles.inCallHeader]}>
+                    //         <Image
+                    //             source={{
+                    //                 uri: userInfo.user?.avatar,
+                    //             }}
+                    //             style={[styles.avatarInCall]}
+                    //         />
+                    //         <View style={[styles.arrowRightContainer]}>
+                    //             <Image
+                    //                 source={require("../../assets/arrow-right-s-line.png")}
+                    //                 style={[
+                    //                     styles.arrowRightStyle,
+                    //                     styles.arrowRightStyleFirst,
+                    //                 ]}
+                    //             />
+                    //             <Image
+                    //                 source={require("../../assets/arrow-right-s-line.png")}
+                    //                 style={[
+                    //                     styles.arrowRightStyle,
+                    //                     styles.arrowRightStyleSecond,
+                    //                 ]}
+                    //             />
+                    //             <Image
+                    //                 source={require("../../assets/arrow-right-s-line.png")}
+                    //                 style={[
+                    //                     styles.arrowRightStyle,
+                    //                     styles.arrowRightStyleThird,
+                    //                 ]}
+                    //             />
+                    //         </View>
+                    //         <Image
+                    //             source={{
+                    //                 uri: opponentUser?.avatar,
+                    //             }}
+                    //             style={[styles.avatarInCall]}
+                    //         />
+                    //     </View>
 
-                        <Text style={[styles.inCallTitle]}>
-                            {t("audioCallInCallWith")}
-                        </Text>
+                    //     <Text style={[styles.inCallTitle]}>
+                    //         {t("audioCallInCallWith")}
+                    //     </Text>
 
-                        <Text
-                            style={[
-                                styles.callingUsername,
-                                {
-                                    color: commonStyles.darkPrimaryText.color,
-                                },
-                            ]}
-                        >
-                            {opponentUser?.name}
-                        </Text>
+                    //     <Text
+                    //         style={[
+                    //             styles.callingUsername,
+                    //             {
+                    //                 color: commonStyles.darkPrimaryText.color,
+                    //             },
+                    //         ]}
+                    //     >
+                    //         {opponentUser?.name}
+                    //     </Text>
 
-                        <Text
-                            style={[
-                                styles.callingUsername,
-                                {
-                                    color: commonStyles.darkPrimaryText.color,
-                                },
-                            ]}
-                        >
-                            {formatSecondsToMinutesSeconds(seconds)}
-                        </Text>
-                    </View>
+                    //     <Text
+                    //         style={[
+                    //             styles.callingUsername,
+                    //             {
+                    //                 color: commonStyles.darkPrimaryText.color,
+                    //             },
+                    //         ]}
+                    //     >
+                    //         {formatSecondsToMinutesSeconds(seconds)}
+                    //     </Text>
+                    // </View>
                 )}
 
                 <View style={[styles.actionContainer]}>

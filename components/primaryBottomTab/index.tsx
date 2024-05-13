@@ -49,8 +49,6 @@ export default function PrimaryBottomTab({navigation, route} : Props) {
                 friendIds: friends
             }))
             dispatch(updateFriends(friends))
-
-            
         }
         if (!socket){
             connectSocket()
@@ -283,7 +281,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                     >{t("tabbarChat")}</Text>
                 </TouchableOpacity>
             </View>
-            <View
+            {/* <View
                 
                 style={{
                     justifyContent: "center",
@@ -333,7 +331,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                         ]}
                     >{t("tabbarStory")}</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <View
                 
                 style={{
@@ -383,7 +381,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                     >{t("tabbarContact")}</Text>
                 </TouchableOpacity>
             </View>
-            <View
+            {/* <View
                
                 style={{
                     justifyContent: "center",
@@ -431,7 +429,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                         ]}
                     >{t("tabbarSettings")}</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <View
                
                 style={{

@@ -7,7 +7,14 @@ import {
     Modal,
     Alert,
 } from "react-native";
-import { Dispatch, memo, SetStateAction, useEffect, useRef, useState } from "react";
+import {
+    Dispatch,
+    memo,
+    SetStateAction,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { styles } from "./styles";
 import commonStyles from "../../../CommonStyles/commonStyles";
 import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
@@ -100,14 +107,17 @@ function ChatDetailHeader({
                 }),
             });
             if (resp.ok) {
-                const data = await resp.json() as IMessageItem;
-                socket.emit("sendMessage", data)
-                if (messageIdRef.current !== data._id){
-                    setMessageHistory((prev) => [...prev, {
-                        ...data,
-                        createdAt: getAccurancyDateVN(data.createdAt),
-                        updatedAt: getAccurancyDateVN(data.updatedAt),
-                    }]);
+                const data = (await resp.json()) as IMessageItem;
+                socket.emit("sendMessage", data);
+                if (messageIdRef.current !== data._id) {
+                    setMessageHistory((prev) => [
+                        ...prev,
+                        {
+                            ...data,
+                            createdAt: getAccurancyDateVN(data.createdAt),
+                            updatedAt: getAccurancyDateVN(data.updatedAt),
+                        },
+                    ]);
                     messageIdRef.current = data._id;
                 }
                 console.log(`Create ${type} notification success`);
@@ -227,14 +237,14 @@ function ChatDetailHeader({
         );
     }
 
-    function handleCallVideo(){
+    function handleCallVideo() {
         navigation.navigate("VideoCall", {
-            conversation: conversation
+            conversation: conversation,
         });
     }
-    function handleCallAudio(){
+    function handleCallAudio() {
         navigation.navigate("AudioCall", {
-            conversation: conversation
+            conversation: conversation,
         });
     }
 
@@ -277,7 +287,12 @@ function ChatDetailHeader({
                     >
                         {!conversation.isGroup ? (
                             <Image
-                                source={{ uri: conversation.users.find((user) => user._id !== userInfo.user?._id)?.avatar}}
+                                source={{
+                                    uri: conversation.users.find(
+                                        (user) =>
+                                            user._id !== userInfo.user?._id
+                                    )?.avatar,
+                                }}
                                 resizeMode="cover"
                                 style={{
                                     width: 36,
@@ -308,7 +323,12 @@ function ChatDetailHeader({
                                         : commonStyles.darkPrimaryText,
                                 ]}
                             >
-                                {conversation.isGroup ? conversation.name : conversation.users.find((user) => user._id !== userInfo.user?._id)?.name}
+                                {conversation.isGroup
+                                    ? conversation.name
+                                    : conversation.users.find(
+                                          (user) =>
+                                              user._id !== userInfo.user?._id
+                                      )?.name}
                             </Text>
                             {isConversationOnline() && (
                                 <Text
@@ -326,7 +346,7 @@ function ChatDetailHeader({
                     </TouchableOpacity>
 
                     <View style={[styles.chatDetailNavbarBaseActions]}>
-                        <OutsidePressHandler
+                        {/* <OutsidePressHandler
                             onOutsidePress={() => {
                                 setShowModalSearch(false);
                             }}
@@ -400,7 +420,7 @@ function ChatDetailHeader({
                                     />
                                 </View>
                             )}
-                        </OutsidePressHandler>
+                        </OutsidePressHandler> */}
 
                         {conversation.isGroup ? (
                             <TouchableOpacity
@@ -430,30 +450,24 @@ function ChatDetailHeader({
                                 />
                             </TouchableOpacity>
                         ) : (
-                            <TouchableOpacity
-                                onPress={handleCallAudio}
-                            >
-                                <Image
-                                    source={require("../../../assets/phone-line-icon.png")}
-                                    resizeMode="contain"
-                                    style={{
-                                        width: 23,
-                                        height: 23,
-                                    }}
-                                    tintColor={
-                                        theme === lightMode
-                                            ? commonStyles.lightSecondaryText
-                                                  .color
-                                            : commonStyles.darkSecondaryText
-                                                  .color
-                                    }
-                                />
-                            </TouchableOpacity>
+                            <></>
                         )}
-
-                        <TouchableOpacity
-                            onPress={handleCallVideo}
-                        >
+                        <TouchableOpacity onPress={handleCallAudio}>
+                            <Image
+                                source={require("../../../assets/phone-line-icon.png")}
+                                resizeMode="contain"
+                                style={{
+                                    width: 23,
+                                    height: 23,
+                                }}
+                                tintColor={
+                                    theme === lightMode
+                                        ? commonStyles.lightSecondaryText.color
+                                        : commonStyles.darkSecondaryText.color
+                                }
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleCallVideo}>
                             <Image
                                 source={require("../../../assets/vidicon-line-icon.png")}
                                 resizeMode="contain"
@@ -527,7 +541,7 @@ function ChatDetailHeader({
                                                             socket: socket,
                                                             setConversation:
                                                                 setConversation,
-                                                            setMessageHistory: 
+                                                            setMessageHistory:
                                                                 setMessageHistory,
                                                         }
                                                     );

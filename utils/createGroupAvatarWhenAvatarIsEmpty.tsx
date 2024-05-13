@@ -1,7 +1,9 @@
 import { Image, View } from "react-native";
 import { IConversation, IGroupConversation } from "../configs/interfaces";
 
-export default function CreateGroupAvatarWhenAvatarIsEmpty(conversation: IConversation | IGroupConversation) {
+export default function CreateGroupAvatarWhenAvatarIsEmpty(conversation: IConversation | IGroupConversation, 
+    width : number = 36, height: number = 35, borderRadius: number = 50, padding: number = 3
+) {
     let users = conversation.users;
     if (users.length > 4){
         users = users.slice(0, 4);
