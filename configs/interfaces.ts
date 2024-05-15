@@ -42,6 +42,7 @@ export interface IMessageItem{
     conversation: IConversationInMessage,
     reply : null | IMessageItem,
     files: [] | IFileMessage[],
+    sticker ?: string,
     createdAt: string,
     updatedAt: string
     "__v": number,
@@ -171,4 +172,13 @@ export interface IUserInContact{
 export interface IContactInServer{
     contacts: IUserInContact[],
     updatedAt: string
+}
+
+export interface ISenderInCallComing{
+    _id: string,
+    name: string,
+    avatar: string,
+    background: string,
+    dateOfBirth: string,
+    gender: string,
 }

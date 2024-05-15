@@ -24,19 +24,9 @@ export async function handleNavigateToChatDetail(conversation: IGroupConversatio
             Array.isArray(messageHistoryData) &&  messageHistoryData.forEach((item: IMessageItem) => {
                 newData.push(
                     {
-                        _id: item._id,
-                        sender: item.sender,
-                        messages: item.messages,
-                        conversation: item.conversation,
-                        reply: item.reply,
-                        files: item.files,
+                        ...item,
                         createdAt: getAccurancyDateVN(item.createdAt),
                         updatedAt: getAccurancyDateVN(item.updatedAt),
-                        "__v": item.__v,
-                        statuses: item.statuses,
-                        location: item.location,
-                        deleted: item.deleted,
-                        notification: item.notification
                     }
                 )
             })

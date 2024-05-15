@@ -107,6 +107,7 @@
     "chatDetailReplyToTitle": "Trả lời ",
     "chatDetailImageTitle": "[Hình ảnh] ",
     "chatDetailFileTitle": "[File] ",
+    "chatDetailStickerTitle": "[Nhãn dán] ",
     "chatDetailSendTextPlaceholder": "Nhập tin nhắn...",
     "chatDetailReadyUploadTitle": "Đã sẵn sàng để tải lên!",
     "chatDetaildMoreViewProfileTitle": "Tùy chọn",
@@ -284,5 +285,8 @@
     "newPassword": "Mật khẩu mới",
     "confirmNewPassword": "Xác nhận mật khẩu mới",
     "registerPasswordValidationNotMatch": "Mật khẩu không khớp với mật khẩu mới",
-    "oldPasswordValidation": "Mật khẩu cũ không đúng"
+    "oldPasswordValidation": "Mật khẩu cũ không đúng",
+    "searchStickerTitle": "Tìm kiếm sticker",
+    "from": "Từ",
+    "incomingCall": "Cuộc gọi đến"
 }

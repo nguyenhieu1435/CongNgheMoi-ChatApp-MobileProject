@@ -32,6 +32,8 @@ import {
     IConversation,
     IMessageItem,
     IReceivedRequestFriendList,
+    ISenderInCallComing,
+    IUserInConversation,
     IUserIsMyFriendsResult,
     IUserResultSearch,
 } from "../../configs/interfaces";
@@ -45,6 +47,14 @@ import {
     updateOnlineUserIds,
 } from "../../redux_toolkit/slices/onlineUserIds.slice";
 import { schedulePushNotification } from "../../App";
+
+interface callInComingInterface{
+    sender: ISenderInCallComing,
+    users: IUserInConversation[],
+    type: string,
+    _id: string,
+    conversationName: string
+}
 
 type Props = {
     navigation: any;
@@ -95,7 +105,8 @@ export default function ChatList({ navigation, route }: Props) {
     }
 
     const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
-
+    const isInCall = useSelector((state: IRootState) => state.isInCall.isInCall);
+    
     async function getFriendList() {
         try {
             const resp = await fetch(LINK_GET_MY_FRIENDS, {
@@ -182,10 +193,38 @@ export default function ChatList({ navigation, route }: Props) {
                 )
             );
         }
+
+        function sortConversationsByUpdatedTime(conversations: IConversation[]) {
+            return conversations.sort((a, b) => {
+                return (
+                    new Date(b.updatedAt).getTime() -
+                    new Date(a.updatedAt).getTime()
+                );
+            });
+        }
    
         function onReceivedMessage(message : IMessageItem) {
             console.log("Received message: ", JSON.stringify(message))
-            if (messageIdRef.current !== message._id){
+
+            if (messageIdRef.current !== message._id){              
+                let newConversations = myConversations.map((conversation) => {
+                    let currentDate = new Date()
+                    currentDate.setMinutes(currentDate.getMinutes())
+                    if (conversation._id === message.conversation._id){
+                        return {
+                            ...conversation,
+                            lastMessage: message,
+                            updatedAt: currentDate.toISOString(),
+                            unreadMessageCount: conversation.unreadMessageCount + 1
+                        }
+                    } else {
+                        return conversation
+                    }
+                })
+                newConversations = sortConversationsByUpdatedTime(newConversations)
+                setMyConversations(newConversations)
+
+
                 if (message.conversation.isGroup){
                     schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name} trong nhóm ${message.conversation.name}`)
                 } else {
@@ -202,6 +241,8 @@ export default function ChatList({ navigation, route }: Props) {
             socket.on("userOffline", onOffline);
             socket.on("receivedMessage", onReceivedMessage)
             socket.on("sendFriendRequest", onSendFriendRequest)
+            socket.on("call", onReceivedCall)
+            socket.on("missedCall", onMissedCall)
         }
         return () => {
             if (socket != null){
@@ -209,10 +250,38 @@ export default function ChatList({ navigation, route }: Props) {
                 socket.off("userOffline", onOffline);
                 socket.off("receivedMessage", onReceivedMessage)
                 socket.off("sendFriendRequest", onSendFriendRequest)
+                socket.off("call", onReceivedCall)
+                socket.off("missedCall", onMissedCall)
             }
         };
-    }, [route.name, isFocused, socket]);
+    }, [route.name, isFocused, socket, isInCall]);
+
+    function onMissedCall({missedUserIds, _id, conversationName }: {
+        missedUserIds: string[],
+        _id: string,
+        conversationName: string
+    }){ 
+        const isNotGroup = !missedUserIds.some((userId) => userId === userInfo.user?._id)
+        schedulePushNotification(t("notificationTitle"), `Cuộc gọi nhỡ từ ${conversationName}`)
+    }
     
+    function onReceivedCall({ sender, users, type, _id, conversationName  } : callInComingInterface){
+        console.log("Sender: ", sender)
+        console.log("Users: ", users)
+        console.log("Type: ", type)
+        console.log("_id: ", _id)
+        console.log("Conversation Name: ", conversationName )
+        if (!isInCall){
+            navigation.navigate("CallIncoming", {
+                sender,
+                users,
+                type,
+                _id,
+                conversationName
+            })
+        }
+    }
+
     function onSendFriendRequest(friendRequest : IReceivedRequestFriendList){
         console.log("Received friend request: ", friendRequest)
         schedulePushNotification(t("notificationTitle"), `${friendRequest.sender_id.name} đã gửi yêu cầu kết bạn!`)
@@ -237,6 +306,9 @@ export default function ChatList({ navigation, route }: Props) {
                 new Date(accurancyDate).getTime()) /
                 60000
         );
+        if (diffMinute === -1){
+            return "0" + " " + t("minutes")
+        }
         if (diffMinute < 60) {
             return diffMinute + " " + t("minutes");
         } else {
@@ -409,7 +481,7 @@ export default function ChatList({ navigation, route }: Props) {
                             {t("chatListTitle")}
                         </Text>
                         <View style={[styles.chatListHeaderIconBox]}>
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 onPress={handleToggleModalScanQRCode}
                             >
                                 <Image
@@ -426,7 +498,7 @@ export default function ChatList({ navigation, route }: Props) {
                                         },
                                     ]}
                                 />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                             <OutsidePressHandler
                                 onOutsidePress={() =>
                                     setShowHeaderMoreActionPopup(false)
@@ -574,7 +646,7 @@ export default function ChatList({ navigation, route }: Props) {
                                                 {t("chatListCreateGroupTitle")}
                                             </Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity
+                                        {/* <TouchableOpacity
                                             style={[
                                                 styles.chatListHeaderPopUpRightBtn,
                                             ]}
@@ -701,7 +773,7 @@ export default function ChatList({ navigation, route }: Props) {
                                             >
                                                 {t("chatListLoginDevices")}
                                             </Text>
-                                        </TouchableOpacity>
+                                        </TouchableOpacity> */}
                                     </View>
                                 )}
                             </OutsidePressHandler>

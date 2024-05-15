@@ -15,6 +15,8 @@ import {
     Alert,
     Platform,
     Linking,
+    Animated,
+    Easing,
 } from "react-native";
 import { styles } from "./styles";
 import Tooltip from "react-native-walkthrough-tooltip";
@@ -377,7 +379,8 @@ function MessageComponent({
                 />
             );
         } else if (
-            data.notification?.type === "PIN_MESSAGE" || data.notification?.type === "UNPIN_MESSAGE"
+            data.notification?.type === "PIN_MESSAGE" ||
+            data.notification?.type === "UNPIN_MESSAGE"
         ) {
             return (
                 <PinNotificationMessage
@@ -386,17 +389,30 @@ function MessageComponent({
                     translation={t}
                     userInfo={userInfo}
                 />
-            )
-        } else if (data.notification?.type === "LEAVE_GROUP"){
+            );
+        } else if (data.notification?.type === "LEAVE_GROUP") {
             return (
                 <LeaveGroupNotificationMessage
                     message={data}
                     translation={t}
                     userInfo={userInfo}
                 />
-            )
+            );
         }
-        return <Text>Another Notification</Text>;
+        return (
+            <Text
+                style={[
+                    {
+                        textAlign: "center",
+                    },
+                    theme === lightMode
+                        ? commonStyles.lightPrimaryText
+                        : commonStyles.darkPrimaryText,
+                ]}
+            >
+                Another Notification
+            </Text>
+        );
     }
 
     return dataAfter ? (
@@ -578,7 +594,9 @@ function MessageComponent({
                                                             setShowForwardModal
                                                         }
                                                         socket={socket}
-                                                        setMessageHistory={setMessageHistory}
+                                                        setMessageHistory={
+                                                            setMessageHistory
+                                                        }
                                                     />
                                                 }
                                             >
@@ -934,6 +952,12 @@ function MessageComponent({
                                                                     ? t(
                                                                           "chatDetailFileTitle"
                                                                       )
+                                                                    : dataAfter
+                                                                          .reply
+                                                                          .sticker
+                                                                    ? t(
+                                                                          "chatDetailStickerTitle"
+                                                                      )
                                                                     : dataAfter.reply.messages.map(
                                                                           (
                                                                               message
@@ -1076,6 +1100,19 @@ function MessageComponent({
                                                     )}
                                                 </Text>
                                             </View>
+                                            {dataAfter.sticker && (
+                                                <Image
+                                                    source={{
+                                                        uri: dataAfter.sticker,
+                                                    }}
+                                                    style={{
+                                                        width: 150,
+                                                        height: 150,
+                                                        marginLeft: "auto",
+                                                        marginRight: "auto",
+                                                    }}
+                                                />
+                                            )}
                                             {dataAfter.files.some(
                                                 (file) =>
                                                     file.type.includes(
@@ -1511,6 +1548,7 @@ function MessageComponent({
                                                             >
                                                                 {
                                                                     dataAfter
+                                                                        .reply
                                                                         .sender
                                                                         .name
                                                                 }
@@ -1554,6 +1592,12 @@ function MessageComponent({
                                                                       )
                                                                     ? t(
                                                                           "chatDetailFileTitle"
+                                                                      )
+                                                                    : dataAfter
+                                                                          .reply
+                                                                          .sticker
+                                                                    ? t(
+                                                                          "chatDetailStickerTitle"
                                                                       )
                                                                     : dataAfter.messages.map(
                                                                           (
@@ -1677,6 +1721,18 @@ function MessageComponent({
                                                     )}
                                                 </Text>
                                             </View>
+                                            {dataAfter.sticker && (
+                                                <Image
+                                                    source={{
+                                                        uri: dataAfter.sticker,
+                                                    }}
+                                                    style={{
+                                                        width: 150,
+                                                        height: 150,
+                                                        aspectRatio: 2,
+                                                    }}
+                                                />
+                                            )}
 
                                             {dataAfter.files.some(
                                                 (file) =>
@@ -1793,6 +1849,7 @@ function MessageComponent({
                                                     </TouchableOpacity>
                                                 </TouchableOpacity>
                                             )}
+
                                             {dataAfter.files.some((file) =>
                                                 file.type.includes("image")
                                             ) && (
@@ -2268,8 +2325,9 @@ function MessageComponent({
                                                             setShowForwardModal
                                                         }
                                                         socket={socket}
-                                                        setMessageHistory={setMessageHistory}
-
+                                                        setMessageHistory={
+                                                            setMessageHistory
+                                                        }
                                                     />
                                                 }
                                             >
@@ -2382,7 +2440,14 @@ export const AcceptFriendNotificationMessage = ({
                     </View>
                 </View>
                 <View style={[styles.acceptFriendNotificationBottomBox]}>
-                    <Text style={[styles.acceptFriendNotificationContentText]}>
+                    <Text
+                        style={[
+                            styles.acceptFriendNotificationContentText,
+                            theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText,
+                        ]}
+                    >
                         {`${getOtherUser()?.name} ${translate(
                             "acceptFriendNotificationMessageText"
                         )}`}
@@ -2439,7 +2504,14 @@ export const GroupNotificationMessage = ({
                         }}
                         style={[styles.chatGroupAddUserAvatar]}
                     />
-                    <Text style={[styles.groupNotificationContentText]}>
+                    <Text
+                        style={[
+                            styles.groupNotificationContentText,
+                            theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText,
+                        ]}
+                    >
                         {handleGetUsernameList()}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
@@ -2474,7 +2546,12 @@ export const GroupNotificationMessage = ({
                             style={[styles.chatGroupAddUserKeyImg]}
                         />
                         <Text
-                            style={[styles.groupNotificationContentChildText]}
+                            style={[
+                                styles.groupNotificationContentChildText,
+                                theme === lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
                         >
                             {translation("youAppointedAdminFirstTitle")}
                             <Text style={[styles.groupNotificationContentText]}>
@@ -2505,7 +2582,14 @@ export const GroupNotificationMessage = ({
                             source={require("../../../assets/chat-primary-key.png")}
                             style={[styles.chatGroupAddUserKeyImg]}
                         />
-                        <Text style={[styles.groupNotificationContentText]}>
+                        <Text
+                            style={[
+                                styles.groupNotificationContentText,
+                                theme === lightMode
+                                    ? commonStyles.lightPrimaryText
+                                    : commonStyles.darkPrimaryText,
+                            ]}
+                        >
                             {message.sender.name}
                             <Text
                                 style={[
@@ -2544,17 +2628,28 @@ export const GroupNotificationMessage = ({
                         source={require("../../../assets/chat-tip-icon-key.png")}
                         style={[styles.chatGroupAddUserKeyImg]}
                     />
-                    <Text style={[styles.groupNotificationContentText]}>
-                        {userInfo.user?._id === message.notification?.users[0]._id ? translation("you") : message.notification?.users[0].name}
-                        <Text style={[styles.groupNotificationContentChildText]}>
+                    <Text
+                        style={[
+                            styles.groupNotificationContentText,
+                            theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText,
+                        ]}
+                    >
+                        {userInfo.user?._id ===
+                        message.notification?.users[0]._id
+                            ? translation("you")
+                            : message.notification?.users[0].name}
+                        <Text
+                            style={[styles.groupNotificationContentChildText]}
+                        >
                             {translation("becomeDeputyNotification")}
                         </Text>
-                        
                     </Text>
                 </View>
             </View>
         );
-    } else if (notificationType === "REMOVE_ADMIN"){
+    } else if (notificationType === "REMOVE_ADMIN") {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2574,17 +2669,29 @@ export const GroupNotificationMessage = ({
                         source={require("../../../assets/chat-tip-icon-key.png")}
                         style={[styles.chatGroupAddUserKeyImg]}
                     />
-                    <Text style={[styles.groupNotificationContentText]}>
-                        {userInfo.user?._id === message.notification?.users[0]._id ? translation("you") : message.notification?.users[0].name}
-                        <Text style={[styles.groupNotificationContentChildText]}>
+                    <Text
+                        style={[
+                            styles.groupNotificationContentText,
+
+                            theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText,
+                        ]}
+                    >
+                        {userInfo.user?._id ===
+                        message.notification?.users[0]._id
+                            ? translation("you")
+                            : message.notification?.users[0].name}
+                        <Text
+                            style={[styles.groupNotificationContentChildText]}
+                        >
                             {translation("becomeDeputyNotification")}
                         </Text>
-                        
                     </Text>
                 </View>
             </View>
-        )
-    } else if (notificationType === "REMOVE_USER"){
+        );
+    } else if (notificationType === "REMOVE_USER") {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2606,11 +2713,22 @@ export const GroupNotificationMessage = ({
                         }}
                         style={[styles.chatGroupAddUserAvatar]}
                     />
-                    <Text style={[styles.groupNotificationContentText]}>
+                    <Text
+                        style={[
+                            styles.groupNotificationContentText,
+                            theme === lightMode
+                                ? commonStyles.lightPrimaryText
+                                : commonStyles.darkPrimaryText,
+                        ]}
+                    >
                         {message.notification?.users[0].name}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
-                        >{`${translation("wasRemovedFromGroupNotification")} ${userInfo.user?._id === message.sender._id ? translation("you") : message.sender.name}`}</Text>
+                        >{`${translation("wasRemovedFromGroupNotification")} ${
+                            userInfo.user?._id === message.sender._id
+                                ? translation("you")
+                                : message.sender.name
+                        }`}</Text>
                     </Text>
                 </View>
             </View>
@@ -2626,79 +2744,159 @@ interface PinNotificationMessageProps {
 }
 
 export const PinNotificationMessage = ({
-    message, notificationType, translation, userInfo
-} : PinNotificationMessageProps)=>{
+    message,
+    notificationType,
+    translation,
+    userInfo,
+}: PinNotificationMessageProps) => {
     const theme = useSelector((state: IRootState) => state.theme.theme);
 
     return (
         <View style={[styles.groupNotificationWrapper]}>
-                <View
+            <View
+                style={[
+                    styles.groupNotificationBox,
+                    {
+                        backgroundColor:
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryBackground
+                                      .backgroundColor
+                                : commonStyles.darkSecondaryBackground
+                                      .backgroundColor,
+                    },
+                ]}
+            >
+                <Image
+                    source={require("../../../assets/ic_pin.png")}
+                    style={[styles.chatGroupAddUserKeyImg]}
+                />
+                <Text
                     style={[
-                        styles.groupNotificationBox,
-                        {
-                            backgroundColor:
-                                theme === lightMode
-                                    ? commonStyles.lightSecondaryBackground
-                                          .backgroundColor
-                                    : commonStyles.darkSecondaryBackground
-                                          .backgroundColor,
-                        },
+                        styles.groupNotificationContentText,
+                        theme === lightMode
+                            ? commonStyles.lightPrimaryText
+                            : commonStyles.darkPrimaryText,
                     ]}
                 >
-                    <Image
-                        source={require("../../../assets/ic_pin.png")}
-                        style={[styles.chatGroupAddUserKeyImg]}
-                    />
-                    <Text style={[styles.groupNotificationContentText]}>
-                        {userInfo.user?._id === message.sender._id ? translation("you") : message.sender.name}
-                        <Text
-                            style={[styles.groupNotificationContentChildText]}
-                        >{
-                            notificationType === "PIN_MESSAGE" ? translation("pinnedMessageNotification") : translation("unpinnedMessageNotification")
-                        }</Text>
+                    {userInfo.user?._id === message.sender._id
+                        ? translation("you")
+                        : message.sender.name}
+                    <Text style={[styles.groupNotificationContentChildText]}>
+                        {notificationType === "PIN_MESSAGE"
+                            ? translation("pinnedMessageNotification")
+                            : translation("unpinnedMessageNotification")}
                     </Text>
-                </View>
+                </Text>
             </View>
-    )
-}
+        </View>
+    );
+};
 interface LeaveGroupNotificationMessageProps {
-    message : IMessageItem;
-    translation: any
-    userInfo: userInfoInterfaceI
+    message: IMessageItem;
+    translation: any;
+    userInfo: userInfoInterfaceI;
 }
 export const LeaveGroupNotificationMessage = ({
-    message, translation, userInfo
-} : LeaveGroupNotificationMessageProps) =>{
+    message,
+    translation,
+    userInfo,
+}: LeaveGroupNotificationMessageProps) => {
     const theme = useSelector((state: IRootState) => state.theme.theme);
 
     return (
         <View style={[styles.groupNotificationWrapper]}>
-                <View
+            <View
+                style={[
+                    styles.groupNotificationBox,
+                    {
+                        backgroundColor:
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryBackground
+                                      .backgroundColor
+                                : commonStyles.darkSecondaryBackground
+                                      .backgroundColor,
+                    },
+                ]}
+            >
+                <Image
+                    source={require("../../../assets/ic_pin.png")}
+                    style={[styles.chatGroupAddUserKeyImg]}
+                />
+                <Text
                     style={[
-                        styles.groupNotificationBox,
-                        {
-                            backgroundColor:
-                                theme === lightMode
-                                    ? commonStyles.lightSecondaryBackground
-                                          .backgroundColor
-                                    : commonStyles.darkSecondaryBackground
-                                          .backgroundColor,
-                        },
+                        styles.groupNotificationContentText,
+                        theme === lightMode
+                            ? commonStyles.lightPrimaryText
+                            : commonStyles.darkPrimaryText,
                     ]}
                 >
-                    <Image
-                        source={require("../../../assets/ic_pin.png")}
-                        style={[styles.chatGroupAddUserKeyImg]}
-                    />
-                    <Text style={[styles.groupNotificationContentText]}>
-                        {userInfo.user?._id === message.sender._id ? translation("you") : message.sender.name}
-                        <Text
-                            style={[styles.groupNotificationContentChildText]}
-                        >{
-                            translation("leaveGroupNotification")
-                        }</Text>
+                    {userInfo.user?._id === message.sender._id
+                        ? translation("you")
+                        : message.sender.name}
+                    <Text style={[styles.groupNotificationContentChildText]}>
+                        {translation("leaveGroupNotification")}
                     </Text>
-                </View>
+                </Text>
             </View>
-    )
-}
+        </View>
+    );
+};
+
+// interface AnimateStickerProps{
+//     uri: string
+// }
+// export function AnimateSticker({uri} : AnimateStickerProps){
+//     const animatedValue = useRef(new Animated.Value(0)).current;
+
+//     const handleAnimation = () => {
+
+//         Animated.timing(animatedValue, {
+//             toValue: 1,
+//             duration: 1000,
+//             easing: Easing.ease
+//         } as any).start()
+
+//     }
+
+//     useEffect(()=>{
+//         handleAnimation()
+//     }, [])
+
+//     return (
+//         <Animated.Image
+//             source={{uri: uri}}
+//             resizeMode='contain'
+//             style={{
+//                 height: 40,
+//                 width: 40,
+//                 transform: [
+//                     {
+//                         translateX: animatedValue.interpolate({
+//                             inputRange: [0, 1],
+//                             outputRange: [0, 120]
+//                         })
+//                     },
+//                     {
+//                         translateY: animatedValue.interpolate({
+//                             inputRange: [0, 1],
+//                             outputRange: [0, 25]
+//                         })
+//                     },
+//                     {
+//                         scaleX: animatedValue.interpolate({
+//                             inputRange: [0, 1],
+//                             outputRange: [1, 15]
+//                         })
+//                     },
+//                     {
+//                         scaleY: animatedValue.interpolate({
+//                             inputRange: [0, 1],
+//                             outputRange: [1, 12.5]
+//                         })
+//                     }
+//                 ]
+//             }}
+//         />
+//     )
+
+// }

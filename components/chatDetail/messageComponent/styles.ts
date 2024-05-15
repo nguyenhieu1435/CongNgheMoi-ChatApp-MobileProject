@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 5,
         borderRadius: 8,
         borderBottomRightRadius: 0,
+        overflow: "hidden"
     },
     chatDetailMessageFromMeInfoText:{
         fontSize: 16,
@@ -102,6 +103,7 @@ export const styles = StyleSheet.create({
         borderRadius: 8,
         position: "relative",
         borderBottomLeftRadius: 0,
+        overflow: "hidden"
     },
     chatDetailMessageFromOpponentInfoTextBox:{
         flexDirection: "row",

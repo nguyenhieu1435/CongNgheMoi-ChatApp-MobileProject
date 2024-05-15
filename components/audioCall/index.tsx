@@ -21,10 +21,11 @@ import { styles } from "./styles";
 import { AGORA_APP_ID } from "@env";
 import { useTranslation } from "react-i18next";
 import commonStyles from "../../CommonStyles/commonStyles";
-import { IConversation } from "../../configs/interfaces";
-import { useSelector } from "react-redux";
+import { IConversation, IUserInConversation } from "../../configs/interfaces";
+import { useDispatch, useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
 import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
+import { setIsInCall } from "../../redux_toolkit/slices/isInCall.slice";
 
 const appId = AGORA_APP_ID;
 const token = "";
@@ -36,12 +37,17 @@ interface AudioCallProps {
 }
 
 export default function AudioCall({ navigation, route }: AudioCallProps) {
-    const conversation = route.params.conversation as IConversation;
-    const channelName = conversation._id;
+    const conversationId = route.params.conversationId as string;
+    const isGroup = route.params.isGroup as boolean;
+    const users = route.params.users as IUserInConversation[];
+    const conversationName = route.params.conversationName as string;
+    const callInComing = route.params.callInComing as boolean;
+    const channelName = conversationId;
     const userInfo = useSelector((state: IRootState) => state.userInfo);
-    const opponentUser = conversation.users.find(
-        (user) => user._id !== userInfo.user?._id
-    );
+    const opponentUser = !isGroup
+        ? users.find((user) => user._id !== userInfo.user?._id)
+        : null;
+
     const agoraEngineRef = useRef<IRtcEngine>(); // Agora engine instance
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
     const [remoteUid, setRemoteUid] = useState(0); // Uid of the remote user
@@ -54,6 +60,12 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     const [seconds, setSeconds] = useState(0);
     const [quantityOfUsersInCall, setQuantityOfUsersInCall] = useState(1);
     const wasQuantityGreaterThanEqualTwo = useRef(false);
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
+    const [usersInCallInGroup, setUsersInCallInGroup] = useState<IUserInConversation[]>([]);
+    const userAcceptCaffIdRef = useRef<string | null>(null);
+    const userEndCallIdRef = useRef<string | null>(null);
+    const dispatch = useDispatch();
+
 
     function showMessage(msg: string) {
         setMessage(msg);
@@ -96,11 +108,14 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
 
     useEffect(() => {
         // Initialize Agora engine when the app starts
-        async function start(){
+        dispatch(setIsInCall(true))
+
+
+        async function start() {
             await setupVoiceSDKEngine();
             await join();
         }
-        start()
+        start();
     }, [route.params]);
 
     const setupVoiceSDKEngine = async () => {
@@ -117,9 +132,10 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         "Successfully joined the channel " + channelName
                     );
                     setIsJoined(true);
-
                 },
                 onUserJoined: (_connection, Uid) => {
+                    console.log("Remote user joined");
+                    
                     showMessage("Remote user joined with uid " + Uid);
                     setRemoteUid(Uid);
                     if (quantityOfUsersInCall + 1 >= 2) {
@@ -132,7 +148,6 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                             setSeconds((prev) => prev + 1);
                         }, 1000);
                     }
-
                 },
                 onUserOffline: (_connection, Uid) => {
                     showMessage("Remote user left the channel. uid: " + Uid);
@@ -150,12 +165,39 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             console.log(e);
         }
     };
-    
-    useEffect(()=>{
-        if (wasQuantityGreaterThanEqualTwo.current && quantityOfUsersInCall < 2 && !conversation.isGroup) {
+
+    useEffect(() => {
+        if (
+            wasQuantityGreaterThanEqualTwo.current &&
+            quantityOfUsersInCall < 2 &&
+            !isGroup
+        ) {
             handleEndCall();
         }
-    }, [quantityOfUsersInCall])
+    }, [quantityOfUsersInCall]);
+
+    useEffect(()=>{
+        socket.on("acceptCall", onAcceptCall)
+        socket.on("endCall", onEndCall)
+
+        return () => {
+            socket.off("acceptCall", onAcceptCall)
+            socket.off("endCall", onEndCall)
+        }
+    }, [conversationId])
+
+    function onAcceptCall({receiver, _id}: {receiver: IUserInConversation, _id: string}){
+        if (receiver._id != userAcceptCaffIdRef.current){
+            userAcceptCaffIdRef.current = receiver._id;
+            setUsersInCallInGroup((prev) => [...prev, receiver])
+        }
+    }
+    function onEndCall({sender, _id}: {sender: IUserInConversation, _id: string}){
+        if (sender._id != userEndCallIdRef.current){
+            userEndCallIdRef.current = sender._id;
+            setUsersInCallInGroup((prev) => prev.filter(user => user._id !== sender._id))
+        }
+    }
 
     // console.log("showMessage: ", JSON.stringify(message));
 
@@ -170,13 +212,22 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     }
 
     function handleEndCall() {
+        dispatch(setIsInCall(false))
+        socket.emit("endCall", {
+            sender: userInfo.user,
+            _id: conversationId,
+        })
         leave();
         refInterval.current && clearInterval(refInterval.current);
         refInterval.current = null;
         setQuantityOfUsersInCall(1);
         wasQuantityGreaterThanEqualTwo.current = false;
         setSeconds(0);
-        navigation.goBack();
+        if (callInComing){
+            navigation.pop(2)
+        } else {
+            navigation.goBack();
+        }
     }
 
     function formatSecondsToMinutesSeconds(totalSeconds: number) {
@@ -193,23 +244,14 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     }
 
     function renderWaitingLayout() {
-        return conversation.isGroup ? (
+        return isGroup ? (
             <View style={[styles.callingContainer]}>
-                {conversation.picture ? (
-                    <Image
-                        source={{
-                            uri: conversation.picture,
-                        }}
-                        style={[styles.avatar]}
-                    />
-                ) : (
-                    CreateGroupAvatarWhenAvatarIsEmpty(
-                        conversation,
-                        120,
-                        120,
-                        60
-                    )
-                )}
+                <Image
+                    source={{
+                        uri: "https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png",
+                    }}
+                    style={[styles.avatar]}
+                />
                 <Text
                     style={[
                         styles.callingTitle,
@@ -229,7 +271,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         },
                     ]}
                 >
-                    {conversation.name}
+                    {conversationName}
                 </Text>
             </View>
         ) : (
@@ -265,14 +307,18 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         );
     }
 
+    console.log("user number: ", quantityOfUsersInCall)
+
     function renderInCallLayout() {
-        return conversation.isGroup ? (
-            <View style={[styles.callingContainer, styles.callingGroupContainer]}>
+        return isGroup ? (
+            <View
+                style={[styles.callingContainer, styles.callingGroupContainer]}
+            >
                 <TouchableOpacity
                     style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 5
+                        gap: 5,
                     }}
                     onPress={handleEndCall}
                 >
@@ -282,8 +328,9 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                             style={[
                                 styles.backToPreviousBtnImg,
                                 {
-                                    tintColor: commonStyles.darkPrimaryText.color,
-                                }
+                                    tintColor:
+                                        commonStyles.darkPrimaryText.color,
+                                },
                             ]}
                         />
                     </View>
@@ -292,9 +339,11 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                             styles.backToPreviousBtnText,
                             {
                                 color: commonStyles.darkPrimaryText.color,
-                            }
+                            },
                         ]}
-                    >{t("backToConversation")}</Text>
+                    >
+                        {t("backToConversation")}
+                    </Text>
                 </TouchableOpacity>
                 <View
                     style={{
@@ -302,36 +351,61 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         flexGrow: 1,
                         marginTop: 30,
                         width: "100%",
-                        paddingHorizontal: 25
+                        paddingHorizontal: 25,
                     }}
                 >
                     <ScrollView
                         contentContainerStyle={{
-                            width: "100%"
+                            width: "100%",
                         }}
                     >
-                        <View
-                            style={[
-                                styles.userInCallContainerItem
-                            ]}
-                        >
+                        <View style={[styles.userInCallContainerItem]}>
                             <Image
-                                source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnfAxGV-fZxGL9elM_hQ2tp7skLeSwMyUiwo4lMm1zyA&s"}}
-                            
-                                style={[
-                                    styles.avatarInGroupCall
-                                ]}
+                                source={{
+                                    uri: userInfo.user?.avatar,
+                                }}
+                                style={[styles.avatarInGroupCall]}
                             />
                             <Text
                                 style={[
                                     styles.callingUsernameInGroup,
                                     {
-                                        color: commonStyles.darkPrimaryText.color,
-                                    }
+                                        color: commonStyles.darkPrimaryText
+                                            .color,
+                                    },
                                 ]}
-                            >Nguyen Van A</Text>
+                            >
+                                {userInfo.user?.name}
+                            </Text>
+                            
                         </View>
-                        
+
+                        {
+                            usersInCallInGroup.map((user, index) => {
+                                return (
+                                    <View style={[styles.userInCallContainerItem]} key={index}>
+                                        <Image
+                                            source={{
+                                                uri: user?.avatar,
+                                            }}
+                                            style={[styles.avatarInGroupCall]}
+                                        />
+                                        <Text
+                                            style={[
+                                                styles.callingUsernameInGroup,
+                                                {
+                                                    color: commonStyles.darkPrimaryText
+                                                        .color,
+                                                },
+                                            ]}
+                                        >
+                                            {user?.name}
+                                        </Text>
+                                        
+                                    </View>
+                                )
+                            })
+                        }
                     </ScrollView>
                 </View>
             </View>
@@ -404,28 +478,15 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         );
     }
     function renderBackgroundImage() {
-        return (
-            conversation.isGroup ? (
-                conversation.picture ? (
-                    <Image
-                        source={{
-                            uri: conversation.picture,
-                        }}
-                        style={[styles.imageBackground]}
-                        blurRadius={15}
-                    />
-                )
-                :
-                (
-                    CreateGroupAvatarWhenAvatarIsEmpty(
-                        conversation,
-                        120,
-                        120,
-                        60
-                    )
-                )
-            )
-            :
+        return isGroup ? (
+            <Image
+                source={{
+                    uri: "https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png",
+                }}
+                style={[styles.imageBackground]}
+                blurRadius={15}
+            />
+        ) : (
             <Image
                 source={{
                     uri: opponentUser?.avatar,
@@ -433,19 +494,17 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                 style={[styles.imageBackground]}
                 blurRadius={15}
             />
-        )
+        );
     }
-    console.log("conversation id: ", conversation._id)
+    console.log("conversation id: ", conversationId);
 
     return (
         <View style={[styles.container]}>
             <StatusBar />
             <SafeAreaView style={[styles.containerSafeArea]}>
                 {renderBackgroundImage()}
-                {waitingLayout ? (
-                    renderWaitingLayout()
-                ) : (
-                    renderInCallLayout()
+                {
+                    waitingLayout ? renderWaitingLayout() : renderInCallLayout()
                     // <View style={[styles.callingContainer]}>
                     //     <View style={[styles.inCallHeader]}>
                     //         <Image
@@ -511,7 +570,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                     //         {formatSecondsToMinutesSeconds(seconds)}
                     //     </Text>
                     // </View>
-                )}
+                }
 
                 <View style={[styles.actionContainer]}>
                     <TouchableOpacity

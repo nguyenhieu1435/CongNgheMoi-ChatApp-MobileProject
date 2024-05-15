@@ -107,6 +107,7 @@
     "chatDetailReplyToTitle": "Reply ",
     "chatDetailImageTitle": "[Image] ",
     "chatDetailFileTitle": "[File] ",
+    "chatDetailStickerTitle": "[Sticker] ",
     "chatDetailSendTextPlaceholder": "Enter Message...",
     "chatDetailReadyUploadTitle": "Ready to upload!",
     "chatDetaildMoreViewProfileTitle": "Optional",
@@ -281,5 +282,8 @@
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
     "registerPasswordValidationNotMatch": "Password does not match new password",
-    "oldPasswordValidation": "Old password is incorrect"
+    "oldPasswordValidation": "Old password is incorrect",
+    "searchStickerTitle": "Search sticker",
+    "from": "From",
+    "incomingCall": "Incoming call"
 }

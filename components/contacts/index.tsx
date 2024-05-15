@@ -409,15 +409,37 @@ function FriendScrollBox({
                 }
             );
             if (conversationResponse.ok) {
-                const conversationData = await conversationResponse.json();
+                const conversationData = await conversationResponse.json() as IConversation;
                 setIsLoading(false);
                 if (type == "video") {
+                    socket.emit("call", {
+                        sender: userInfo.user,
+                        users: conversationData.users,
+                        type: "video",
+                        _id: conversationData._id,
+                        conversationName: conversationData.name,
+                    })
                     navigation.navigate("VideoCall", {
-                        conversation: conversationData as IConversation,
+                        conversationId: conversationData._id,
+                        isGroup: conversationData.isGroup,
+                        conversationName: conversationData.name,
+                        users: conversationData.users,
+                        callInComing: false
                     });
                 } else {
+                    socket.emit("call", {
+                        sender: userInfo.user,
+                        users: conversationData.users,
+                        type: "audio",
+                        _id: conversationData._id,
+                        conversationName: conversationData.name,
+                    })
                     navigation.navigate("AudioCall", {
-                        conversation: conversationData as IConversation,
+                        conversationId: conversationData._id,
+                        isGroup: conversationData.isGroup,
+                        conversationName: conversationData.name,
+                        users: conversationData.users,
+                        callInComing: false
                     });
                 
                 }

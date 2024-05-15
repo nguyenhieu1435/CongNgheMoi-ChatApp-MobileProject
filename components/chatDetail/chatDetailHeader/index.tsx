@@ -77,6 +77,7 @@ function ChatDetailHeader({
         (state: IRootState) => state.onlineUserIds
     );
     const messageIdRef = useRef<string>("");
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     function setTextDebounce(text: string) {
         debounce(() => {
@@ -238,13 +239,35 @@ function ChatDetailHeader({
     }
 
     function handleCallVideo() {
+        socket.emit("call", {
+            sender: userInfo.user,
+            users: conversation.users,
+            type: "video",
+            _id: conversation._id,
+            conversationName: conversation.name,
+        });
         navigation.navigate("VideoCall", {
-            conversation: conversation,
+            conversationId: conversation._id,
+            isGroup: conversation.isGroup,
+            conversationName: conversation.name,
+            users: conversation.users,
+            callInComing: false,
         });
     }
     function handleCallAudio() {
+        socket.emit("call", {
+            sender: userInfo.user,
+            users: conversation.users,
+            type: "audio",
+            _id: conversation._id,
+            conversationName: conversation.name,
+        });
         navigation.navigate("AudioCall", {
-            conversation: conversation,
+            conversationId: conversation._id,
+            isGroup: conversation.isGroup,
+            conversationName: conversation.name,
+            users: conversation.users,
+            callInComing: false,
         });
     }
 
@@ -821,12 +844,28 @@ function ChatDetailHeader({
                                                             styles.pinnedContentMessageBox,
                                                         ]}
                                                     >
-                                                        <Text numberOfLines={1}>
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            style={[
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles.lightPrimaryText
+                                                                    : commonStyles.darkPrimaryText,
+                                                            ]}
+                                                        >
                                                             {handleGetMessageContent(
                                                                 message
                                                             )}
                                                         </Text>
-                                                        <Text numberOfLines={1}>
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            style={
+                                                                theme ===
+                                                                lightMode
+                                                                    ? commonStyles.lightPrimaryText
+                                                                    : commonStyles.darkPrimaryText
+                                                            }
+                                                        >
                                                             {`${t(
                                                                 "chatDetailMessageTheMessageOf"
                                                             )} ${
@@ -1026,12 +1065,26 @@ function ChatDetailHeader({
                                     <View
                                         style={[styles.pinnedContentMessageBox]}
                                     >
-                                        <Text numberOfLines={1}>
+                                        <Text
+                                            numberOfLines={1}
+                                            style={[
+                                                theme === lightMode
+                                                    ? commonStyles.lightPrimaryText
+                                                    : commonStyles.darkPrimaryText,
+                                            ]}
+                                        >
                                             {handleGetMessageContent(
                                                 conversation.pinnedMessages[0]
                                             )}
                                         </Text>
-                                        <Text numberOfLines={1}>
+                                        <Text
+                                            numberOfLines={1}
+                                            style={
+                                                theme === lightMode
+                                                    ? commonStyles.lightPrimaryText
+                                                    : commonStyles.darkPrimaryText
+                                            }
+                                        >
                                             {`${t(
                                                 "chatDetailMessageTheMessageOf"
                                             )} ${

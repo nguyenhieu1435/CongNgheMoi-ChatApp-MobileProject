@@ -1,14 +1,79 @@
 import { View, Text, StatusBar, SafeAreaView, Image, TouchableOpacity } from "react-native";
 import { styles } from "./style";
 import commonStyles from "../../CommonStyles/commonStyles";
+import { ISenderInCallComing, IUserInConversation } from "../../configs/interfaces";
+import { useSelector } from "react-redux";
+import { IRootState } from "../../redux_toolkit/store";
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 interface CallIncomingProps {
     navigation: any,
     route: any,
-
 }
 
 export default function CallIncoming({ navigation, route }: CallIncomingProps) {
+    const sender = route.params.sender as ISenderInCallComing;
+    const users = route.params.users as IUserInConversation[];
+    const type = route.params.type as string;
+    const _id = route.params._id as string;
+    const conversationName = route.params.conversationName as string;
+    const userInfo = useSelector((state: IRootState) => state.userInfo)
+    const {t} = useTranslation();
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
+
+    function handleAcceptCall(){
+        socket.emit("acceptCall", {
+            receiver: userInfo.user,
+            _id: _id,
+        })
+        
+        
+        if (type === "video"){
+            navigation.navigate("VideoCall", {
+                conversationId: _id,
+                isGroup: isGroup(),
+                conversationName: conversationName,
+                users: users,
+                callInComing: true
+            })
+        } else {
+            navigation.navigate("AudioCall", {
+                conversationId: _id,
+                isGroup: isGroup(),
+                conversationName: conversationName,
+                users: users,
+                callInComing: true
+            })
+        }
+    }
+    function handleRejectCall(){
+        socket.emit("rejectCall", {
+            sender: userInfo.user,
+            _id: _id
+        })
+        navigation.goBack();
+    }
+
+    function isGroup(){
+        return !users.some(user => user.name === conversationName) 
+    }
+
+    useEffect(()=>{
+        socket.on("missedCall", onMissedCall);
+        return () => {
+            socket.off("missedCall", onMissedCall)
+        }
+    }, [])
+    
+    function onMissedCall({missedUserIds, _id, conversationName }: {
+        missedUserIds: string[],
+        _id: string,
+        conversationName: string
+    }){
+        navigation.goBack();
+    }
+
     return (
         <View
             style={{
@@ -36,7 +101,7 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
                     ]}
                 >
                     <Image
-                        source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbI-_7c6jmIW-XA6pbBuXZyb0TVmrmvBp8rQeh92r_Kw&s"}}
+                        source={{uri: sender.avatar}}
                         style={[
                             styles.callIncomingAvatarImg
                         ]}
@@ -47,7 +112,7 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
                             commonStyles.darkPrimaryText
                         ]}
                     >
-                        Incoming call
+                        {t("incomingCall")}
                     </Text>
                     <Text
                         style={[
@@ -55,7 +120,11 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
                             commonStyles.darkPrimaryText
                         ]}
                     >
-                        User Name
+                        {
+                            !isGroup()
+                            ? `${sender.name}` 
+                            : `${sender.name} từ ${t("searchDetailGroupTitle")}: ${conversationName}`
+                        }
                     </Text>
                 </View>
                 <View
@@ -64,6 +133,7 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
                     ]}
                 >
                     <TouchableOpacity
+                        onPress={handleRejectCall}
                         style={[
                             styles.callIncomingActionBtn,
                             styles.callIncomingBtnReject
@@ -81,6 +151,7 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onPress={handleAcceptCall}
                         style={[
                             styles.callIncomingActionBtn,
                             styles.callIncomingBtnAccept

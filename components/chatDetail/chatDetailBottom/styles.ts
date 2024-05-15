@@ -121,5 +121,42 @@ export const styles = StyleSheet.create({
     chatDetailBottomActionText:{
         fontSize: 15,
 
+    },
+    searchStickerContainer:{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        borderWidth: 1,
+        borderRadius: 20,
+        paddingHorizontal: 10
+    },
+    searchStickerContainerImg:{
+        width: 20,
+        height: 20,
+        resizeMode: "contain"
+    },
+    searchStickerContainerInput:{
+        fontSize: 15,
+        paddingVertical: 2,
+    },
+    stickerCategoryTitle:{
+        fontWeight: "500",
+        fontSize: 16,
+        marginBottom: 4
+    },
+    listStickerContainer:{
+        flexDirection: "row",
+        flexWrap: "wrap",
+        width: "100%",
+        gap: 5
+    },
+    itemStickerBox:{
+        width: "24%",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    itemStickerBoxImage:{
+        width: "100%",
+        height: 80,
     }
 })
