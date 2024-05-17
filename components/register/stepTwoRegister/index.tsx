@@ -8,23 +8,23 @@ import {
     SectionList,
     Alert,
     ActivityIndicator,
-} from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
-import { EvilIcons } from "@expo/vector-icons";
-import { AntDesign } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
-import { styles } from "./styles";
-import commonStyles from "../../../CommonStyles/commonStyles";
-import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
-import { IRootState } from "../../../redux_toolkit/store";
-import { useTranslation } from "react-i18next";
-import Checkbox from "expo-checkbox";
-import { LINK_USING_TERM, LINK_SOCIAL_TERM, LINK_CREATE_OTP } from "@env";
-import { useForm, Controller} from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import {  useState } from "react";
+} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { Octicons } from '@expo/vector-icons';
+import { EvilIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { styles } from './styles';
+import commonStyles from '../../../CommonStyles/commonStyles';
+import { lightMode } from '../../../redux_toolkit/slices/theme.slice';
+import { IRootState } from '../../../redux_toolkit/store';
+import { useTranslation } from 'react-i18next';
+import Checkbox from 'expo-checkbox';
+import { LINK_USING_TERM, LINK_SOCIAL_TERM, LINK_CREATE_OTP } from '@env';
+import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
 
 interface Props {
     navigation: any;
@@ -49,16 +49,16 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                 .shape({
                     contact: yup
                         .string()
-                        .required(" ")
+                        .required(' ')
                         .matches(
                             /(^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$)|(^\+\d{1,2}\d{9}$|^0\d{9}$)/,
-                            t("registerPhoneValidate")
+                            t('registerPhoneValidate'),
                         ),
                     isCheckTerm: yup.boolean().required().oneOf([true]),
                     isCheckSocialTerm: yup.boolean().required().oneOf([true]),
                 });
             return formSchema;
-        }
+        },
     );
 
     const {
@@ -67,13 +67,13 @@ export default function StepTwoRegister({ navigation, route }: Props) {
         formState: { errors, isValid },
         watch,
         setValue,
-        setError
+        setError,
     } = useForm<IFormData2>({
         resolver: yupResolver(schema),
-        mode: "onSubmit",
-        reValidateMode: "onSubmit",
+        mode: 'onSubmit',
+        reValidateMode: 'onSubmit',
         defaultValues: {
-            contact: "",
+            contact: '',
             isCheckTerm: false,
             isCheckSocialTerm: false,
         },
@@ -84,36 +84,42 @@ export default function StepTwoRegister({ navigation, route }: Props) {
             try {
                 setIsLoading(true);
                 const response = await fetch(LINK_CREATE_OTP, {
-                    method: "POST",
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         contact: data.contact,
                     }),
-                })
-                if (response.ok){
-                  Alert.alert(t("registerEmailSendOTPCodeNotificationTitle"), t("registerEmailSendOTPCodeNotificationDesc"), [
-                      {
-                          text: "OK",
-                          onPress: () => {
-                              setIsLoading(false);
-                              navigation.navigate("StepTwoPointFiveRegister", {
-                                  username: route.params.username,
-                                  contact: data.contact,
-                              });
-                          },
-                      },
-                  
-                  ])
+                });
+                if (response.ok) {
+                    Alert.alert(
+                        t('registerEmailSendOTPCodeNotificationTitle'),
+                        t('registerEmailSendOTPCodeNotificationDesc'),
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    setIsLoading(false);
+                                    navigation.navigate(
+                                        'StepTwoPointFiveRegister',
+                                        {
+                                            username: route.params.username,
+                                            contact: data.contact,
+                                        },
+                                    );
+                                },
+                            },
+                        ],
+                    );
                 } else {
-                  setError("contact", {
-                      type: "custom",
-                      message: t("registerEmailExistMsg")
-                  })
-                } 
+                    setError('contact', {
+                        type: 'custom',
+                        message: t('registerEmailExistMsg'),
+                    });
+                }
             } catch (error) {
-              console.log("error", error)
+                console.log('error', error);
             }
             setIsLoading(false);
         }
@@ -134,13 +140,13 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                     onPress={() => navigation.goBack()}
                 >
                     <FontAwesome
-                        name="angle-left"
+                        name='angle-left'
                         size={28}
                         color={commonStyles.darkPrimaryText.color}
                     />
                 </TouchableOpacity>
                 <Text style={[styles.currentTabName]}>
-                    {t("registerCreateAccount")}
+                    {t('registerCreateAccount')}
                 </Text>
             </View>
             <View
@@ -162,7 +168,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                             : commonStyles.darkSecondaryBackground,
                     ]}
                 >
-                    {t("reigsterEmailAddressDesc")}
+                    {t('reigsterEmailAddressDesc')}
                 </Text>
 
                 <View style={[styles.formPhoneContainer]}>
@@ -174,9 +180,9 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                     field: { onChange, onBlur, value },
                                 }) => (
                                     <TextInput
-                                        keyboardType="default"
+                                        keyboardType='default'
                                         placeholder={t(
-                                            "registerPhonePlaceHolder"
+                                            'registerPhonePlaceHolder',
                                         )}
                                         placeholderTextColor={
                                             theme === lightMode
@@ -193,21 +199,21 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         ]}
                                         value={value}
                                         onChangeText={(text) => {
-                                          setError("contact", {
-                                              type: "custom",
-                                              message: ""
-                                          })
-                                          onChange(text)
+                                            setError('contact', {
+                                                type: 'custom',
+                                                message: '',
+                                            });
+                                            onChange(text);
                                         }}
                                     />
                                 )}
-                                name="contact"
+                                name='contact'
                             />
-                            {watch("contact").trim() && (
+                            {watch('contact').trim() && (
                                 <AntDesign
-                                    name="close"
+                                    name='close'
                                     size={20}
-                                    onPress={() => setValue("contact", "")}
+                                    onPress={() => setValue('contact', '')}
                                     color={
                                         theme == lightMode
                                             ? commonStyles.lightPrimaryText
@@ -220,12 +226,11 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                             )}
                         </View>
                     </View>
-                    {errors.contact &&
-                        errors.contact.message?.trim() && (
-                            <Text style={[styles.textErrMsg]}>
-                                {errors.contact.message}
-                            </Text>
-                        )}
+                    {errors.contact && errors.contact.message?.trim() && (
+                        <Text style={[styles.textErrMsg]}>
+                            {errors.contact.message}
+                        </Text>
+                    )}
 
                     <View style={[styles.listCheckBoxGroup]}>
                         <View style={[styles.itemCheckBox]}>
@@ -246,7 +251,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         }
                                     />
                                 )}
-                                name="isCheckTerm"
+                                name='isCheckTerm'
                             />
                             <Text
                                 style={[
@@ -256,14 +261,14 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         : commonStyles.darkPrimaryText,
                                 ]}
                             >
-                                {t("registerPhoneAgreeTitle")}{" "}
+                                {t('registerPhoneAgreeTitle')}{' '}
                                 <Text
                                     style={styles.linkDescCheckBox}
                                     onPress={() =>
                                         Linking.openURL(LINK_USING_TERM)
                                     }
                                 >
-                                    {t("registerPhoneTerms")}
+                                    {t('registerPhoneTerms')}
                                 </Text>
                             </Text>
                         </View>
@@ -286,7 +291,7 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         }
                                     />
                                 )}
-                                name="isCheckSocialTerm"
+                                name='isCheckSocialTerm'
                             />
 
                             <Text
@@ -297,14 +302,14 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                                         : commonStyles.darkPrimaryText,
                                 ]}
                             >
-                                {t("registerPhoneAgreeTitle")}{" "}
+                                {t('registerPhoneAgreeTitle')}{' '}
                                 <Text
                                     style={styles.linkDescCheckBox}
                                     onPress={() =>
                                         Linking.openURL(LINK_SOCIAL_TERM)
                                     }
                                 >
-                                    {t("registerPhoneSocialTerms")}
+                                    {t('registerPhoneSocialTerms')}
                                 </Text>
                             </Text>
                         </View>
@@ -313,25 +318,26 @@ export default function StepTwoRegister({ navigation, route }: Props) {
                         <TouchableOpacity
                             style={[
                                 styles.btnNextToStepTwo,
-                                watch("isCheckSocialTerm") &&
-                                watch("isCheckTerm") &&
-                                watch("contact").trim()
+                                watch('isCheckSocialTerm') &&
+                                watch('isCheckTerm') &&
+                                watch('contact').trim()
                                     ? styles.btnNextToStepTwoActive
                                     : null,
                             ]}
                             onPress={handleSubmit(handleSubmitForm)}
                         >
-                            {
-                              isLoading
-                              ?
-                              <ActivityIndicator size="small" color={commonStyles.darkPrimaryText.color} />
-                              :
-                              <AntDesign
-                                  name="arrowright"
-                                  size={24}
-                                  color={commonStyles.darkPrimaryText.color}
-                              />
-                            }
+                            {isLoading ? (
+                                <ActivityIndicator
+                                    size='small'
+                                    color={commonStyles.darkPrimaryText.color}
+                                />
+                            ) : (
+                                <AntDesign
+                                    name='arrowright'
+                                    size={24}
+                                    color={commonStyles.darkPrimaryText.color}
+                                />
+                            )}
                         </TouchableOpacity>
                     </View>
                 </View>

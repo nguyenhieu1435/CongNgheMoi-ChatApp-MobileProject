@@ -39,21 +39,21 @@ export default function Login({ navigation }: Props) {
     const [isFocus, setIsFocus] = useState(false);
     const [isShow, setIsShow] = useState(t('show'));
     const phoneErrorMessage = t('registerPhoneValidate');
-    const passwordErrorMessage= t("registerPasswordValidationCommonRequire")
+    const passwordErrorMessage = t('registerPasswordValidationCommonRequire');
     const [showError, setShowError] = useState(false);
     const dispatch = useDispatch();
     const [isLoadingLogin, setIsLoadingLogin] = useState(false);
     const [errorText, setErrorText] = useState<string | undefined>('');
-
+    const emailValidate = t('emailValidate');
     const [schema, setSchema] = useState<yup.ObjectSchema<IFormData>>(
         (): yup.ObjectSchema<IFormData> => {
             const formSchema: yup.ObjectSchema<IFormData> = yup.object().shape({
                 contact: yup
                     .string()
-                    .required()
+                    .required(emailValidate)
                     .matches(
                         /(^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$)|(^\+\d{1,2}\d{9}$|^0\d{9}$)/,
-                        phoneErrorMessage
+                        phoneErrorMessage,
                     ),
                 password: yup
                     .string()
@@ -65,7 +65,6 @@ export default function Login({ navigation }: Props) {
             });
             return formSchema;
         },
-      
     );
 
     const {
@@ -94,7 +93,7 @@ export default function Login({ navigation }: Props) {
             setErrorText(errPwd.message);
             return;
         }
-        
+
         if (!errPhone?.message || !errPwd?.message) {
             setErrorText(undefined);
         }
@@ -106,10 +105,10 @@ export default function Login({ navigation }: Props) {
         () => contact.length < 6 || password.length < 6,
         [contact, password],
     );
-    console.log('🚀 ~ Login ~ disabled:', disabled);
+    // console.log('🚀 ~ Login ~ disabled:', disabled);
 
     const onSubmitForm = async (data: IFormData) => {
-        console.log('🚀 ~ onSubmitForm ~ data:', data);
+        // console.log('🚀 ~ onSubmitForm ~ data:', data);
         if (disabled) return;
 
         setShowError(false);
@@ -350,16 +349,22 @@ export default function Login({ navigation }: Props) {
                         <Text style={[styles.textErrMsg]}>{errorText}</Text>
                     )}
                     <View>
-                        <Text
-                            style={[
-                                styles.textDescCheckBox,
-                                theme == lightMode
-                                    ? commonStyles.lightPrimaryText
-                                    : commonStyles.darkPrimaryText,
-                            ]}
+                        <Pressable
+                            onPress={() => {
+                                navigation.navigate('StepOneRecoverPasswords');
+                            }}
                         >
-                            {t('recoverPassword')}
-                        </Text>
+                            <Text
+                                style={[
+                                    styles.textDescCheckBox,
+                                    theme == lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText,
+                                ]}
+                            >
+                                {t('recoverPassword')}
+                            </Text>
+                        </Pressable>
                     </View>
                 </View>
 
