@@ -180,7 +180,6 @@ export default function ChatList({ navigation, route }: Props) {
 
         function onOnline(usersOnline: string[]) {
             console.log("Users Online: ", usersOnline);
-            console.log("Route name: ", route.name);
             dispatch(updateOnlineUserIds(usersOnline));
         }
 
@@ -254,7 +253,7 @@ export default function ChatList({ navigation, route }: Props) {
         }
         return () => {
             if (socket != null) {
-                socket.off("usersOnline", onOnline);
+                socket.off("userOnline", onOnline);
                 socket.off("userOffline", onOffline);
                 socket.off("receivedMessage", onReceivedMessage);
                 socket.off("sendFriendRequest", onSendFriendRequest);
@@ -284,11 +283,6 @@ export default function ChatList({ navigation, route }: Props) {
         _id,
         conversationName,
     }: callInComingInterface) {
-        console.log("Sender: ", sender);
-        console.log("Users: ", users);
-        console.log("Type: ", type);
-        console.log("_id: ", _id);
-        console.log("Conversation Name: ", conversationName);
         if (!isInCall) {
             navigation.navigate("CallIncoming", {
                 sender,
@@ -348,7 +342,6 @@ export default function ChatList({ navigation, route }: Props) {
         }
     }
     function handleShowMessagePreview(message: IMessageItem) {
-
         if (message.files.some((file) => file.type.includes("image"))) {
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
@@ -406,60 +399,60 @@ export default function ChatList({ navigation, route }: Props) {
         } else if (message.sticker) {
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
-                <Image
-                    source={require("../../assets/image-fill-icon.png")}
-                    resizeMode="contain"
-                    style={{ width: 15, height: 15 }}
-                    tintColor={
-                        theme === lightMode
-                            ? commonStyles.lightSecondaryText.color
-                            : commonStyles.darkSecondaryText.color
-                    }
-                />
-                <Text
-                    numberOfLines={1}
-                    style={[
-                        styles.chatListHistoryPrevContent,
-                        theme === lightMode
-                            ? commonStyles.lightSecondaryText
-                            : commonStyles.darkSecondaryText,
-                    ]}
-                >
-                    {t("chatDetailStickerTitle")}
-                </Text>
-            </View>
+                    <Image
+                        source={require("../../assets/image-fill-icon.png")}
+                        resizeMode="contain"
+                        style={{ width: 15, height: 15 }}
+                        tintColor={
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryText.color
+                                : commonStyles.darkSecondaryText.color
+                        }
+                    />
+                    <Text
+                        numberOfLines={1}
+                        style={[
+                            styles.chatListHistoryPrevContent,
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryText
+                                : commonStyles.darkSecondaryText,
+                        ]}
+                    >
+                        {t("chatDetailStickerTitle")}
+                    </Text>
+                </View>
             );
         } else if (!!message.notification?.type) {
-         
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
-                <Image
-                    source={require("../../assets/image-fill-icon.png")}
-                    resizeMode="contain"
-                    style={{ width: 15, height: 15 }}
-                    tintColor={
-                        theme === lightMode
-                            ? commonStyles.lightSecondaryText.color
-                            : commonStyles.darkSecondaryText.color
-                    }
-                />
-                <Text
-                    numberOfLines={1}
-                    style={[
-                        styles.chatListHistoryPrevContent,
-                        theme === lightMode
-                            ? commonStyles.lightSecondaryText
-                            : commonStyles.darkSecondaryText,
-                    ]}
-                >
-                    {t("chatDetailNotificationTitle")}
-                </Text>
-            </View>
-            )
+                    <Image
+                        source={require("../../assets/image-fill-icon.png")}
+                        resizeMode="contain"
+                        style={{ width: 15, height: 15 }}
+                        tintColor={
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryText.color
+                                : commonStyles.darkSecondaryText.color
+                        }
+                    />
+                    <Text
+                        numberOfLines={1}
+                        style={[
+                            styles.chatListHistoryPrevContent,
+                            theme === lightMode
+                                ? commonStyles.lightSecondaryText
+                                : commonStyles.darkSecondaryText,
+                        ]}
+                    >
+                        {t("chatDetailNotificationTitle")}
+                    </Text>
+                </View>
+            );
         } else {
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
                     <Text
+                        numberOfLines={1}
                         style={[
                             styles.chatListHistoryPrevContent,
                             theme === lightMode
@@ -1117,7 +1110,7 @@ export default function ChatList({ navigation, route }: Props) {
                     >
                         {myConversations.length > 0 &&
                             myConversations.map((conversation, index) => {
-                                return (
+                                return conversation.lastMessage ? (
                                     <TouchableOpacity
                                         onPress={() =>
                                             handleNavigateToChatDetail(
@@ -1281,6 +1274,8 @@ export default function ChatList({ navigation, route }: Props) {
                                             )}
                                         </View>
                                     </TouchableOpacity>
+                                ) : (
+                                    <></>
                                 );
                             })}
                         {/* <TouchableOpacity

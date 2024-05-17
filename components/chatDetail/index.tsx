@@ -4,8 +4,8 @@ import {
     StatusBar,
     SafeAreaView,
     Image,
-    ScrollView,
 } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { styles } from "./styles";
 import { useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";

@@ -808,8 +808,9 @@ function ChatDetailBottom({
             <EmojiPicker
                 open={showEmojiPicker}
                 onEmojiSelected={(emoji) => {
-                    setTextMessage(textMessage + emoji.emoji);
+                    setTextMessage(prev => prev + emoji.emoji)
                 }}
+                allowMultipleSelections={true}
                 onClose={() => setShowEmojiPicker(false)}
                 enableSearchBar
                 enableRecentlyUsed

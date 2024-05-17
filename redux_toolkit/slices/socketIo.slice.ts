@@ -20,6 +20,9 @@ const socketIoSlice = createSlice({
             state.socket = socketSingleTon
             state.socket.connect()
 
+            console.log("online::::", action.payload.friendIds);
+            
+
             state.socket.emit("online", {
                 userId: action.payload.userId,
                 friendIds: action.payload.friendIds,
