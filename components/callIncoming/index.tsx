@@ -56,6 +56,9 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
     }
 
     function isGroup(){
+        if (!users){
+            return false;
+        }
         return !users.some(user => user.name === conversationName) 
     }
 
@@ -64,13 +67,13 @@ export default function CallIncoming({ navigation, route }: CallIncomingProps) {
         return () => {
             socket.off("missedCall", onMissedCall)
         }
-    }, [])
+    }, [_id, type, socket])
     
-    function onMissedCall({missedUserIds, _id, conversationName }: {
-        missedUserIds: string[],
+    function onMissedCall({ _id, conversationName }: {
         _id: string,
         conversationName: string
     }){
+        console.log("missed call")
         navigation.goBack();
     }
 

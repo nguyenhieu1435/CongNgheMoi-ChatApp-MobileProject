@@ -529,6 +529,23 @@ function DetailSearchPopUpSearchNotEmpty({
                 }),
             });
             if (response.ok) {
+                const data = await response.json();
+                socket.emit("sendFriendRequest", {
+                    _id: data._id,
+                    receiver_id: userId,
+                    blockView: false,
+                    message: "Hello, I want to be your friend",
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                    sender_id: {
+                        _id: userInfo.user?._id,
+                        name: userInfo.user?.name,
+                        avatar: userInfo.user?.avatar,
+                        background: userInfo.user?.background,
+                        dateOfBirth: userInfo.user?.dateOfBirth,
+                        gender: userInfo.user?.gender
+                    }
+                })
 
                 const requestFriendList = await getUserInRequestFriendList();
                 setRequestFriendList(requestFriendList);

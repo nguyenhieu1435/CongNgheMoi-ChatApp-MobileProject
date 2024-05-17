@@ -108,6 +108,7 @@
     "chatDetailImageTitle": "[Image] ",
     "chatDetailFileTitle": "[File] ",
     "chatDetailStickerTitle": "[Sticker] ",
+    "chatDetailNotificationTitle": "[Notification] ",
     "chatDetailSendTextPlaceholder": "Enter Message...",
     "chatDetailReadyUploadTitle": "Ready to upload!",
     "chatDetaildMoreViewProfileTitle": "Optional",

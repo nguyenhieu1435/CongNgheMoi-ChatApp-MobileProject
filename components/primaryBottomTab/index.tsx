@@ -17,6 +17,7 @@ import { LINK_GET_MY_FRIENDS } from '@env';
 import { IMessageItem, IUserIsMyFriendsResult } from '../../configs/interfaces';
 import { setSocket } from '../../redux_toolkit/slices/socketIo.slice';
 import { updateFriends } from '../../redux_toolkit/slices/onlineUserIds.slice';
+import OutsidePressHandler from 'react-native-outside-press';
 
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get("window")
@@ -61,21 +62,13 @@ export default function PrimaryBottomTab({navigation, route} : Props) {
             
         }
         return ()=> {
+
             // if (socket){
             //     socket.off("receivedAddFriend", onReceivedRequestAddFriend)
             //     socket.off("onReceivedMessage", onReceivedMessage)
             // }
         }
     }, [socket])
-
-    function onReceivedRequestAddFriend(notification: string) {
-        console.log("Received add friend: ", notification)
-
-    }
-
-    function onReceivedMessage(message : IMessageItem) {
-        console.log("Received message: ", message)
-    }
 
     
 
@@ -103,18 +96,20 @@ export default function PrimaryBottomTab({navigation, route} : Props) {
     }
 
     console.log("Calling at PrimaryBottomTab")
-
+    console.log("statusBarHeight: ", statusBarHeight);
+    
     return (
         <View
             style={{
                 width,
-                height: height - statusBarHeight,
+                height: height,
+                position: "relative",
             }}
         >
             
             <Tab.Navigator
                 tabBar={(props) => <TabBarCustomize  props={props} theme={theme} navigation={navigation}/>
-                    
+                
             }
             initialRouteName='ChatList'
                 screenOptions={{headerShown: false,
@@ -159,6 +154,10 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
             activeOpacity={1}
             onPress={()=> setToggleShowLogout(false)}
             style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -455,7 +454,8 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                 {
                     toggleShowLogout
                     &&
-                    <View
+                    <OutsidePressHandler
+                        onOutsidePress={()=> setToggleShowLogout(false)}
                         style={[{position: "absolute",
                             bottom: 55,
                             right: 10,
@@ -502,7 +502,7 @@ function TabBarCustomize(tabbarProps : TabBarCustomizeProps){
                                 }
                             />
                         </TouchableOpacity>
-                    </View>
+                    </OutsidePressHandler>
                 }
             </View>
          </TouchableOpacity>

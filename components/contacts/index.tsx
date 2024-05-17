@@ -63,8 +63,8 @@ export default function Contacts({ navigation, route }: ContactsProps) {
         ContactTypeFilter.FRIEND
     );
     const userInfo = useSelector((state: IRootState) => state.userInfo);
-
     const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
+
 
     useEffect(()=>{
         setTextSearch("")
@@ -245,7 +245,7 @@ export default function Contacts({ navigation, route }: ContactsProps) {
                 <View
                     style={[styles.contactDetailFriendListOrGroupListWrapper]}
                 >
-                    {typeFilterSelected === ContactTypeFilter.FRIEND ? (
+                    {typeFilterSelected === ContactTypeFilter.FRIEND && (
                         <FriendScrollBox
                             translation={t}
                             theme={theme}
@@ -256,9 +256,10 @@ export default function Contacts({ navigation, route }: ContactsProps) {
                             }}
                             navigation={navigation}
                             userInfo={userInfo}
-                            route={route}
+                          
                         />
-                    ) : (
+                    )}
+                    {typeFilterSelected === ContactTypeFilter.GROUP && (
                         <GroupScrollBox
                             translation={t}
                             theme={theme}
@@ -289,7 +290,6 @@ interface FriendScrollBoxProps {
     style: object;
     navigation: any;
     userInfo: userInfoInterfaceI;
-    route: any;
 }
 export interface ISectionFriendData {
     title: string;
@@ -301,7 +301,6 @@ function FriendScrollBox({
     style,
     navigation,
     userInfo,
-    route
 }: FriendScrollBoxProps) {
     const [indexPopupSelected, setIndexPopupSelected] = useState<string | null>(
         null
@@ -317,6 +316,8 @@ function FriendScrollBox({
     const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function getFriendList() {
+        console.log("Call getFriendList");
+        
         try {
             const response = await fetch(LINK_GET_MY_FRIENDS, {
                 method: "GET",
@@ -377,20 +378,62 @@ function FriendScrollBox({
         });
     }
 
+    function onAcceptFriendRequest({ _id, user }: any) {
+
+        const newFriend = {
+            avatar: user.avatar,
+            name: user.name,
+            _id: user._id,
+        } as IUserResultSearch;
+
+        console.log("New friend", newFriend);
+        
+
+        setSectionFriendList((prev) => {
+            const firstChar = newFriend.name[0].toUpperCase();
+            const index = prev.findIndex(
+                (section) => section.title === firstChar
+            );
+            if (index !== -1) {
+                prev[index].data.push(newFriend);
+                return [...prev];
+            } else {
+                return [
+                    ...prev,
+                    {
+                        title: firstChar,
+                        data: [newFriend],
+                    },
+                ];
+            }
+        });
+    }
+
     useEffect(() => {
 
         socket.on("connect", onConnect);
         socket.on("deleteFriend", onReceivedDeleteFriend);
+        socket.on("acceptFriend", onAcceptFriendRequest);
 
         return () => {
             socket.off("connect", onConnect);
             socket.off("deleteFriend", onReceivedDeleteFriend);
+            socket.off("acceptFriend", onAcceptFriendRequest);
         };
-    }, [sectionFriendList]);
-
+    }, [sectionFriendList]);;
+    
     useEffect(()=>{
         getFriendList();
-    }, [route.params, friendOnline])
+    }, [friendOnline])
+
+    // useEffect(()=>{
+    //     if (previousFromChild.current != isBackChildLayout && isBackChildLayout){ 
+    //         getFriendList();
+    //         previousFromChild.current = isBackChildLayout;
+    //     }  
+    // }, [isBackChildLayout])
+
+    
 
     async function handleCallFriend(friend: IUserResultSearch, type: string) {
         try {
@@ -1470,6 +1513,8 @@ function GroupScrollBox({
 }: GroupScrollBoxProps) {
     const [myGroups, setMyGroups] = useState<IGroupConversation[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
+
 
     async function getMyGroupList() {
         try {
@@ -1493,7 +1538,27 @@ function GroupScrollBox({
     }
     useEffect(() => {
         getMyGroupList();
-    }, []);
+
+        socket.on("addOrUpdateConversation", onAddOrUpdateConversation);
+
+        return () => {
+            socket.off("addOrUpdateConversation", onAddOrUpdateConversation);
+        };
+
+    }, [myGroups]);
+
+    function onAddOrUpdateConversation({conversation} : {conversation: IConversation}){
+        setMyGroups((prev) => {
+            const index = prev.findIndex((group) => group._id === conversation._id);
+            if(index !== -1){
+                prev[index] = conversation as IGroupConversation;
+                return [...prev];
+            }else{
+                return [...prev, conversation as IGroupConversation];
+            }
+        })
+
+    }
 
     // function handleNavigateToGroupDetail(group: IGroupConversation){
     //     try {

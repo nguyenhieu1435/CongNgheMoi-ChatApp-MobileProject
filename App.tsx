@@ -248,6 +248,7 @@ export default function App() {
                                 name="ChangePassword"
                                 component={ChangePassword}
                             />
+                            
                         </Stack.Navigator>
                     </NavigationContainer>
                 </ActionSheetProvider>

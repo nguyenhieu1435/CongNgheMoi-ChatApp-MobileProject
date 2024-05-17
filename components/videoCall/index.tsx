@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import AgoraUIKit from 'agora-rn-uikit';
+import AgoraUIKit, { DualStreamMode, StreamFallbackOptions } from 'agora-rn-uikit';
 import { AGORA_APP_ID } from "@env";
 import { useDispatch, useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
@@ -33,7 +33,6 @@ export default function VideoCall({ navigation, route }: VideoCallProps) {
         EndCall: onEndCall,
         UserJoined: onUserJoined,
         UserOffline: onUserOffline,
-
     };
 
     function onUserJoined(...rest: any) {
@@ -82,9 +81,10 @@ export default function VideoCall({ navigation, route }: VideoCallProps) {
             <AgoraUIKit 
                 settings={{
                     displayUsername: true,
+                    activeSpeaker: true,
+                    
                 }}
                 connectionData={connectionData} rtcCallbacks={rtcCallbacks} 
-
             />
         </View>
     )

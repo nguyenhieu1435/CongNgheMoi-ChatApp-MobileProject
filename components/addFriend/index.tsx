@@ -39,6 +39,7 @@ export default function AddFriend({ navigation }: AddFriendProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const user = useSelector((state: IRootState) => state.userInfo);
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function handleCheckAndAddFriend() {
         setIsLoading(true);
@@ -90,9 +91,28 @@ export default function AddFriend({ navigation }: AddFriendProps) {
                 },
                 body: JSON.stringify({
                     friendId: friendIdRequest,
+                    message: "Hello, I want to be your friend",
+                    blockView: false,
                 }),
             });
             if (response.ok) {
+                const data = await response.json();
+                socket.emit("sendFriendRequest", {
+                    _id: data._id,
+                    receiver_id: friendIdRequest,
+                    blockView: false,
+                    message: "",
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                    sender_id: {
+                        _id: user.user?._id,
+                        name: user.user?.name,
+                        avatar: user.user?.avatar,
+                        background: user.user?.background,
+                        dateOfBirth: user.user?.dateOfBirth,
+                        gender: user.user?.gender
+                    }
+                })
                 Alert.alert(t("notificationTitle"), t("addFriendRequestSent"));
             }
         } catch (error) {

@@ -48,12 +48,12 @@ import {
 } from "../../redux_toolkit/slices/onlineUserIds.slice";
 import { schedulePushNotification } from "../../App";
 
-interface callInComingInterface{
-    sender: ISenderInCallComing,
-    users: IUserInConversation[],
-    type: string,
-    _id: string,
-    conversationName: string
+interface callInComingInterface {
+    sender: ISenderInCallComing;
+    users: IUserInConversation[];
+    type: string;
+    _id: string;
+    conversationName: string;
 }
 
 type Props = {
@@ -105,8 +105,10 @@ export default function ChatList({ navigation, route }: Props) {
     }
 
     const setTextSearchDebounce = useCallback(debounce(setTextSearch, 500), []);
-    const isInCall = useSelector((state: IRootState) => state.isInCall.isInCall);
-    
+    const isInCall = useSelector(
+        (state: IRootState) => state.isInCall.isInCall
+    );
+
     async function getFriendList() {
         try {
             const resp = await fetch(LINK_GET_MY_FRIENDS, {
@@ -116,10 +118,10 @@ export default function ChatList({ navigation, route }: Props) {
                     Authorization: "Bearer " + userInfo.accessToken,
                 },
             });
-            console.log("status: ", resp.status)
+            console.log("status: ", resp.status);
             if (resp.ok) {
-                const data = (await resp.json()) as IUserIsMyFriendsResult
-                
+                const data = (await resp.json()) as IUserIsMyFriendsResult;
+
                 setFriendList(data);
                 dispatch(updateFriends(data.friends.map((item) => item._id)));
             }
@@ -175,11 +177,10 @@ export default function ChatList({ navigation, route }: Props) {
         if (friendsOnline.friends.length === 0) {
             getFriendList();
         }
-       
-        function onOnline(usersOnline: string[]) {
 
+        function onOnline(usersOnline: string[]) {
             console.log("Users Online: ", usersOnline);
-            console.log("Route name: ", route.name)
+            console.log("Route name: ", route.name);
             dispatch(updateOnlineUserIds(usersOnline));
         }
 
@@ -194,7 +195,9 @@ export default function ChatList({ navigation, route }: Props) {
             );
         }
 
-        function sortConversationsByUpdatedTime(conversations: IConversation[]) {
+        function sortConversationsByUpdatedTime(
+            conversations: IConversation[]
+        ) {
             return conversations.sort((a, b) => {
                 return (
                     new Date(b.updatedAt).getTime() -
@@ -202,89 +205,107 @@ export default function ChatList({ navigation, route }: Props) {
                 );
             });
         }
-   
-        function onReceivedMessage(message : IMessageItem) {
-            console.log("Received message: ", JSON.stringify(message))
 
-            if (messageIdRef.current !== message._id){              
+        function onReceivedMessage(message: IMessageItem) {
+            console.log("Received message: ", JSON.stringify(message));
+
+            if (messageIdRef.current !== message._id) {
                 let newConversations = myConversations.map((conversation) => {
-                    let currentDate = new Date()
-                    currentDate.setMinutes(currentDate.getMinutes())
-                    if (conversation._id === message.conversation._id){
+                    let currentDate = new Date();
+                    currentDate.setMinutes(currentDate.getMinutes());
+                    if (conversation._id === message.conversation._id) {
                         return {
                             ...conversation,
                             lastMessage: message,
                             updatedAt: currentDate.toISOString(),
-                            unreadMessageCount: conversation.unreadMessageCount + 1
-                        }
+                            unreadMessageCount:
+                                conversation.unreadMessageCount + 1,
+                        };
                     } else {
-                        return conversation
+                        return conversation;
                     }
-                })
-                newConversations = sortConversationsByUpdatedTime(newConversations)
-                setMyConversations(newConversations)
+                });
+                newConversations =
+                    sortConversationsByUpdatedTime(newConversations);
+                setMyConversations(newConversations);
 
-
-                if (message.conversation.isGroup){
-                    schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name} trong nhóm ${message.conversation.name}`)
+                if (message.conversation.isGroup) {
+                    schedulePushNotification(
+                        t("notificationTitle"),
+                        `Có tin nhắn mới từ ${message.sender.name} trong nhóm ${message.conversation.name}`
+                    );
                 } else {
-                    schedulePushNotification(t("notificationTitle"), `Có tin nhắn mới từ ${message.sender.name}`)
+                    schedulePushNotification(
+                        t("notificationTitle"),
+                        `Có tin nhắn mới từ ${message.sender.name}`
+                    );
                 }
-                messageIdRef.current = message._id
+                messageIdRef.current = message._id;
             }
-
         }
 
-        
-        if (socket != null){
+        if (socket != null) {
             socket.on("usersOnline", onOnline);
             socket.on("userOffline", onOffline);
-            socket.on("receivedMessage", onReceivedMessage)
-            socket.on("sendFriendRequest", onSendFriendRequest)
-            socket.on("call", onReceivedCall)
-            socket.on("missedCall", onMissedCall)
+            socket.on("receivedMessage", onReceivedMessage);
+            socket.on("sendFriendRequest", onSendFriendRequest);
+            socket.on("call", onReceivedCall);
+            socket.on("missedCall", onMissedCall);
         }
         return () => {
-            if (socket != null){
+            if (socket != null) {
                 socket.off("usersOnline", onOnline);
                 socket.off("userOffline", onOffline);
-                socket.off("receivedMessage", onReceivedMessage)
-                socket.off("sendFriendRequest", onSendFriendRequest)
-                socket.off("call", onReceivedCall)
-                socket.off("missedCall", onMissedCall)
+                socket.off("receivedMessage", onReceivedMessage);
+                socket.off("sendFriendRequest", onSendFriendRequest);
+                socket.off("call", onReceivedCall);
+                socket.off("missedCall", onMissedCall);
             }
         };
     }, [route.name, isFocused, socket, isInCall]);
 
-    function onMissedCall({missedUserIds, _id, conversationName }: {
-        missedUserIds: string[],
-        _id: string,
-        conversationName: string
-    }){ 
-        const isNotGroup = !missedUserIds.some((userId) => userId === userInfo.user?._id)
-        schedulePushNotification(t("notificationTitle"), `Cuộc gọi nhỡ từ ${conversationName}`)
+    function onMissedCall({
+        _id,
+        conversationName,
+    }: {
+        _id: string;
+        conversationName: string;
+    }) {
+        schedulePushNotification(
+            t("notificationTitle"),
+            `Cuộc gọi nhỡ từ ${conversationName}`
+        );
     }
-    
-    function onReceivedCall({ sender, users, type, _id, conversationName  } : callInComingInterface){
-        console.log("Sender: ", sender)
-        console.log("Users: ", users)
-        console.log("Type: ", type)
-        console.log("_id: ", _id)
-        console.log("Conversation Name: ", conversationName )
-        if (!isInCall){
+
+    function onReceivedCall({
+        sender,
+        users,
+        type,
+        _id,
+        conversationName,
+    }: callInComingInterface) {
+        console.log("Sender: ", sender);
+        console.log("Users: ", users);
+        console.log("Type: ", type);
+        console.log("_id: ", _id);
+        console.log("Conversation Name: ", conversationName);
+        if (!isInCall) {
             navigation.navigate("CallIncoming", {
                 sender,
                 users,
                 type,
                 _id,
-                conversationName
-            })
+                conversationName,
+            });
         }
     }
 
-    function onSendFriendRequest(friendRequest : IReceivedRequestFriendList){
-        console.log("Received friend request: ", friendRequest)
-        schedulePushNotification(t("notificationTitle"), `${friendRequest.sender_id.name} đã gửi yêu cầu kết bạn!`)
+    function onSendFriendRequest(friendRequest: IReceivedRequestFriendList) {
+        console.log("Received friend request: ", friendRequest);
+        schedulePushNotification(
+            t("notificationTitle"),
+            `${friendRequest.sender_id.name} đã gửi yêu cầu kết bạn!`
+        );
     }
 
     function getDateFormated(date: string) {
@@ -306,8 +327,8 @@ export default function ChatList({ navigation, route }: Props) {
                 new Date(accurancyDate).getTime()) /
                 60000
         );
-        if (diffMinute === -1){
-            return "0" + " " + t("minutes")
+        if (diffMinute === -1) {
+            return "0" + " " + t("minutes");
         }
         if (diffMinute < 60) {
             return diffMinute + " " + t("minutes");
@@ -327,6 +348,7 @@ export default function ChatList({ navigation, route }: Props) {
         }
     }
     function handleShowMessagePreview(message: IMessageItem) {
+
         if (message.files.some((file) => file.type.includes("image"))) {
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
@@ -349,7 +371,7 @@ export default function ChatList({ navigation, route }: Props) {
                                 : commonStyles.darkSecondaryText,
                         ]}
                     >
-                        Images
+                        {t("chatDetailImageTitle")}
                     </Text>
                 </View>
             );
@@ -381,6 +403,59 @@ export default function ChatList({ navigation, route }: Props) {
                     </Text>
                 </View>
             );
+        } else if (message.sticker) {
+            return (
+                <View style={[styles.chatListHistoryPrevContentBox]}>
+                <Image
+                    source={require("../../assets/image-fill-icon.png")}
+                    resizeMode="contain"
+                    style={{ width: 15, height: 15 }}
+                    tintColor={
+                        theme === lightMode
+                            ? commonStyles.lightSecondaryText.color
+                            : commonStyles.darkSecondaryText.color
+                    }
+                />
+                <Text
+                    numberOfLines={1}
+                    style={[
+                        styles.chatListHistoryPrevContent,
+                        theme === lightMode
+                            ? commonStyles.lightSecondaryText
+                            : commonStyles.darkSecondaryText,
+                    ]}
+                >
+                    {t("chatDetailStickerTitle")}
+                </Text>
+            </View>
+            );
+        } else if (!!message.notification?.type) {
+         
+            return (
+                <View style={[styles.chatListHistoryPrevContentBox]}>
+                <Image
+                    source={require("../../assets/image-fill-icon.png")}
+                    resizeMode="contain"
+                    style={{ width: 15, height: 15 }}
+                    tintColor={
+                        theme === lightMode
+                            ? commonStyles.lightSecondaryText.color
+                            : commonStyles.darkSecondaryText.color
+                    }
+                />
+                <Text
+                    numberOfLines={1}
+                    style={[
+                        styles.chatListHistoryPrevContent,
+                        theme === lightMode
+                            ? commonStyles.lightSecondaryText
+                            : commonStyles.darkSecondaryText,
+                    ]}
+                >
+                    {t("chatDetailNotificationTitle")}
+                </Text>
+            </View>
+            )
         } else {
             return (
                 <View style={[styles.chatListHistoryPrevContentBox]}>
@@ -414,43 +489,49 @@ export default function ChatList({ navigation, route }: Props) {
     }
 
     function getFriendOnlineStatus() {
-       
         if (friendList == null || friendsOnline.friends.length === 0) {
             console.log(friendList);
             console.log(friendsOnline);
-            
+
             return [];
         }
-      
+
         return friendList.friends.filter((item) =>
             friendsOnline.onlineUserIds.includes(item._id)
         );
     }
 
-    async function handleOpenChatDetail(friend: IUserResultSearch){
+    async function handleOpenChatDetail(friend: IUserResultSearch) {
         try {
-            setIsLoading(true)
-            const conversationResponse = await fetch(LINK_GET_MY_CONVERSATIONS, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${userInfo.accessToken}`,
-                },
-                body: JSON.stringify({
-                    receiverUserId: friend._id
-                })
-            })
-            if (conversationResponse.ok){
-                const conversationData = await conversationResponse.json()
-                
-                handleNavigateToChatDetail(conversationData as IConversation, setIsLoading, userInfo, navigation)
+            setIsLoading(true);
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: friend._id,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData = await conversationResponse.json();
+
+                handleNavigateToChatDetail(
+                    conversationData as IConversation,
+                    setIsLoading,
+                    userInfo,
+                    navigation
+                );
             }
         } catch (error) {
-            console.log("error", error)
+            console.log("error", error);
         }
-        setIsLoading(false)
+        setIsLoading(false);
     }
-
 
     return (
         <View
@@ -508,12 +589,11 @@ export default function ChatList({ navigation, route }: Props) {
                                 ]}
                             >
                                 <TouchableOpacity
-                                    onPress={async () =>{
+                                    onPress={async () => {
                                         setShowHeaderMoreActionPopup(
                                             !showHeaderMoreActionPopup
-                                        )
-                                    }
-                                    }
+                                        );
+                                    }}
                                 >
                                     <Image
                                         source={require("../../assets/add-fill-icon.png")}
@@ -840,7 +920,9 @@ export default function ChatList({ navigation, route }: Props) {
                             return (
                                 <TouchableOpacity
                                     key={index}
-                                    onPress={() => handleOpenChatDetail(friendOnline)}
+                                    onPress={() =>
+                                        handleOpenChatDetail(friendOnline)
+                                    }
                                     style={[styles.friendActiveItem]}
                                 >
                                     <View
@@ -980,7 +1062,6 @@ export default function ChatList({ navigation, route }: Props) {
                                 ></View>
                             </View>
                         </TouchableOpacity> */}
-                        
                     </ScrollView>
                 </View>
                 <View style={[styles.chatListHistoryBox]}>
@@ -1057,7 +1138,13 @@ export default function ChatList({ navigation, route }: Props) {
                                                 {!conversation.isGroup ? (
                                                     <Image
                                                         source={{
-                                                            uri: conversation.users.find(item => item._id !== userInfo.user?._id)?.avatar,
+                                                            uri: conversation.users.find(
+                                                                (item) =>
+                                                                    item._id !==
+                                                                    userInfo
+                                                                        .user
+                                                                        ?._id
+                                                            )?.avatar,
                                                         }}
                                                         resizeMode="contain"
                                                         style={{
