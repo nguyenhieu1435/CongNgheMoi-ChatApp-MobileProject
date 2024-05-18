@@ -90,6 +90,7 @@ export default function ChatList({ navigation, route }: Props) {
     );
     const socket = useSelector((state: IRootState) => state.socketIo.socket);
     const messageIdRef = useRef<string | null>(null);
+    const prevUserInfoRef = useRef("");
 
     async function handleToggleModalScanQRCode() {
         if (showModalScanQRCode) {
@@ -171,10 +172,11 @@ export default function ChatList({ navigation, route }: Props) {
         ) {
             getMyConversations();
         }
-    }, [route.name, isFocused]);
+    }, [route.name, isFocused, userInfo]);
 
     useEffect(() => {
-        if (friendsOnline.friends.length === 0) {
+        if (friendsOnline.friends.length === 0 || prevUserInfoRef.current !== userInfo?.user?._id) {
+            prevUserInfoRef.current = userInfo?.user?._id || "";
             getFriendList();
         }
 
@@ -261,7 +263,7 @@ export default function ChatList({ navigation, route }: Props) {
                 socket.off("missedCall", onMissedCall);
             }
         };
-    }, [route.name, isFocused, socket, isInCall]);
+    }, [route.name, isFocused, socket, isInCall, userInfo?.user?._id]);
 
     function onMissedCall({
         _id,
@@ -482,9 +484,10 @@ export default function ChatList({ navigation, route }: Props) {
     }
 
     function getFriendOnlineStatus() {
+        console.log("getFriendOnlineStatus-friendList", friendList);
+        console.log("getFriendOnlineStatus-friendsOnline", friendsOnline);
+        
         if (friendList == null || friendsOnline.friends.length === 0) {
-            console.log(friendList);
-            console.log(friendsOnline);
 
             return [];
         }
@@ -910,6 +913,7 @@ export default function ChatList({ navigation, route }: Props) {
                         style={[styles.friendsActiveListBox]}
                     >
                         {getFriendOnlineStatus().map((friendOnline, index) => {
+                            console.log("getFriendOnlineStatus", friendOnline);
                             return (
                                 <TouchableOpacity
                                     key={index}

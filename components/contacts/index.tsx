@@ -316,7 +316,6 @@ function FriendScrollBox({
     const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function getFriendList() {
-        console.log("Call getFriendList");
         
         try {
             const response = await fetch(LINK_GET_MY_FRIENDS, {
@@ -424,7 +423,7 @@ function FriendScrollBox({
     
     useEffect(()=>{
         getFriendList();
-    }, [friendOnline])
+    }, [friendOnline, userInfo])
 
     // useEffect(()=>{
     //     if (previousFromChild.current != isBackChildLayout && isBackChildLayout){ 

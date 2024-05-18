@@ -1,9 +1,9 @@
-declare module "@env" {
+declare module '@env' {
     export const LINK_NAMED_POLICY: string;
     export const LINK_USING_TERM: string;
     export const LINK_SOCIAL_TERM: string;
     export const LINK_REGISTER_POST: string;
-    export const LINK_UPDATE_IMAGE:string;
+    export const LINK_UPDATE_IMAGE: string;
     export const SQLITE_DB_NAME: string;
     export const LINK_SIGN_IN_ENCRYPT: string;
     export const LINK_CREATE_OTP: string;
@@ -14,11 +14,11 @@ declare module "@env" {
     export const LINK_SEND_MESSAGE: string;
     export const LINK_SEARCH_USER: string;
     export const LINK_GET_MY_FRIENDS: string;
-    export const LINK_REQUEST_ADD_FRIEND : string;
-    export const LINK_ACCEPT_FRIEND_REQUEST : string;
+    export const LINK_REQUEST_ADD_FRIEND: string;
+    export const LINK_ACCEPT_FRIEND_REQUEST: string;
     export const LINK_DELETE_FRIEND: string;
-    export const LINK_REQUEST_FRIEND_LIST : string;
-    export const LINK_REVOCATION_REQUEST_FRIEND : string;
+    export const LINK_REQUEST_FRIEND_LIST: string;
+    export const LINK_REVOCATION_REQUEST_FRIEND: string;
     export const LINK_GET_MY_CONVERSATIONS: string;
     export const LINK_SOCKET_IO: string;
     export const LINK_REQUEST_FRIEND_WAIT_RESPONSE: string;
@@ -39,4 +39,6 @@ declare module "@env" {
     export const AGORA_APP_ID: string;
     export const LINK_USER_METHOD: string;
     export const LINK_AUTH_METHOD: string;
+    export const LINK_SEND_OTP_FORGOT_PASSWORD: string;
+    export const LINK_FORGOT_PASSWORD: string;
 }

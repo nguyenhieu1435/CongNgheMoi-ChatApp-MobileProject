@@ -1,0 +1,215 @@
+import { StyleSheet } from 'react-native';
+import commonStyles from '../../../CommonStyles/commonStyles';
+
+export const styles = StyleSheet.create({
+    wrapperAll: {
+        flex: 1,
+    },
+    navigationTabBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        backgroundColor: commonStyles.primaryColor.color,
+    },
+    btnReturnInitialPage: {
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    currentTabName: {
+        color: commonStyles.darkPrimaryText.color,
+        fontSize: 18,
+        fontWeight: '500',
+        marginLeft: 10,
+    },
+    mainContentContainer: {
+        flex: 1,
+        // marginTop: '-50%',
+        flexGrow: 1,
+        flexShrink: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    mainContentTopBox: {
+        flex: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mainContentTopBoxTitle: {
+        fontSize: 24,
+        fontWeight: '500',
+        textAlign: 'center',
+        marginTop: 15,
+    },
+    mainContentTopBoxDesc: {
+        width: '80%',
+        textAlign: 'center',
+        fontSize: 16,
+        marginTop: 14,
+    },
+    mainContentTopExpireTitle: {
+        fontSize: 16,
+        fontWeight: '500',
+        textAlign: 'center',
+        marginTop: 15,
+    },
+    mainContentBottomBox: {
+        marginTop: 30,
+        flex: 4,
+        alignItems: 'center',
+    },
+    inputVerifyCode: {
+        paddingVertical: 10,
+        width: '100%',
+        textAlign: 'center',
+        borderWidth: 1,
+        borderRadius: 4,
+        fontSize: 16,
+    },
+    inputVerifyCodeErrMsg: {
+        position: 'absolute',
+        bottom: -38,
+        fontSize: 14,
+        color: commonStyles.redPrimaryColor.color,
+        textAlign: 'left',
+        left: 0,
+    },
+    submitVerifyCodeBtn: {
+        width: '80%',
+        alignItems: 'center',
+        backgroundColor: commonStyles.primaryColor.color,
+        borderRadius: 4,
+        paddingVertical: 10,
+    },
+    submitVerifyCodeBtnText: {
+        color: commonStyles.lightFourBackground.backgroundColor,
+        fontSize: 16,
+        width: '100%',
+        textAlign: 'center',
+        borderRadius: 4,
+        textTransform: 'uppercase',
+    },
+    descriptionForThisPage: {
+        fontSize: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+    },
+    boxDescStatusSendingMsg: {
+        alignItems: 'center',
+        marginTop: 25,
+    },
+    boxIconStatusSendMsg: {
+        width: 60,
+        height: 60,
+        borderWidth: 2,
+        borderRadius: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: '#ccc',
+    },
+    iconStatusSendMsg: {
+        fontSize: 35,
+        color: commonStyles.primaryColor.color,
+        padding: 5,
+    },
+    callingToTitle: {
+        fontWeight: '500',
+        fontSize: 17,
+        marginTop: 20,
+    },
+    callingToTips: {
+        fontSize: 16,
+        marginTop: 10,
+        fontWeight: '500',
+    },
+    boxListInputOTPWrapper: {
+        marginTop: 25,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 30,
+        justifyContent: 'space-between',
+    },
+    passwordContainer: {
+        width: '100%',
+        alignItems: 'center',
+    },
+    passwordContainerChild: {
+        marginTop: 40,
+        width: '80%',
+        marginBottom: 20,
+    },
+    passwordTitleText: {
+        fontSize: 17,
+    },
+    passwordInputWrapperRow: {
+        flexDirection: 'row',
+        marginTop: 16,
+        position: 'relative',
+    },
+    passwordInput: {
+        fontSize: 15,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        flex: 1,
+        paddingRight: 30,
+    },
+    boxIconToggleShowPassword: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+    },
+    iconToggleShowPassword: {
+        width: 20,
+        height: 20,
+        resizeMode: 'contain',
+    },
+    textErrMsg: {
+        fontSize: 14,
+        marginTop: 5,
+        color: 'red',
+    },
+    boxWrapperBtnNext: {
+        width: '100%',
+        alignItems: 'center',
+        marginTop: 30,
+    },
+    btnNextPage: {
+        width: '55%',
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    textBtnNextPage: {
+        textAlign: 'center',
+        fontSize: 18,
+    },
+    formPhoneContainer: {
+        paddingHorizontal: 15,
+        marginTop: 25,
+        marginBottom: 35,
+        // flexGrow: 1,
+    },
+    boxInputZaloName: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    inputZaloName: {
+        flex: 1,
+        paddingVertical: 10,
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    btnDeleteTextInputZaloName: {
+        padding: 10,
+    },
+    textDescCheckBox: {
+        marginTop: 30,
+        fontWeight: '500',
+        color: commonStyles.primaryColor.color,
+    },
+});
