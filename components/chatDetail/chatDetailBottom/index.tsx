@@ -7,6 +7,7 @@ import {
     Animated,
     Easing,
     ActivityIndicator,
+    Dimensions,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { styles } from "./styles";
@@ -55,6 +56,8 @@ interface ChatDetailBottomProps {
     setMessageHistory: Dispatch<SetStateAction<IMessageItem[]>>;
     conversation: IConversation;
 }
+
+const {width : WIDTH} = Dimensions.get("window");
 
 function ChatDetailBottom({
     theme,
@@ -907,16 +910,28 @@ function ChatDetailBottom({
                                                                 key={index2}
                                                                 style={[
                                                                     styles.itemStickerBox,
+                                                                    {
+                                                                        width: (WIDTH - 30 - 15 - 10) / 4 
+                                                                    }
                                                                 ]}
                                                             >
-                                                                <Image
-                                                                    source={{
-                                                                        uri: stickerDetail?.spriteURL,
+                                                                <View
+                                                                    style={{
+                                                                        position: "relative",
+                                                                        width: "100%",
+                                                                        height: 80,
+                                                                        overflow: "hidden",
                                                                     }}
-                                                                    style={[
-                                                                        styles.itemStickerBoxImage,
-                                                                    ]}
-                                                                />
+                                                                >
+                                                                    <Image
+                                                                        source={{
+                                                                            uri: stickerDetail?.spriteURL,
+                                                                        }}
+                                                                        style={[
+                                                                            styles.itemStickerBoxImage,
+                                                                        ]}
+                                                                    />
+                                                                </View>
                                                             </TouchableOpacity>
                                                         );
                                                     })

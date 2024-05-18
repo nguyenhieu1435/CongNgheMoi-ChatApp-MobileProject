@@ -2317,6 +2317,7 @@ export default function ChatList({ navigation, route }: Props) {
                 isPressOutsideTextInput={isOutsideTextInput}
                 heightFromHeaderToInput={heightPopup}
                 setHeightFromHeaderToInput={setHeightPopup}
+                navigation={navigation}
             />
         </View>
     );

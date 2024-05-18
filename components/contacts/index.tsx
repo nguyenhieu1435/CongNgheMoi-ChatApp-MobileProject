@@ -278,6 +278,7 @@ export default function Contacts({ navigation, route }: ContactsProps) {
                     textSearch={textSearch}
                     setTextSearch={setTextSearch}
                     setHeightFromHeaderToInput={setHeightPopup}
+                    navigation={navigation}
                 />
             </SafeAreaView>
         </View>

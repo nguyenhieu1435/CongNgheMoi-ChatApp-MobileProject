@@ -151,12 +151,23 @@ export const styles = StyleSheet.create({
         gap: 5
     },
     itemStickerBox:{
-        width: "24%",
+        // width: "23%",
         alignItems: "center",
         justifyContent: "center",
     },
     itemStickerBoxImage:{
-        width: "100%",
-        height: 80,
+        // width: 80,
+        // height: 80,
+        // position: "relative",
+        // left: 0,
+        // resizeMode: "cover",
+        // top: 0,
+        // objectFit: "cover",
+        width: 120,
+        height: 70,
+        aspectRatio: 5,
+        position: 'absolute',
+        left: 0,
+        top: 0,
     }
 })

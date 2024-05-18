@@ -17,6 +17,7 @@ import { TFunction, use } from "i18next";
 import { useEffect, useState } from "react";
 import OutsidePressHandler from "react-native-outside-press";
 import {
+    LINK_GET_MY_CONVERSATIONS,
     LINK_GET_MY_FRIENDS,
     LINK_REQUEST_ADD_FRIEND,
     LINK_REQUEST_FRIEND_LIST,
@@ -25,6 +26,7 @@ import {
 } from "@env";
 import Spinner from "react-native-loading-spinner-overlay";
 import {
+    IConversation,
     IRequestFriendList,
     IUserIsMyFriendsResult,
     IUserResultSearch,
@@ -35,6 +37,7 @@ import {
     insertUserSearched,
     selectTop5NewestUserSearched,
 } from "../../utils/sqlite";
+import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 
 interface SearchDetailPopupProps {
     textSearch: string;
@@ -42,6 +45,7 @@ interface SearchDetailPopupProps {
     heightFromHeaderToInput: number;
     isPressOutsideTextInput: boolean;
     setHeightFromHeaderToInput: (height: number) => void;
+    navigation: any;
 }
 
 export default function SearchDetailPopup({
@@ -49,12 +53,12 @@ export default function SearchDetailPopup({
     setTextSearch,
     heightFromHeaderToInput,
     isPressOutsideTextInput,
+    navigation,
 }: SearchDetailPopupProps) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
     const { t } = useTranslation();
     const { navigate, goBack } = useNavigation();
     const [isPressOutsidePopup, setIsPressOutsidePopup] = useState(false);
-    
 
     return (!isPressOutsideTextInput || !isPressOutsidePopup) &&
         heightFromHeaderToInput ? (
@@ -84,6 +88,7 @@ export default function SearchDetailPopup({
                         theme={theme}
                         navigate={navigate}
                         textSearch={textSearch}
+                        navigation={navigation}
                     />
                 ) : (
                     <DetailSearchPopUpSearchEmpty
@@ -118,7 +123,10 @@ function DetailSearchPopUpSearchEmpty({
             try {
                 const db = getDBConnection();
                 const table = await createUserSearchedTable(db);
-                const result = await selectTop5NewestUserSearched(db, userInfo.user?._id || "0");
+                const result = await selectTop5NewestUserSearched(
+                    db,
+                    userInfo.user?._id || "0"
+                );
                 const obj = result[0];
                 if ("rows" in obj) {
                     const userSearched: IUserResultSearch[] = [];
@@ -142,10 +150,13 @@ function DetailSearchPopUpSearchEmpty({
     }, []);
 
     return (
-        <View style={[styles.detailSearchPopUpSearchEmptyWrapper, {
-            borderWidth: 1
-        }]}
-        
+        <View
+            style={[
+                styles.detailSearchPopUpSearchEmptyWrapper,
+                {
+                    borderWidth: 1,
+                },
+            ]}
         >
             <ScrollView>
                 <View
@@ -369,6 +380,7 @@ interface DetailSearchPopUpSearchNotEmptyProps {
     theme: string;
     navigate: any;
     textSearch: string;
+    navigation: any;
 }
 
 function DetailSearchPopUpSearchNotEmpty({
@@ -376,15 +388,20 @@ function DetailSearchPopUpSearchNotEmpty({
     theme,
     navigate,
     textSearch,
+    navigation,
 }: DetailSearchPopUpSearchNotEmptyProps) {
     const [usersResult, setUsersResult] = useState<IUserResultSearch[]>([]);
-    const [myFriends, setMyFriends] = useState<IUserIsMyFriendsResult|null>(null);
+    const [myFriends, setMyFriends] = useState<IUserIsMyFriendsResult | null>(
+        null
+    );
     const [isLoading, setIsLoading] = useState(false);
     const [requestFriendList, setRequestFriendList] = useState<
         IRequestFriendList[]
     >([]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
-    const friendOnline = useSelector((state: IRootState) => state.onlineUserIds)
+    const friendOnline = useSelector(
+        (state: IRootState) => state.onlineUserIds
+    );
     const socket = useSelector((state: IRootState) => state.socketIo.socket);
 
     async function getUserInRequestFriendList() {
@@ -463,7 +480,7 @@ function DetailSearchPopUpSearchNotEmpty({
             if (response.ok) {
                 const data = await response.json();
                 console.log("getUsersIsMyFriends", data);
-                if (data === null){
+                if (data === null) {
                     return null;
                 }
                 const arrayData: IUserIsMyFriendsResult = {
@@ -503,11 +520,11 @@ function DetailSearchPopUpSearchNotEmpty({
     }, [textSearch]);
 
     function handleCheckUserIsFriend(userId: string) {
-        const result = myFriends?.friends.some((friend) => friend._id === userId) || false;
+        const result =
+            myFriends?.friends.some((friend) => friend._id === userId) || false;
         return result;
     }
     function checkIsRequestedFriend(userId: string) {
-      
         const result = requestFriendList.some(
             (request) => request.receiver_id?._id === userId
         );
@@ -543,9 +560,9 @@ function DetailSearchPopUpSearchNotEmpty({
                         avatar: userInfo.user?.avatar,
                         background: userInfo.user?.background,
                         dateOfBirth: userInfo.user?.dateOfBirth,
-                        gender: userInfo.user?.gender
-                    }
-                })
+                        gender: userInfo.user?.gender,
+                    },
+                });
 
                 const requestFriendList = await getUserInRequestFriendList();
                 setRequestFriendList(requestFriendList);
@@ -578,7 +595,7 @@ function DetailSearchPopUpSearchNotEmpty({
                 }),
             });
             if (response.ok) {
-                socket.emit("addFriend", userId)
+                socket.emit("addFriend", userId);
                 const requestFriendList = await getUserInRequestFriendList();
                 setRequestFriendList(requestFriendList);
             } else {
@@ -613,10 +630,97 @@ function DetailSearchPopUpSearchNotEmpty({
             throw error;
         }
     }
-    async function handleOpenChatDetail(receiverID: string) {}
+    async function handleOpenChatDetail(receivedId: string) {
+        try {
+            setIsLoading(true);
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: receivedId,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData = await conversationResponse.json();
+
+                handleNavigateToChatDetail(
+                    conversationData as IConversation,
+                    setIsLoading,
+                    userInfo,
+                    navigation
+                );
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
+        setIsLoading(false);
+    }
+    async function handleCallFriend(receiverId: string, type: string) {
+        try {
+            setIsLoading(true);
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: receiverId,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData =
+                    (await conversationResponse.json()) as IConversation;
+                setIsLoading(false);
+                if (type == "video") {
+                    socket.emit("call", {
+                        sender: userInfo.user,
+                        users: conversationData.users,
+                        type: "video",
+                        _id: conversationData._id,
+                        conversationName: conversationData.name,
+                    });
+                    navigation.navigate("VideoCall", {
+                        conversationId: conversationData._id,
+                        isGroup: conversationData.isGroup,
+                        conversationName: conversationData.name,
+                        users: conversationData.users,
+                        callInComing: false,
+                    });
+                } else {
+                    socket.emit("call", {
+                        sender: userInfo.user,
+                        users: conversationData.users,
+                        type: "audio",
+                        _id: conversationData._id,
+                        conversationName: conversationData.name,
+                    });
+                    navigation.navigate("AudioCall", {
+                        conversationId: conversationData._id,
+                        isGroup: conversationData.isGroup,
+                        conversationName: conversationData.name,
+                        users: conversationData.users,
+                        callInComing: false,
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
+        setIsLoading(false);
+    }
 
     // useEffect(()=>{
-        
+
     // }, [])
 
     return (
@@ -661,18 +765,18 @@ function DetailSearchPopUpSearchNotEmpty({
                                     styles.detailSearchPopUpSearchNotEmptyAllContactList,
                                 ]}
                             >
-
                                 {usersResult.map(
                                     (user: IUserResultSearch, index) => {
-                                        
                                         return (
                                             <TouchableOpacity
-                                                onPress={
-                                                    () =>
+                                                onPress={() => {
                                                     handleInsertUserSearchedToSQLite(
                                                         user
-                                                    )
-                                                }
+                                                    );
+                                                    handleOpenChatDetail(
+                                                        user._id
+                                                    );
+                                                }}
                                                 key={index}
                                                 style={[
                                                     styles.detailSearchPopUpSearchNotEmptyAllContactItem,
@@ -723,19 +827,52 @@ function DetailSearchPopUpSearchNotEmpty({
                                                     {handleCheckUserIsFriend(
                                                         user._id
                                                     ) ? (
-                                                        <TouchableOpacity
-                                                            onPress={() => {}}
-                                                            style={[
-                                                                styles.detailSearchPopUpSearchNotEmptyContactItemCallBtn,
-                                                            ]}
+                                                        <View
+                                                            style={{
+                                                                flexDirection:
+                                                                    "row",
+                                                                alignItems:
+                                                                    "center",
+                                                                gap: 10
+                                                            }}
                                                         >
-                                                            <Image
-                                                                source={require("../../assets/phone-fill-icon.png")}
+                                                            <TouchableOpacity
+                                                                onPress={() =>
+                                                                    handleCallFriend(
+                                                                        user._id,
+                                                                        "audio"
+                                                                    )
+                                                                }
                                                                 style={[
-                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemCallBtnIcon,
+                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemCallBtn,
                                                                 ]}
-                                                            />
-                                                        </TouchableOpacity>
+                                                            >
+                                                                <Image
+                                                                    source={require("../../assets/phone-fill-icon.png")}
+                                                                    style={[
+                                                                        styles.detailSearchPopUpSearchNotEmptyContactItemCallBtnIcon,
+                                                                    ]}
+                                                                />
+                                                            </TouchableOpacity>
+                                                            <TouchableOpacity
+                                                                onPress={() =>
+                                                                    handleCallFriend(
+                                                                        user._id,
+                                                                        "video"
+                                                                    )
+                                                                }
+                                                                style={[
+                                                                    styles.detailSearchPopUpSearchNotEmptyContactItemCallBtn,
+                                                                ]}
+                                                            >
+                                                                <Image
+                                                                    source={require("../../assets/vidicon-line-icon.png")}
+                                                                    style={[
+                                                                        styles.detailSearchPopUpSearchNotEmptyContactItemCallBtnIcon,
+                                                                    ]}
+                                                                />
+                                                            </TouchableOpacity>
+                                                        </View>
                                                     ) : checkIsRequestedFriend(
                                                           user._id
                                                       ) ? (
