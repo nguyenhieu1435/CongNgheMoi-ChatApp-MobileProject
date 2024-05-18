@@ -598,7 +598,7 @@ function DetailSearchPopUpSearchNotEmpty({
                 }),
             });
             if (response.ok) {
-                socket.emit("addFriend", userId);
+
                 const requestFriendList = await getUserInRequestFriendList();
                 setRequestFriendList(requestFriendList);
             } else {

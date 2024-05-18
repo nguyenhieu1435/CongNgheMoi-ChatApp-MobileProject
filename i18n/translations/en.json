@@ -210,6 +210,7 @@
     "contactInPhoneAllFilter": "All",
     "contactInPhoneNotFriendFilter": "Not friend",
     "contactInPhoneAddFriendTitle": "Add friend",
+    "contactInPhoneAddFriendUndoTitle": "Undo",
     "searchHistoryModificationTitle": "Search history modification",
     "searchHistoryModificationHistoryTitle": "Search History",
     "searchHistoryModificationSaveContactSearched": "Save contact searched",

@@ -43,6 +43,7 @@ import { useIsFocused } from "@react-navigation/native";
 import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
 import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 import {
+    removeFriendById,
     updateFriends,
     updateOnlineUserIds,
 } from "../../redux_toolkit/slices/onlineUserIds.slice";
@@ -175,7 +176,10 @@ export default function ChatList({ navigation, route }: Props) {
     }, [route.name, isFocused, userInfo]);
 
     useEffect(() => {
-        if (friendsOnline.friends.length === 0 || prevUserInfoRef.current !== userInfo?.user?._id) {
+        if (
+            friendsOnline.friends.length === 0 ||
+            prevUserInfoRef.current !== userInfo?.user?._id
+        ) {
             prevUserInfoRef.current = userInfo?.user?._id || "";
             getFriendList();
         }
@@ -252,6 +256,7 @@ export default function ChatList({ navigation, route }: Props) {
             socket.on("sendFriendRequest", onSendFriendRequest);
             socket.on("call", onReceivedCall);
             socket.on("missedCall", onMissedCall);
+            socket.on("deleteFriend", onDeleteFriend);
         }
         return () => {
             if (socket != null) {
@@ -261,10 +266,24 @@ export default function ChatList({ navigation, route }: Props) {
                 socket.off("sendFriendRequest", onSendFriendRequest);
                 socket.off("call", onReceivedCall);
                 socket.off("missedCall", onMissedCall);
+                socket.off("deleteFriend", onDeleteFriend);
             }
         };
     }, [route.name, isFocused, socket, isInCall, userInfo?.user?._id]);
 
+    function onDeleteFriend({ senderId }: { senderId: string }) {
+        console.log("Delete friend: ", senderId);
+        setFriendList((prev) => {
+            if (prev) {
+                return {
+                    ...prev,
+                    friends: prev.friends.filter((item) => item._id !== senderId),
+                };
+            }
+            return null;
+        })
+        dispatch(removeFriendById(senderId));
+    }
     function onMissedCall({
         _id,
         conversationName,
@@ -486,9 +505,8 @@ export default function ChatList({ navigation, route }: Props) {
     function getFriendOnlineStatus() {
         console.log("getFriendOnlineStatus-friendList", friendList);
         console.log("getFriendOnlineStatus-friendsOnline", friendsOnline);
-        
-        if (friendList == null || friendsOnline.friends.length === 0) {
 
+        if (friendList == null || friendsOnline.friends.length === 0) {
             return [];
         }
 

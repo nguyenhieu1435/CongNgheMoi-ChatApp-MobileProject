@@ -11,6 +11,8 @@ import {
     UIManager,
     LayoutAnimation,
     Animated,
+    Alert,
+    ActivityIndicator,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { IRootState } from "../../redux_toolkit/store";
@@ -20,8 +22,9 @@ import { lightMode } from "../../redux_toolkit/slices/theme.slice";
 import commonStyles from "../../CommonStyles/commonStyles";
 import { useEffect, useRef, useState } from "react";
 import * as Contacts from "expo-contacts";
-import { LINK_PHONE_BOOK } from "@env";
-import { IContactInServer, IUserInContact } from "../../configs/interfaces";
+import { LINK_GET_MY_CONVERSATIONS, LINK_PHONE_BOOK, LINK_REQUEST_ADD_FRIEND, LINK_REQUEST_FRIEND_LIST, LINK_REVOCATION_REQUEST_FRIEND } from "@env";
+import { IContactInServer, IConversation, IRequestFriendList, IUserInContact } from "../../configs/interfaces";
+import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
 
 interface IContactsInPhoneProps {
     navigation: any;
@@ -49,6 +52,10 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
     const [sectionAll, setSectionAll] = useState<ISectionContact[]>([]);
     const [sectionNotFriend, setSectionNotFriend] = useState<ISectionContact[]>([]);
     const [textSearch, setTextSearch] = useState<string>("");
+    const [usersIdRequestFriend, setUsersIdRequestFriend] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const socket = useSelector((state: IRootState) => state.socketIo.socket);
+    const [isLoadingNavigate, setIsLoadingNavigate] = useState<boolean>(false);
 
     if (Platform.OS === "android") {
         UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -129,7 +136,6 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
            
             
             if (resp.ok){
-                console.log(resp.status)
                 const data = await resp.json() as IContactInServer;
                 if (data.contacts.length > 0){
                     setContactsInPhoneList(data);
@@ -187,11 +193,71 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
         });
         setSectionNotFriend(sectionData);
     }
+    async function getUserInRequestFriendList() {
+        try {
+            const response = await fetch(LINK_REQUEST_FRIEND_LIST, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("getUserInRequestFriendList-----------: ", data);
+                const arrayData: string[] = [];
+                Array.isArray(data) &&
+                    data.forEach((element: any) => {
+                        arrayData.push(element.receiver_id._id);
+                    });
+                console.log("arrayData::RequestFriend: ", arrayData)
+
+                setUsersIdRequestFriend(arrayData);
+            } else {
+                setUsersIdRequestFriend([]);
+            }
+        } catch (error) {
+            setUsersIdRequestFriend([]);
+            throw error;
+        }
+
+    }
+    async function handleOpenChatDetail(friendId: string) {
+        try {
+           
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: friendId,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData = await conversationResponse.json();
+
+                handleNavigateToChatDetail(
+                    conversationData as IConversation,
+                    setIsLoadingNavigate,
+                    userInfo,
+                    navigation
+                );
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
+        
+    }
 
     useEffect(() => {
         // handleCheckIsHaveContactInDB();
         // handlePostContactToServer()
-
+        getUserInRequestFriendList();
         handleCheckIsHaveContactInDB();
     }, []);
 
@@ -200,9 +266,98 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
             classificationContactUserAll();
             classificationContactUserNotFriend();
         }
-    }, [contactsInPhoneList])
+    }, [contactsInPhoneList, usersIdRequestFriend])
 
-    console.log("sectionNotFriend: ", JSON.stringify(sectionNotFriend));
+    function checkIsInRequestFriendList(userId: string) {
+        console.log("Thao: ", userId);
+        
+        return usersIdRequestFriend.some(id => id === userId);
+    }
+
+    async function handleAddFriend(userId: string) {
+        try {
+            setIsLoading(true);
+            const response = await fetch(LINK_REQUEST_ADD_FRIEND, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+                body: JSON.stringify({
+                    friendId: userId,
+                    message: "Hello, I want to be your friend",
+                    blockView: false,
+                }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                socket.emit("sendFriendRequest", {
+                    _id: data._id,
+                    receiver_id: userId,
+                    blockView: false,
+                    message: "Hello, I want to be your friend",
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                    sender_id: {
+                        _id: userInfo.user?._id,
+                        name: userInfo.user?.name,
+                        avatar: userInfo.user?.avatar,
+                        background: userInfo.user?.background,
+                        dateOfBirth: userInfo.user?.dateOfBirth,
+                        gender: userInfo.user?.gender,
+                    },
+                });
+
+                setUsersIdRequestFriend([...usersIdRequestFriend, userId]);
+            } else {
+                Alert.alert("Error", "Add friend failed", [
+                    {
+                        text: "OK",
+                        onPress: () => {},
+                    },
+                ]);
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+        }
+        setIsLoading(false);
+    }
+    async function handleUndoAddFriend(userId: string) {
+        try {
+            setIsLoading(true);
+            const response = await fetch(LINK_REVOCATION_REQUEST_FRIEND, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + userInfo.accessToken,
+                },
+                body: JSON.stringify({
+                    friendId: userId,
+                }),
+            });
+            if (response.ok) {
+             
+                setUsersIdRequestFriend(prev => {
+                    return prev.filter(item => item !== userId)
+                })
+            } else {
+                Alert.alert("Error", "Undo add friend failed", [
+                    {
+                        text: "OK",
+                        onPress: () => {},
+                    },
+                ]);
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+        }
+        setIsLoading(false);
+    }
+
 
     function renderContactSectionItem({
         item,
@@ -212,7 +367,9 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
         index: number;
     }) {
         return (
-            <TouchableOpacity style={[styles.contactsInPhoneListContactItem]} key={index}>
+            <TouchableOpacity style={[styles.contactsInPhoneListContactItem]} key={index}
+                onPress={()=> handleOpenChatDetail(item._id)}
+            >
                 <Image
                     source={{
                         uri: item.avatar,
@@ -248,20 +405,62 @@ export default function ContactsInPhone({ navigation }: IContactsInPhoneProps) {
                     </Text>
                 </View>
                 {!item.isFriend && (
+                    checkIsInRequestFriendList(item._id) ? 
                     <TouchableOpacity
+                        onPress={() => handleUndoAddFriend(item._id)}
+                        disabled={isLoading}
                         style={[
                             styles.contactsInPhoneAddFriendBtn,
                             commonStyles.primaryColorBackground,
                         ]}
                     >
-                        <Text
+                        {
+                            isLoading 
+                            ?
+                            <ActivityIndicator
+                                style={{width: 55}}
+                                size={"small"}
+                                color={commonStyles.darkPrimaryText.color}
+                            />
+                            :
+                            <Text
                             style={[
                                 styles.contactsInPhoneBackBtnText,
                                 commonStyles.primaryColor,
                             ]}
                         >
-                            {t("contactInPhoneAddFriendTitle")}
+                            {t("contactInPhoneAddFriendUndoTitle")}
                         </Text>
+                        }
+                    </TouchableOpacity>
+                    :
+                    <TouchableOpacity
+                        onPress={() => handleAddFriend(item._id)}
+                        disabled={isLoading}
+                        style={[
+                            styles.contactsInPhoneAddFriendBtn,
+                            commonStyles.primaryColorBackground,
+                        ]}
+                    >
+                        {
+                            isLoading 
+                            ?
+                            <ActivityIndicator
+                                style={{width: 55}}
+                                size={"small"}
+                                color={commonStyles.darkPrimaryText.color}
+                            />
+                            :
+                            <Text
+                                style={[
+                                    styles.contactsInPhoneBackBtnText,
+                                    commonStyles.primaryColor,
+                                ]}
+                            >
+                                {t("contactInPhoneAddFriendTitle")}
+                            </Text>
+                        }
+                        
                     </TouchableOpacity>
                 )}
             </TouchableOpacity>

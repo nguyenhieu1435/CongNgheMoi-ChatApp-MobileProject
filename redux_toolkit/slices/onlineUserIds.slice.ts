@@ -18,9 +18,13 @@ const onlineUserIdsSlice = createSlice({
         },
         updateFriends: (state, action) => {
             state.friends = action.payload;
+        },
+        removeFriendById: (state, action)=>{
+            state.onlineUserIds = state.onlineUserIds.filter(friend => friend !== action.payload);
+            state.friends = state.friends.filter(friend => friend !== action.payload);
         }
     },
 })
 
-export const { updateOnlineUserIds, updateFriends } = onlineUserIdsSlice.actions;
+export const { updateOnlineUserIds, updateFriends, removeFriendById } = onlineUserIdsSlice.actions;
 export default onlineUserIdsSlice.reducer;
