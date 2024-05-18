@@ -244,6 +244,8 @@ export default function BottomSheetLeaveGroup({
                         ?
                         handleFilterUserByName().map((user, index) => {
                                 return (
+                                    user._id !== currentUser.user?._id
+                                    ?
                                     <View
                                         style={[styles.userInListItem]}
                                         key={index}
@@ -268,12 +270,16 @@ export default function BottomSheetLeaveGroup({
                                             value={user._id}
                                         />
                                     </View>
+                                    :
+                                    <></>
                                 );
                             })
                         :
                         conversation.users &&
                             conversation.users.map((user, index) => {
                                 return (
+                                    user._id !== currentUser.user?._id
+                                    ?
                                     <View
                                         style={[styles.userInListItem]}
                                         key={index}
@@ -298,6 +304,8 @@ export default function BottomSheetLeaveGroup({
                                             value={user._id}
                                         />
                                     </View>
+                                    :
+                                    <></>
                                 );
                             })
                     }
