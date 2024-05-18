@@ -209,6 +209,8 @@ export default function BottomSheetLeaveGroup({
                     setHeightScrollView(null);
                 }
             }}
+            enablePanDownToClose={true}
+            onClose={() => setVisible(false)}
             snapPoints={[540, "100%"]}
             containerStyle={{ zIndex: 200, backgroundColor: "rgba(0,0,0,0.3)" }}
         >

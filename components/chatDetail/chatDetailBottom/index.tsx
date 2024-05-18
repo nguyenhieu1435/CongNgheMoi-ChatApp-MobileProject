@@ -853,6 +853,7 @@ function ChatDetailBottom({
                     snapPoints={[440, "100%"]}
                     enablePanDownToClose={true}
                     onClose={() => setShowModalEmoji(false)}
+                
                     style={{
                         zIndex: 500,
                     }}

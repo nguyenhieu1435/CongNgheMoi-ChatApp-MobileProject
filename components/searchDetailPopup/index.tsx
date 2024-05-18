@@ -89,6 +89,7 @@ export default function SearchDetailPopup({
                         navigate={navigate}
                         textSearch={textSearch}
                         navigation={navigation}
+                        setTextSearch={setTextSearch}
                     />
                 ) : (
                     <DetailSearchPopUpSearchEmpty
@@ -381,6 +382,7 @@ interface DetailSearchPopUpSearchNotEmptyProps {
     navigate: any;
     textSearch: string;
     navigation: any;
+    setTextSearch: (search: string) => void;
 }
 
 function DetailSearchPopUpSearchNotEmpty({
@@ -389,6 +391,7 @@ function DetailSearchPopUpSearchNotEmpty({
     navigate,
     textSearch,
     navigation,
+    setTextSearch
 }: DetailSearchPopUpSearchNotEmptyProps) {
     const [usersResult, setUsersResult] = useState<IUserResultSearch[]>([]);
     const [myFriends, setMyFriends] = useState<IUserIsMyFriendsResult | null>(
@@ -631,6 +634,8 @@ function DetailSearchPopUpSearchNotEmpty({
         }
     }
     async function handleOpenChatDetail(receivedId: string) {
+        setTextSearch("");
+        
         try {
             setIsLoading(true);
             const conversationResponse = await fetch(
@@ -662,6 +667,7 @@ function DetailSearchPopUpSearchNotEmpty({
         setIsLoading(false);
     }
     async function handleCallFriend(receiverId: string, type: string) {
+        setTextSearch("");
         try {
             setIsLoading(true);
             const conversationResponse = await fetch(

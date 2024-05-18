@@ -369,7 +369,7 @@ export default function AddFriend({ navigation }: AddFriendProps) {
                         )}
                     </View>
                     <TouchableOpacity
-                        disabled={isLoading}
+                        disabled={isLoading || userId.trim().length === 0}
                         onPress={handleCheckAndAddFriend}
                         style={[
                             styles.addFriendSearchTelAndChooseCountryNextStepBtn,

@@ -1672,6 +1672,26 @@ function MessageComponent({
                                                     />
                                                 </MapView>
                                             )} */}
+                                            {getVideoFiles(dataAfter?.files)
+                                                ?.link && (
+                                                <Video
+                                                    style={{
+                                                        width: "100%",
+                                                        height: 200,
+                                                    }}
+                                                    source={{
+                                                        uri:
+                                                            getVideoFiles(
+                                                                dataAfter?.files
+                                                            )?.link || "",
+                                                    }}
+                                                    useNativeControls
+                                                    resizeMode={
+                                                        ResizeMode.CONTAIN
+                                                    }
+                                                    isLooping={false}
+                                                />
+                                            )}
 
                                             <View
                                                 style={[
@@ -2685,7 +2705,7 @@ export const GroupNotificationMessage = ({
                         <Text
                             style={[styles.groupNotificationContentChildText]}
                         >
-                            {translation("becomeDeputyNotification")}
+                            {translation("removeDeputyNotification")}
                         </Text>
                     </Text>
                 </View>
