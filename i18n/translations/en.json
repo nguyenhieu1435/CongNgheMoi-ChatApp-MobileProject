@@ -294,8 +294,8 @@
     "from": "From",
     "incomingCall": "Incoming call",
     "initialRecoverScreen": "Recover password",
-    "recoverDesc": "Enter your phone number to recover password",
-    "confirmPhoneNumberRecoverPassword": "Confirm phone number ",
-    "confirmPhoneNumberRecoverPasswordDesc": "This phone number will be used to receive the verification",
+    "recoverDesc": "Enter your email address to recover password",
+    "confirmPhoneNumberRecoverPassword": "Confirm email address ",
+    "confirmPhoneNumberRecoverPasswordDesc": "This email address will be used to receive the verification",
     "requestError": "Some errors occurred, please try again"
 }

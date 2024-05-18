@@ -297,8 +297,8 @@
     "from": "Từ",
     "incomingCall": "Cuộc gọi đến",
     "initialRecoverScreen": "Lấy lại mật khẩu",
-    "recoverDesc": "Nhập số điện thoại để lấy lại mật khẩu",
-    "confirmPhoneNumberRecoverPassword": "Xác nhận số điện thoại ",
-    "confirmPhoneNumberRecoverPasswordDesc": "Số điện thoại này sẽ được sử dụng để nhân mã xác thực",
+    "recoverDesc": "Nhập địa chỉ email để lấy lại mật khẩu",
+    "confirmPhoneNumberRecoverPassword": "Xác nhận địa chỉ email ",
+    "confirmPhoneNumberRecoverPasswordDesc": "Email này sẽ được sử dụng để nhân mã xác thực",
     "requestError": "Có vài lỗi xảy ra, xin vui lòng thử lại"
 }
