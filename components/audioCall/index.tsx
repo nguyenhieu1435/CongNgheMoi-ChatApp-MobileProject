@@ -1,34 +1,34 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Image,
+    PermissionsAndroid,
+    Platform,
     SafeAreaView,
     ScrollView,
     StatusBar,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View,
-} from "react-native";
-import { PermissionsAndroid, Platform } from "react-native";
+} from 'react-native';
 import {
-    ClientRoleType,
-    createAgoraRtcEngine,
-    IRtcEngine,
     ChannelProfileType,
-} from "react-native-agora";
-import { styles } from "./styles";
+    ClientRoleType,
+    IRtcEngine,
+    createAgoraRtcEngine,
+} from 'react-native-agora';
+import { styles } from './styles';
 
-import { AGORA_APP_ID } from "@env";
-import { useTranslation } from "react-i18next";
-import commonStyles from "../../CommonStyles/commonStyles";
-import { IConversation, IUserInConversation } from "../../configs/interfaces";
-import { useDispatch, useSelector } from "react-redux";
-import { IRootState } from "../../redux_toolkit/store";
-import CreateGroupAvatarWhenAvatarIsEmpty from "../../utils/createGroupAvatarWhenAvatarIsEmpty";
-import { setIsInCall } from "../../redux_toolkit/slices/isInCall.slice";
+import { AGORA_APP_ID } from '@env';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import commonStyles from '../../CommonStyles/commonStyles';
+import { IUserInConversation } from '../../configs/interfaces';
+import { setIsInCall } from '../../redux_toolkit/slices/isInCall.slice';
+import { IRootState } from '../../redux_toolkit/store';
+import getAgoraUid from '../../utils/getAgoraUid';
 
 const appId = AGORA_APP_ID;
-const token = "";
+const token = '';
 const uid = 0;
 
 interface AudioCallProps {
@@ -44,6 +44,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     const callInComing = route.params.callInComing as boolean;
     const channelName = conversationId;
     const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const uid = getAgoraUid(userInfo.user?._id || '');
     const opponentUser = !isGroup
         ? users.find((user) => user._id !== userInfo.user?._id)
         : null;
@@ -51,7 +52,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     const agoraEngineRef = useRef<IRtcEngine>(); // Agora engine instance
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
     const [remoteUid, setRemoteUid] = useState(0); // Uid of the remote user
-    const [message, setMessage] = useState(""); // Message to the user
+    const [message, setMessage] = useState(''); // Message to the user
     const { t } = useTranslation();
     const [micOn, setMicOn] = useState(true);
     const [speakerOn, setSpeakerOn] = useState(true);
@@ -61,18 +62,19 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     const [quantityOfUsersInCall, setQuantityOfUsersInCall] = useState(1);
     const wasQuantityGreaterThanEqualTwo = useRef(false);
     const socket = useSelector((state: IRootState) => state.socketIo.socket);
-    const [usersInCallInGroup, setUsersInCallInGroup] = useState<IUserInConversation[]>([]);
+    const [usersInCallInGroup, setUsersInCallInGroup] = useState<
+        IUserInConversation[]
+    >([]);
     const userAcceptCaffIdRef = useRef<string | null>(null);
     const userEndCallIdRef = useRef<string | null>(null);
     const dispatch = useDispatch();
-
 
     function showMessage(msg: string) {
         setMessage(msg);
     }
 
     const getPermission = async () => {
-        if (Platform.OS === "android") {
+        if (Platform.OS === 'android') {
             await PermissionsAndroid.requestMultiple([
                 PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
             ]);
@@ -85,7 +87,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         }
         try {
             agoraEngineRef.current?.setChannelProfile(
-                ChannelProfileType.ChannelProfileCommunication
+                ChannelProfileType.ChannelProfileCommunication,
             );
             agoraEngineRef.current?.joinChannel(token, channelName, uid, {
                 clientRoleType: ClientRoleType.ClientRoleBroadcaster,
@@ -100,7 +102,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             agoraEngineRef.current?.leaveChannel();
             setRemoteUid(0);
             setIsJoined(false);
-            showMessage("You left the channel");
+            showMessage('You left the channel');
         } catch (e) {
             console.log(e);
         }
@@ -108,8 +110,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
 
     useEffect(() => {
         // Initialize Agora engine when the app starts
-        dispatch(setIsInCall(true))
-
+        dispatch(setIsInCall(true));
 
         async function start() {
             await setupVoiceSDKEngine();
@@ -121,7 +122,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     const setupVoiceSDKEngine = async () => {
         try {
             // use the helper function to get permissions
-            if (Platform.OS === "android") {
+            if (Platform.OS === 'android') {
                 await getPermission();
             }
             agoraEngineRef.current = createAgoraRtcEngine();
@@ -129,14 +130,14 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             agoraEngine.registerEventHandler({
                 onJoinChannelSuccess: () => {
                     showMessage(
-                        "Successfully joined the channel " + channelName
+                        'Successfully joined the channel ' + channelName,
                     );
                     setIsJoined(true);
                 },
                 onUserJoined: (_connection, Uid) => {
-                    console.log("Remote user joined");
-                    
-                    showMessage("Remote user joined with uid " + Uid);
+                    console.log('Remote user joined');
+
+                    showMessage('Remote user joined with uid ' + Uid);
                     setRemoteUid(Uid);
                     if (quantityOfUsersInCall + 1 >= 2) {
                         wasQuantityGreaterThanEqualTwo.current = true;
@@ -150,7 +151,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                     }
                 },
                 onUserOffline: (_connection, Uid) => {
-                    showMessage("Remote user left the channel. uid: " + Uid);
+                    showMessage('Remote user left the channel. uid: ' + Uid);
                     setRemoteUid(0);
                     setWaitingLayout(true);
                     clearInterval(refInterval.current!);
@@ -176,26 +177,40 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         }
     }, [quantityOfUsersInCall]);
 
-    useEffect(()=>{
-        socket.on("acceptCall", onAcceptCall)
-        socket.on("endCall", onEndCall)
+    useEffect(() => {
+        socket.on('acceptCall', onAcceptCall);
+        socket.on('endCall', onEndCall);
 
         return () => {
-            socket.off("acceptCall", onAcceptCall)
-            socket.off("endCall", onEndCall)
-        }
-    }, [conversationId])
+            socket.off('acceptCall', onAcceptCall);
+            socket.off('endCall', onEndCall);
+        };
+    }, [conversationId]);
 
-    function onAcceptCall({receiver, _id}: {receiver: IUserInConversation, _id: string}){
-        if (receiver._id != userAcceptCaffIdRef.current){
+    function onAcceptCall({
+        receiver,
+        _id,
+    }: {
+        receiver: IUserInConversation;
+        _id: string;
+    }) {
+        if (receiver._id != userAcceptCaffIdRef.current) {
             userAcceptCaffIdRef.current = receiver._id;
-            setUsersInCallInGroup((prev) => [...prev, receiver])
+            setUsersInCallInGroup((prev) => [...prev, receiver]);
         }
     }
-    function onEndCall({sender, _id}: {sender: IUserInConversation, _id: string}){
-        if (sender._id != userEndCallIdRef.current){
+    function onEndCall({
+        sender,
+        _id,
+    }: {
+        sender: IUserInConversation;
+        _id: string;
+    }) {
+        if (sender._id != userEndCallIdRef.current) {
             userEndCallIdRef.current = sender._id;
-            setUsersInCallInGroup((prev) => prev.filter(user => user._id !== sender._id))
+            setUsersInCallInGroup((prev) =>
+                prev.filter((user) => user._id !== sender._id),
+            );
         }
     }
 
@@ -212,19 +227,19 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
     }
 
     function handleEndCall() {
-        dispatch(setIsInCall(false))
-        socket.emit("endCall", {
+        dispatch(setIsInCall(false));
+        socket.emit('endCall', {
             sender: userInfo.user,
             _id: conversationId,
-        })
+        });
         leave();
         refInterval.current && clearInterval(refInterval.current);
         refInterval.current = null;
         setQuantityOfUsersInCall(1);
         wasQuantityGreaterThanEqualTwo.current = false;
         setSeconds(0);
-        if (callInComing){
-            navigation.pop(2)
+        if (callInComing) {
+            navigation.pop(2);
         } else {
             navigation.goBack();
         }
@@ -248,7 +263,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             <View style={[styles.callingContainer]}>
                 <Image
                     source={{
-                        uri: "https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png",
+                        uri: 'https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png',
                     }}
                     style={[styles.avatar]}
                 />
@@ -260,7 +275,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         },
                     ]}
                 >
-                    {t("audioCallCallingTitle")}
+                    {t('audioCallCallingTitle')}
                 </Text>
 
                 <Text
@@ -290,7 +305,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         },
                     ]}
                 >
-                    {t("audioCallCallingTitle")}
+                    {t('audioCallCallingTitle')}
                 </Text>
 
                 <Text
@@ -307,7 +322,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         );
     }
 
-    console.log("user number: ", quantityOfUsersInCall)
+    console.log('user number: ', quantityOfUsersInCall);
 
     function renderInCallLayout() {
         return isGroup ? (
@@ -316,15 +331,15 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             >
                 <TouchableOpacity
                     style={{
-                        flexDirection: "row",
-                        alignItems: "center",
+                        flexDirection: 'row',
+                        alignItems: 'center',
                         gap: 5,
                     }}
                     onPress={handleEndCall}
                 >
                     <View>
                         <Image
-                            source={require("../../assets/arrow-left-s-line-icon.png")}
+                            source={require('../../assets/arrow-left-s-line-icon.png')}
                             style={[
                                 styles.backToPreviousBtnImg,
                                 {
@@ -342,7 +357,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                             },
                         ]}
                     >
-                        {t("backToConversation")}
+                        {t('backToConversation')}
                     </Text>
                 </TouchableOpacity>
                 <View
@@ -350,13 +365,13 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         flexShrink: 1,
                         flexGrow: 1,
                         marginTop: 30,
-                        width: "100%",
+                        width: '100%',
                         paddingHorizontal: 25,
                     }}
                 >
                     <ScrollView
                         contentContainerStyle={{
-                            width: "100%",
+                            width: '100%',
                         }}
                     >
                         <View style={[styles.userInCallContainerItem]}>
@@ -377,35 +392,34 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                             >
                                 {userInfo.user?.name}
                             </Text>
-                            
                         </View>
 
-                        {
-                            usersInCallInGroup.map((user, index) => {
-                                return (
-                                    <View style={[styles.userInCallContainerItem]} key={index}>
-                                        <Image
-                                            source={{
-                                                uri: user?.avatar,
-                                            }}
-                                            style={[styles.avatarInGroupCall]}
-                                        />
-                                        <Text
-                                            style={[
-                                                styles.callingUsernameInGroup,
-                                                {
-                                                    color: commonStyles.darkPrimaryText
-                                                        .color,
-                                                },
-                                            ]}
-                                        >
-                                            {user?.name}
-                                        </Text>
-                                        
-                                    </View>
-                                )
-                            })
-                        }
+                        {usersInCallInGroup.map((user, index) => {
+                            return (
+                                <View
+                                    style={[styles.userInCallContainerItem]}
+                                    key={index}
+                                >
+                                    <Image
+                                        source={{
+                                            uri: user?.avatar,
+                                        }}
+                                        style={[styles.avatarInGroupCall]}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.callingUsernameInGroup,
+                                            {
+                                                color: commonStyles
+                                                    .darkPrimaryText.color,
+                                            },
+                                        ]}
+                                    >
+                                        {user?.name}
+                                    </Text>
+                                </View>
+                            );
+                        })}
                     </ScrollView>
                 </View>
             </View>
@@ -420,21 +434,21 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                     />
                     <View style={[styles.arrowRightContainer]}>
                         <Image
-                            source={require("../../assets/arrow-right-s-line.png")}
+                            source={require('../../assets/arrow-right-s-line.png')}
                             style={[
                                 styles.arrowRightStyle,
                                 styles.arrowRightStyleFirst,
                             ]}
                         />
                         <Image
-                            source={require("../../assets/arrow-right-s-line.png")}
+                            source={require('../../assets/arrow-right-s-line.png')}
                             style={[
                                 styles.arrowRightStyle,
                                 styles.arrowRightStyleSecond,
                             ]}
                         />
                         <Image
-                            source={require("../../assets/arrow-right-s-line.png")}
+                            source={require('../../assets/arrow-right-s-line.png')}
                             style={[
                                 styles.arrowRightStyle,
                                 styles.arrowRightStyleThird,
@@ -450,7 +464,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                 </View>
 
                 <Text style={[styles.inCallTitle]}>
-                    {t("audioCallInCallWith")}
+                    {t('audioCallInCallWith')}
                 </Text>
 
                 <Text
@@ -481,7 +495,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
         return isGroup ? (
             <Image
                 source={{
-                    uri: "https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png",
+                    uri: 'https://cdn1.iconfinder.com/data/icons/developer-set-2/512/users-512.png',
                 }}
                 style={[styles.imageBackground]}
                 blurRadius={15}
@@ -496,7 +510,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
             />
         );
     }
-    console.log("conversation id: ", conversationId);
+    console.log('conversation id: ', conversationId);
 
     return (
         <View style={[styles.container]}>
@@ -580,8 +594,8 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         <Image
                             source={
                                 speakerOn
-                                    ? require("../../assets/volume-open-fill.png")
-                                    : require("../../assets/volume-off-vibrate-fill.png")
+                                    ? require('../../assets/volume-open-fill.png')
+                                    : require('../../assets/volume-off-vibrate-fill.png')
                             }
                             style={[
                                 styles.speakerAndMicIconStyle,
@@ -598,7 +612,7 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         style={[styles.endCallBtnStyle]}
                     >
                         <Image
-                            source={require("../../assets/audio-phone-fill.png")}
+                            source={require('../../assets/audio-phone-fill.png')}
                             style={[
                                 styles.endCallBtnIconStyle,
                                 {
@@ -616,8 +630,8 @@ export default function AudioCall({ navigation, route }: AudioCallProps) {
                         <Image
                             source={
                                 micOn
-                                    ? require("../../assets/mic-fill.png")
-                                    : require("../../assets/mic-off-fill.png")
+                                    ? require('../../assets/mic-fill.png')
+                                    : require('../../assets/mic-off-fill.png')
                             }
                             style={[
                                 styles.speakerAndMicIconStyle,
