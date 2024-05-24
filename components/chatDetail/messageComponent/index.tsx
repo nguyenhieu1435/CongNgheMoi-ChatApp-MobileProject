@@ -5,7 +5,7 @@ import {
     useEffect,
     useRef,
     useState,
-} from "react";
+} from 'react';
 import {
     View,
     Text,
@@ -17,42 +17,42 @@ import {
     Linking,
     Animated,
     Easing,
-} from "react-native";
-import { styles } from "./styles";
-import Tooltip from "react-native-walkthrough-tooltip";
-import { TFunction, use } from "i18next";
-import commonStyles from "../../../CommonStyles/commonStyles";
-import { lightMode } from "../../../redux_toolkit/slices/theme.slice";
-import MessagePopupAction from "../messagePopupAction";
-import OutsidePressHandler from "react-native-outside-press";
+} from 'react-native';
+import { styles } from './styles';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { TFunction, use } from 'i18next';
+import commonStyles from '../../../CommonStyles/commonStyles';
+import { lightMode } from '../../../redux_toolkit/slices/theme.slice';
+import MessagePopupAction from '../messagePopupAction';
+import OutsidePressHandler from 'react-native-outside-press';
 import {
     IConversation,
     IFileMessage,
     IMessageItem,
     IMessageStatus,
-} from "../../../configs/interfaces";
+} from '../../../configs/interfaces';
 import {
     convertDateStrToHourMinute,
     getAccurancyDateVN,
-} from "../../../utils/date";
-import * as FileSystem from "expo-file-system";
-import { shareAsync } from "expo-sharing";
-import { Modal } from "react-native";
-import ImageViewer from "react-native-image-zoom-viewer";
+} from '../../../utils/date';
+import * as FileSystem from 'expo-file-system';
+import { shareAsync } from 'expo-sharing';
+import { Modal } from 'react-native';
+import ImageViewer from 'react-native-image-zoom-viewer';
 // import MapView, { Marker } from "react-native-maps";
-import { Video, ResizeMode } from "expo-av";
-import { useSelector } from "react-redux";
-import { IRootState } from "../../../redux_toolkit/store";
-import { Socket } from "socket.io-client";
-import { DefaultEventsMap } from "@socket.io/component-emitter";
-import { LINK_REACT_MESSAGE } from "@env";
-import { userInfoInterfaceI } from "../../../redux_toolkit/slices/userInfo.slice";
+import { Video, ResizeMode } from 'expo-av';
+import { useSelector } from 'react-redux';
+import { IRootState } from '../../../redux_toolkit/store';
+import { Socket } from 'socket.io-client';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { LINK_REACT_MESSAGE } from '@env';
+import { userInfoInterfaceI } from '../../../redux_toolkit/slices/userInfo.slice';
 
 interface MessageComponentProps {
     id: number;
     data: IMessageItem;
     theme: string;
-    translation: TFunction<"translation", undefined>;
+    translation: TFunction<'translation', undefined>;
     indexShowListReaction: number;
     setIndexShowListReaction: (index: number) => void;
     setReplyItem: Dispatch<SetStateAction<IMessageItem | null>>;
@@ -66,7 +66,7 @@ interface MessageComponentProps {
     setShowForwardModal: Dispatch<SetStateAction<IMessageItem | null>>;
 }
 
-const { height: HEIGHT, width: WIDTH } = Dimensions.get("screen");
+const { height: HEIGHT, width: WIDTH } = Dimensions.get('screen');
 
 function MessageComponent({
     id,
@@ -85,11 +85,10 @@ function MessageComponent({
     setMessageHistory,
     setShowForwardModal,
 }: MessageComponentProps) {
-    const [placement, setPlacement] = useState("top");
-    const [placementReaction, setPlacementReaction] = useState("top");
+    const [placement, setPlacement] = useState('top');
+    const [placementReaction, setPlacementReaction] = useState('top');
     const [showReaction, setShowReaction] = useState(false);
     const [dataAfter, setDataAfter] = useState<IMessageItem>();
-    const myId = "thaoanhhaa1@gmail.com";
     const [showFullScreenImageMessage, setShowFullScreenImageMessage] =
         useState<IFileMessage | null>(null);
     const [showMoreAction, setShowMoreAction] = useState(false);
@@ -102,17 +101,17 @@ function MessageComponent({
     function handleAddReaction(emoji: string, dataAfter: IMessageItem) {
         setShowReaction(false);
         const isAddedReaction = dataAfter.statuses.some(
-            (item) => item.user == userInfo.user?._id
+            (item) => item.user == userInfo.user?._id,
         );
         const isOldReaction = dataAfter.statuses.some(
-            (item) => item.user == userInfo.user?._id && item.react === emoji
+            (item) => item.user == userInfo.user?._id && item.react === emoji,
         );
 
         if (isAddedReaction && isOldReaction) {
             fetch(LINK_REACT_MESSAGE, {
-                method: "POST",
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${userInfo.accessToken}`,
                 },
                 body: JSON.stringify({
@@ -134,13 +133,13 @@ function MessageComponent({
                         }
                     });
                     setMessageHistory(newMessageHistory);
-                    console.log("calling reactForMessage", {
+                    console.log('calling reactForMessage', {
                         users: conversation.users,
                         messageId: dataAfter._id,
                         react: null,
                         userId: userInfo.user?._id,
                     });
-                    socket.emit("reactForMessage", {
+                    socket.emit('reactForMessage', {
                         users: conversation.users,
                         messageId: dataAfter._id,
                         conversationId: conversation._id,
@@ -149,13 +148,13 @@ function MessageComponent({
                     });
                 })
                 .catch((err) =>
-                    console.log("Error when remove reaction: ", err)
+                    console.log('Error when remove reaction: ', err),
                 );
         } else {
             fetch(LINK_REACT_MESSAGE, {
-                method: "POST",
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${userInfo.accessToken}`,
                 },
                 body: JSON.stringify({
@@ -177,7 +176,7 @@ function MessageComponent({
                         }
                     });
                     setMessageHistory(newMessageHistory);
-                    socket.emit("reactForMessage", {
+                    socket.emit('reactForMessage', {
                         users: conversation.users,
                         messageId: dataAfter._id,
                         conversationId: conversation._id,
@@ -185,16 +184,16 @@ function MessageComponent({
                         userId: userInfo.user?._id,
                     });
                 })
-                .catch((err) => console.log("Error when add reaction: ", err));
+                .catch((err) => console.log('Error when add reaction: ', err));
         }
     }
     function getReactionsNotDuplicateEmoji(
-        dataAfter: IMessageItem
+        dataAfter: IMessageItem,
     ): IMessageStatus[] | undefined {
         let key = (status: IMessageStatus) => status.react;
         const statusesNotDuplicate = [
             ...new Map(
-                dataAfter.statuses.map((item) => [key(item), item])
+                dataAfter.statuses.map((item) => [key(item), item]),
             ).values(),
         ];
         return statusesNotDuplicate;
@@ -205,20 +204,20 @@ function MessageComponent({
         try {
             const res = await FileSystem.downloadAsync(
                 url,
-                FileSystem.documentDirectory + fileName
+                FileSystem.documentDirectory + fileName,
             );
 
-            saveFileToDevice(res.uri, fileName, res.headers["Content-Type"]);
+            saveFileToDevice(res.uri, fileName, res.headers['Content-Type']);
         } catch (error) {
-            console.log("FS Err: ", error);
+            console.log('FS Err: ', error);
         }
     };
     const saveFileToDevice = async (
         fileUri: string,
         fileName: string,
-        mimetype: string
+        mimetype: string,
     ) => {
-        if (Platform.OS === "android") {
+        if (Platform.OS === 'android') {
             const permissions =
                 await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
             if (permissions.granted) {
@@ -228,7 +227,7 @@ function MessageComponent({
                 await FileSystem.StorageAccessFramework.createFileAsync(
                     permissions.directoryUri,
                     fileName,
-                    mimetype
+                    mimetype,
                 )
                     .then(async (uri) => {
                         await FileSystem.writeAsStringAsync(uri, base64, {
@@ -257,24 +256,24 @@ function MessageComponent({
                     }
                 })
                 .catch((err) => {
-                    console.error("An error occurred", err);
+                    console.error('An error occurred', err);
                 });
         }
     };
     function getVideoFiles(files: IFileMessage[]) {
         return files.find(
-            (file) => isVideoFile(file.name) && file.type.includes("video")
+            (file) => isVideoFile(file.name) && file.type.includes('video'),
         );
     }
     function isVideoFile(fileName: string) {
         if (
-            fileName.includes(".mp4") ||
-            fileName.includes(".avi") ||
-            fileName.includes(".mov") ||
-            fileName.includes(".wmv") ||
-            fileName.includes(".flv") ||
-            fileName.includes(".3gp") ||
-            fileName.includes(".mkv")
+            fileName.includes('.mp4') ||
+            fileName.includes('.avi') ||
+            fileName.includes('.mov') ||
+            fileName.includes('.wmv') ||
+            fileName.includes('.flv') ||
+            fileName.includes('.3gp') ||
+            fileName.includes('.mkv')
         ) {
             return true;
         } else {
@@ -286,7 +285,7 @@ function MessageComponent({
         const objDate = new Date(getAccurancyDateVN(date));
         // if (objDate is today) return "hh:mm" or return "hh:mm dd/mm/yyyy"
         const currentDate = new Date(
-            getAccurancyDateVN(new Date().toISOString())
+            getAccurancyDateVN(new Date().toISOString()),
         );
 
         if (
@@ -298,13 +297,13 @@ function MessageComponent({
         } else {
             if (currentDate.getFullYear() !== objDate.getFullYear()) {
                 return `${convertDateStrToHourMinute(
-                    date
+                    date,
                 )} ${objDate.getDate()}/${
                     objDate.getMonth() + 1
                 }/${objDate.getFullYear()}`;
             } else {
                 return `${convertDateStrToHourMinute(
-                    date
+                    date,
                 )} ${objDate.getDate()}/${objDate.getMonth() + 1}`;
             }
         }
@@ -355,7 +354,7 @@ function MessageComponent({
         );
 
     function handleChooseAndShowNotification() {
-        if (data.notification?.type === "ACCEPT_FRIEND") {
+        if (data.notification?.type === 'ACCEPT_FRIEND') {
             return (
                 <AcceptFriendNotificationMessage
                     translate={t}
@@ -364,11 +363,12 @@ function MessageComponent({
                 />
             );
         } else if (
-            data.notification?.type === "ADD_USERS" ||
-            data.notification?.type === "CHANGE_OWNER" ||
-            data.notification?.type === "ADD_ADMIN" ||
-            data.notification?.type === "REMOVE_ADMIN" ||
-            data.notification?.type === "REMOVE_USER"
+            data.notification?.type === 'ADD_USERS' ||
+            data.notification?.type === 'CREATE_GROUP' ||
+            data.notification?.type === 'CHANGE_OWNER' ||
+            data.notification?.type === 'ADD_ADMIN' ||
+            data.notification?.type === 'REMOVE_ADMIN' ||
+            data.notification?.type === 'REMOVE_USER'
         ) {
             return (
                 <GroupNotificationMessage
@@ -379,8 +379,8 @@ function MessageComponent({
                 />
             );
         } else if (
-            data.notification?.type === "PIN_MESSAGE" ||
-            data.notification?.type === "UNPIN_MESSAGE"
+            data.notification?.type === 'PIN_MESSAGE' ||
+            data.notification?.type === 'UNPIN_MESSAGE'
         ) {
             return (
                 <PinNotificationMessage
@@ -390,7 +390,7 @@ function MessageComponent({
                     userInfo={userInfo}
                 />
             );
-        } else if (data.notification?.type === "LEAVE_GROUP") {
+        } else if (data.notification?.type === 'LEAVE_GROUP') {
             return (
                 <LeaveGroupNotificationMessage
                     message={data}
@@ -403,7 +403,7 @@ function MessageComponent({
             <Text
                 style={[
                     {
-                        textAlign: "center",
+                        textAlign: 'center',
                     },
                     theme === lightMode
                         ? commonStyles.lightPrimaryText
@@ -424,7 +424,7 @@ function MessageComponent({
                     {TimeLine}
                     {showFullScreenImageMessage && (
                         <Modal
-                            animationType="slide"
+                            animationType='slide'
                             transparent={true}
                             visible={showFullScreenImageMessage !== null}
                         >
@@ -432,7 +432,7 @@ function MessageComponent({
                                 imageUrls={[
                                     { url: showFullScreenImageMessage.link },
                                 ]}
-                                style={{ backgroundColor: "black" }}
+                                style={{ backgroundColor: 'black' }}
                                 renderIndicator={() => {
                                     return <></>;
                                 }}
@@ -451,7 +451,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() =>
                                                         setShowFullScreenImageMessage(
-                                                            null
+                                                            null,
                                                         )
                                                     }
                                                     style={[
@@ -459,8 +459,8 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/arrow-left-s-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/arrow-left-s-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 30,
                                                             height: 30,
@@ -473,9 +473,9 @@ function MessageComponent({
                                                 </TouchableOpacity>
                                                 <View
                                                     style={{
-                                                        flexDirection: "row",
+                                                        flexDirection: 'row',
                                                         gap: 10,
-                                                        alignItems: "center",
+                                                        alignItems: 'center',
                                                     }}
                                                 >
                                                     <Image
@@ -483,7 +483,7 @@ function MessageComponent({
                                                             uri: dataAfter
                                                                 .sender.avatar,
                                                         }}
-                                                        resizeMode="contain"
+                                                        resizeMode='contain'
                                                         style={[
                                                             styles.chatDetailAvatarImg,
                                                         ]}
@@ -494,7 +494,7 @@ function MessageComponent({
                                                                 .darkPrimaryText
                                                                 .color,
                                                             fontSize: 16,
-                                                            fontWeight: "500",
+                                                            fontWeight: '500',
                                                         }}
                                                     >
                                                         {dataAfter.sender.name}
@@ -506,13 +506,13 @@ function MessageComponent({
                                                     onPress={() =>
                                                         handleDownloadFile(
                                                             showFullScreenImageMessage.link,
-                                                            showFullScreenImageMessage.name
+                                                            showFullScreenImageMessage.name,
                                                         )
                                                     }
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/download-2-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/download-2-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 30,
                                                             height: 30,
@@ -542,7 +542,7 @@ function MessageComponent({
                                         styles.chatDetailAnotherActionWrapper,
                                     ]}
                                 >
-                                    {dataAfter.deleted != "2" ? (
+                                    {dataAfter.deleted != '2' ? (
                                         <>
                                             <Tooltip
                                                 arrowSize={
@@ -557,16 +557,16 @@ function MessageComponent({
                                                 onClose={() =>
                                                     setShowMoreAction(false)
                                                 }
-                                                backgroundColor="transparent"
+                                                backgroundColor='transparent'
                                                 isVisible={showMoreAction}
                                                 showChildInTooltip={false}
                                                 placement={
                                                     placement as
-                                                        | "top"
-                                                        | "left"
-                                                        | "right"
-                                                        | "bottom"
-                                                        | "center"
+                                                        | 'top'
+                                                        | 'left'
+                                                        | 'right'
+                                                        | 'bottom'
+                                                        | 'center'
                                                         | undefined
                                                 }
                                                 content={
@@ -608,10 +608,10 @@ function MessageComponent({
                                                                 .pageY >
                                                             HEIGHT / 2
                                                         ) {
-                                                            setPlacement("top");
+                                                            setPlacement('top');
                                                         } else {
                                                             setPlacement(
-                                                                "bottom"
+                                                                'bottom',
                                                             );
                                                         }
                                                         setShowMoreAction(true);
@@ -621,8 +621,8 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/more-vertical-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/more-vertical-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 20,
                                                             height: 20,
@@ -642,15 +642,15 @@ function MessageComponent({
 
                                             <Tooltip
                                                 onClose={() => {}}
-                                                backgroundColor="transparent"
+                                                backgroundColor='transparent'
                                                 isVisible={showReaction}
                                                 placement={
                                                     placementReaction as
-                                                        | "top"
-                                                        | "left"
-                                                        | "right"
-                                                        | "bottom"
-                                                        | "center"
+                                                        | 'top'
+                                                        | 'left'
+                                                        | 'right'
+                                                        | 'bottom'
+                                                        | 'center'
                                                         | undefined
                                                 }
                                                 arrowSize={
@@ -669,7 +669,7 @@ function MessageComponent({
                                                     <OutsidePressHandler
                                                         onOutsidePress={() =>
                                                             setShowReaction(
-                                                                false
+                                                                false,
                                                             )
                                                         }
                                                         style={[
@@ -682,14 +682,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "love",
-                                                                    dataAfter
+                                                                    'love',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/heart-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/heart-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -698,14 +698,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "haha",
-                                                                    dataAfter
+                                                                    'haha',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/haha-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/haha-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -714,14 +714,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "wow",
-                                                                    dataAfter
+                                                                    'wow',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/surprise-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/surprise-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -730,14 +730,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "sad",
-                                                                    dataAfter
+                                                                    'sad',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/sad-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/sad-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -746,14 +746,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "angry",
-                                                                    dataAfter
+                                                                    'angry',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/aggry-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/aggry-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -762,14 +762,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "like",
-                                                                    dataAfter
+                                                                    'like',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/like-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/like-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -786,11 +786,11 @@ function MessageComponent({
                                                             HEIGHT / 2
                                                         ) {
                                                             setPlacementReaction(
-                                                                "top"
+                                                                'top',
                                                             );
                                                         } else {
                                                             setPlacementReaction(
-                                                                "bottom"
+                                                                'bottom',
                                                             );
                                                         }
                                                         setShowReaction(true);
@@ -800,8 +800,8 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/emotion-happy-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/emotion-happy-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 20,
                                                             height: 20,
@@ -827,8 +827,8 @@ function MessageComponent({
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../../assets/reply-icon.png")}
-                                                    resizeMode="contain"
+                                                    source={require('../../../assets/reply-icon.png')}
+                                                    resizeMode='contain'
                                                     style={{
                                                         width: 20,
                                                         height: 20,
@@ -854,7 +854,7 @@ function MessageComponent({
                                         styles.chatDetailMessageFromOpponentMainContainer,
                                     ]}
                                 >
-                                    {dataAfter.deleted != "2" ? (
+                                    {dataAfter.deleted != '2' ? (
                                         <View
                                             style={[
                                                 styles.chatDetailMessageFromMeInfoBox,
@@ -865,7 +865,7 @@ function MessageComponent({
                                         >
                                             {dataAfter.reply &&
                                                 (dataAfter.reply.deleted !=
-                                                "2" ? (
+                                                '2' ? (
                                                     <TouchableOpacity
                                                         style={[
                                                             styles.replyOpponentMessageContainer,
@@ -932,41 +932,41 @@ function MessageComponent({
                                                                 {dataAfter.reply.files.some(
                                                                     (file) =>
                                                                         file.type.includes(
-                                                                            "image"
-                                                                        )
+                                                                            'image',
+                                                                        ),
                                                                 )
                                                                     ? t(
-                                                                          "chatDetailImageTitle"
+                                                                          'chatDetailImageTitle',
                                                                       )
                                                                     : dataAfter.reply.files.some(
                                                                           (
-                                                                              file
+                                                                              file,
                                                                           ) =>
                                                                               file.type.includes(
-                                                                                  "application"
+                                                                                  'application',
                                                                               ) ||
                                                                               file.type.includes(
-                                                                                  "video"
-                                                                              )
+                                                                                  'video',
+                                                                              ),
                                                                       )
                                                                     ? t(
-                                                                          "chatDetailFileTitle"
+                                                                          'chatDetailFileTitle',
                                                                       )
                                                                     : dataAfter
                                                                           .reply
                                                                           .sticker
                                                                     ? t(
-                                                                          "chatDetailStickerTitle"
+                                                                          'chatDetailStickerTitle',
                                                                       )
                                                                     : dataAfter.reply.messages.map(
                                                                           (
-                                                                              message
+                                                                              message,
                                                                           ) =>
                                                                               message.type ===
-                                                                              "text"
+                                                                              'text'
                                                                                   ? message.content
-                                                                                  : "@" +
-                                                                                    message.content
+                                                                                  : '@' +
+                                                                                    message.content,
                                                                       )}
                                                             </Text>
                                                         </View>
@@ -1032,14 +1032,14 @@ function MessageComponent({
                                                 ?.link && (
                                                 <Video
                                                     style={{
-                                                        width: "100%",
+                                                        width: '100%',
                                                         height: 200,
                                                     }}
                                                     source={{
                                                         uri:
                                                             getVideoFiles(
-                                                                dataAfter?.files
-                                                            )?.link || "",
+                                                                dataAfter?.files,
+                                                            )?.link || '',
                                                     }}
                                                     useNativeControls
                                                     resizeMode={
@@ -1066,7 +1066,7 @@ function MessageComponent({
                                                         (message, index) => {
                                                             if (
                                                                 message.type ===
-                                                                "text"
+                                                                'text'
                                                             ) {
                                                                 return (
                                                                     <Text
@@ -1081,7 +1081,7 @@ function MessageComponent({
                                                                 );
                                                             } else if (
                                                                 message.type ===
-                                                                "tag"
+                                                                'tag'
                                                             ) {
                                                                 return (
                                                                     <Text
@@ -1096,7 +1096,7 @@ function MessageComponent({
                                                                     </Text>
                                                                 );
                                                             }
-                                                        }
+                                                        },
                                                     )}
                                                 </Text>
                                             </View>
@@ -1108,17 +1108,17 @@ function MessageComponent({
                                                     style={{
                                                         width: 150,
                                                         height: 150,
-                                                        marginLeft: "auto",
-                                                        marginRight: "auto",
+                                                        marginLeft: 'auto',
+                                                        marginRight: 'auto',
                                                     }}
                                                 />
                                             )}
                                             {dataAfter.files.some(
                                                 (file) =>
                                                     file.type.includes(
-                                                        "application"
+                                                        'application',
                                                     ) ||
-                                                    file.type.includes("video")
+                                                    file.type.includes('video'),
                                             ) && (
                                                 <View
                                                     style={[
@@ -1135,14 +1135,14 @@ function MessageComponent({
                                                                 backgroundColor:
                                                                     theme ===
                                                                     lightMode
-                                                                        ? "#ECE1FC"
-                                                                        : "#7269EF26",
+                                                                        ? '#ECE1FC'
+                                                                        : '#7269EF26',
                                                             },
                                                         ]}
                                                     >
                                                         <Image
-                                                            source={require("../../../assets/file-text-fill-icon.png")}
-                                                            resizeMode="contain"
+                                                            source={require('../../../assets/file-text-fill-icon.png')}
+                                                            resizeMode='contain'
                                                             style={{
                                                                 width: 20,
                                                                 height: 20,
@@ -1154,7 +1154,7 @@ function MessageComponent({
                                                         />
                                                     </View>
                                                     <Text
-                                                        ellipsizeMode="tail"
+                                                        ellipsizeMode='tail'
                                                         numberOfLines={1}
                                                         style={[
                                                             styles.fileBoxInChatHistoryNameFile,
@@ -1168,11 +1168,11 @@ function MessageComponent({
                                                             dataAfter.files.find(
                                                                 (file) =>
                                                                     file.type.includes(
-                                                                        "application"
+                                                                        'application',
                                                                     ) ||
                                                                     file.type.includes(
-                                                                        "video"
-                                                                    )
+                                                                        'video',
+                                                                    ),
                                                             )?.name
                                                         }
                                                     </Text>
@@ -1184,12 +1184,12 @@ function MessageComponent({
                                                                     .link,
                                                                 dataAfter
                                                                     .files[0]
-                                                                    .name
+                                                                    .name,
                                                             );
                                                         }}
                                                     >
                                                         <Image
-                                                            source={require("../../../assets/download-2-line-icon.png")}
+                                                            source={require('../../../assets/download-2-line-icon.png')}
                                                             style={[
                                                                 styles.fileBoxInChatHistoryFileImageIcon,
                                                                 {
@@ -1209,7 +1209,7 @@ function MessageComponent({
 
                                                     <TouchableOpacity>
                                                         <Image
-                                                            source={require("../../../assets/more-fill-icon.png")}
+                                                            source={require('../../../assets/more-fill-icon.png')}
                                                             style={[
                                                                 styles.fileBoxInChatHistoryFileImageIcon,
                                                                 {
@@ -1229,7 +1229,7 @@ function MessageComponent({
                                                 </View>
                                             )}
                                             {dataAfter.files.some((file) =>
-                                                file.type.includes("image")
+                                                file.type.includes('image'),
                                             ) && (
                                                 <View
                                                     style={[
@@ -1239,12 +1239,12 @@ function MessageComponent({
                                                     {dataAfter.files.map(
                                                         (file, index) => {
                                                             return file.type.includes(
-                                                                "image"
+                                                                'image',
                                                             ) ? (
                                                                 <TouchableOpacity
                                                                     onPress={() =>
                                                                         setShowFullScreenImageMessage(
-                                                                            file
+                                                                            file,
                                                                         )
                                                                     }
                                                                     key={index}
@@ -1256,7 +1256,7 @@ function MessageComponent({
                                                                         source={{
                                                                             uri: file.link,
                                                                         }}
-                                                                        resizeMode="contain"
+                                                                        resizeMode='contain'
                                                                         style={[
                                                                             styles.imageInChatHistory,
                                                                             {
@@ -1281,12 +1281,12 @@ function MessageComponent({
                                                                             onPress={() => {
                                                                                 handleDownloadFile(
                                                                                     file.link,
-                                                                                    file.name
+                                                                                    file.name,
                                                                                 );
                                                                             }}
                                                                         >
                                                                             <Image
-                                                                                source={require("../../../assets/download-2-line-icon.png")}
+                                                                                source={require('../../../assets/download-2-line-icon.png')}
                                                                                 style={[
                                                                                     styles.actionWithImageInChatHistoryImg,
                                                                                 ]}
@@ -1295,7 +1295,7 @@ function MessageComponent({
 
                                                                         <TouchableOpacity>
                                                                             <Image
-                                                                                source={require("../../../assets/more-fill-icon.png")}
+                                                                                source={require('../../../assets/more-fill-icon.png')}
                                                                                 style={[
                                                                                     styles.actionWithImageInChatHistoryImg,
                                                                                 ]}
@@ -1306,7 +1306,7 @@ function MessageComponent({
                                                             ) : (
                                                                 <></>
                                                             );
-                                                        }
+                                                        },
                                                     )}
                                                 </View>
                                             )}
@@ -1316,8 +1316,8 @@ function MessageComponent({
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../../assets/time-line-icon.png")}
-                                                    resizeMode="contain"
+                                                    source={require('../../../assets/time-line-icon.png')}
+                                                    resizeMode='contain'
                                                     style={[
                                                         styles.chatDetailMessageFromOpponentTimeInfoClockImg,
                                                         {
@@ -1343,8 +1343,8 @@ function MessageComponent({
                                                 >
                                                     {convertDateStrToHourMinute(
                                                         new Date(
-                                                            dataAfter.createdAt
-                                                        ).toISOString()
+                                                            dataAfter.createdAt,
+                                                        ).toISOString(),
                                                     )}
                                                 </Text>
                                             </View>
@@ -1354,7 +1354,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() =>
                                                         setIndexShowListReaction(
-                                                            id
+                                                            id,
                                                         )
                                                     }
                                                     style={[
@@ -1365,11 +1365,11 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     {getReactionsNotDuplicateEmoji(
-                                                        dataAfter
+                                                        dataAfter,
                                                     )?.map(
                                                         (
                                                             status,
-                                                            indexReaction
+                                                            indexReaction,
                                                         ) => {
                                                             return (
                                                                 <Image
@@ -1378,29 +1378,29 @@ function MessageComponent({
                                                                     }
                                                                     source={
                                                                         status.react ===
-                                                                        "love"
-                                                                            ? require("../../../assets/heart-reaction.png")
+                                                                        'love'
+                                                                            ? require('../../../assets/heart-reaction.png')
                                                                             : status.react ===
-                                                                              "haha"
-                                                                            ? require("../../../assets/haha-reaction.png")
+                                                                              'haha'
+                                                                            ? require('../../../assets/haha-reaction.png')
                                                                             : status.react ===
-                                                                              "wow"
-                                                                            ? require("../../../assets/surprise-reaction.png")
+                                                                              'wow'
+                                                                            ? require('../../../assets/surprise-reaction.png')
                                                                             : status.react ===
-                                                                              "sad"
-                                                                            ? require("../../../assets/sad-reaction.png")
+                                                                              'sad'
+                                                                            ? require('../../../assets/sad-reaction.png')
                                                                             : status.react ===
-                                                                              "angry"
-                                                                            ? require("../../../assets/aggry-reaction.png")
-                                                                            : require("../../../assets/like-reaction.png")
+                                                                              'angry'
+                                                                            ? require('../../../assets/aggry-reaction.png')
+                                                                            : require('../../../assets/like-reaction.png')
                                                                     }
-                                                                    resizeMode="contain"
+                                                                    resizeMode='contain'
                                                                     style={[
                                                                         styles.chatDetailReactedForMsgImg,
                                                                     ]}
                                                                 />
                                                             );
-                                                        }
+                                                        },
                                                     )}
                                                     {dataAfter.statuses.length >
                                                     1 ? (
@@ -1477,7 +1477,7 @@ function MessageComponent({
                                 source={{
                                     uri: dataAfter.sender.avatar,
                                 }}
-                                resizeMode="contain"
+                                resizeMode='contain'
                                 style={[styles.chatDetailAvatarImg]}
                             />
                         </View>
@@ -1487,7 +1487,7 @@ function MessageComponent({
                                 source={{
                                     uri: dataAfter.sender.avatar,
                                 }}
-                                resizeMode="contain"
+                                resizeMode='contain'
                                 style={[styles.chatDetailAvatarImg]}
                             />
                             <View
@@ -1500,7 +1500,7 @@ function MessageComponent({
                                         styles.chatDetailMessageFromOpponentMainContainer,
                                     ]}
                                 >
-                                    {dataAfter.deleted != "2" ? (
+                                    {dataAfter.deleted != '2' ? (
                                         <View
                                             style={[
                                                 styles.chatDetailMessageFromOpponentInfoBox,
@@ -1508,7 +1508,7 @@ function MessageComponent({
                                         >
                                             {dataAfter.reply &&
                                                 (dataAfter.reply.deleted !=
-                                                "2" ? (
+                                                '2' ? (
                                                     <TouchableOpacity
                                                         style={[
                                                             styles.replyOpponentMessageContainer,
@@ -1575,39 +1575,39 @@ function MessageComponent({
                                                                 {dataAfter.files.some(
                                                                     (file) =>
                                                                         file.type.includes(
-                                                                            "image"
-                                                                        )
+                                                                            'image',
+                                                                        ),
                                                                 )
                                                                     ? t(
-                                                                          "chatDetailImageTitle"
+                                                                          'chatDetailImageTitle',
                                                                       )
                                                                     : dataAfter.files.some(
                                                                           (
-                                                                              file
+                                                                              file,
                                                                           ) =>
                                                                               file.type.includes(
-                                                                                  "application" ||
-                                                                                      "video"
-                                                                              )
+                                                                                  'application' ||
+                                                                                      'video',
+                                                                              ),
                                                                       )
                                                                     ? t(
-                                                                          "chatDetailFileTitle"
+                                                                          'chatDetailFileTitle',
                                                                       )
                                                                     : dataAfter
                                                                           .reply
                                                                           .sticker
                                                                     ? t(
-                                                                          "chatDetailStickerTitle"
+                                                                          'chatDetailStickerTitle',
                                                                       )
                                                                     : dataAfter.messages.map(
                                                                           (
-                                                                              message
+                                                                              message,
                                                                           ) =>
                                                                               message.type ===
-                                                                              "text"
+                                                                              'text'
                                                                                   ? message.content
-                                                                                  : "@" +
-                                                                                    message.content
+                                                                                  : '@' +
+                                                                                    message.content,
                                                                       )}
                                                             </Text>
                                                         </View>
@@ -1676,14 +1676,14 @@ function MessageComponent({
                                                 ?.link && (
                                                 <Video
                                                     style={{
-                                                        width: "100%",
+                                                        width: '100%',
                                                         height: 200,
                                                     }}
                                                     source={{
                                                         uri:
                                                             getVideoFiles(
-                                                                dataAfter?.files
-                                                            )?.link || "",
+                                                                dataAfter?.files,
+                                                            )?.link || '',
                                                     }}
                                                     useNativeControls
                                                     resizeMode={
@@ -1707,7 +1707,7 @@ function MessageComponent({
                                                         (message, index) => {
                                                             if (
                                                                 message.type ===
-                                                                "text"
+                                                                'text'
                                                             ) {
                                                                 return (
                                                                     <Text
@@ -1722,7 +1722,7 @@ function MessageComponent({
                                                                 );
                                                             } else if (
                                                                 message.type ===
-                                                                "tag"
+                                                                'tag'
                                                             ) {
                                                                 return (
                                                                     <Text
@@ -1737,7 +1737,7 @@ function MessageComponent({
                                                                     </Text>
                                                                 );
                                                             }
-                                                        }
+                                                        },
                                                     )}
                                                 </Text>
                                             </View>
@@ -1757,9 +1757,9 @@ function MessageComponent({
                                             {dataAfter.files.some(
                                                 (file) =>
                                                     file.type.includes(
-                                                        "application"
+                                                        'application',
                                                     ) ||
-                                                    file.type.includes("video")
+                                                    file.type.includes('video'),
                                             ) && (
                                                 <TouchableOpacity
                                                     onPress={() => {}}
@@ -1777,14 +1777,14 @@ function MessageComponent({
                                                                 backgroundColor:
                                                                     theme ===
                                                                     lightMode
-                                                                        ? "#ECE1FC"
-                                                                        : "#7269EF26",
+                                                                        ? '#ECE1FC'
+                                                                        : '#7269EF26',
                                                             },
                                                         ]}
                                                     >
                                                         <Image
-                                                            source={require("../../../assets/file-text-fill-icon.png")}
-                                                            resizeMode="contain"
+                                                            source={require('../../../assets/file-text-fill-icon.png')}
+                                                            resizeMode='contain'
                                                             style={{
                                                                 width: 20,
                                                                 height: 20,
@@ -1796,7 +1796,7 @@ function MessageComponent({
                                                         />
                                                     </View>
                                                     <Text
-                                                        ellipsizeMode="tail"
+                                                        ellipsizeMode='tail'
                                                         numberOfLines={1}
                                                         style={[
                                                             styles.fileBoxInChatHistoryNameFile,
@@ -1810,11 +1810,11 @@ function MessageComponent({
                                                             dataAfter.files.find(
                                                                 (file) =>
                                                                     file.type.includes(
-                                                                        "application"
+                                                                        'application',
                                                                     ) ||
                                                                     file.type.includes(
-                                                                        "video"
-                                                                    )
+                                                                        'video',
+                                                                    ),
                                                             )?.name
                                                         }
                                                     </Text>
@@ -1826,12 +1826,12 @@ function MessageComponent({
                                                                     .link,
                                                                 dataAfter
                                                                     .files[0]
-                                                                    .name
+                                                                    .name,
                                                             )
                                                         }
                                                     >
                                                         <Image
-                                                            source={require("../../../assets/download-2-line-icon.png")}
+                                                            source={require('../../../assets/download-2-line-icon.png')}
                                                             style={[
                                                                 styles.fileBoxInChatHistoryFileImageIcon,
                                                                 {
@@ -1850,7 +1850,7 @@ function MessageComponent({
                                                     </TouchableOpacity>
                                                     <TouchableOpacity>
                                                         <Image
-                                                            source={require("../../../assets/more-fill-icon.png")}
+                                                            source={require('../../../assets/more-fill-icon.png')}
                                                             style={[
                                                                 styles.fileBoxInChatHistoryFileImageIcon,
                                                                 {
@@ -1871,7 +1871,7 @@ function MessageComponent({
                                             )}
 
                                             {dataAfter.files.some((file) =>
-                                                file.type.includes("image")
+                                                file.type.includes('image'),
                                             ) && (
                                                 <View
                                                     style={[
@@ -1881,12 +1881,12 @@ function MessageComponent({
                                                     {dataAfter.files.map(
                                                         (file, index) => {
                                                             return file.type.includes(
-                                                                "image"
+                                                                'image',
                                                             ) ? (
                                                                 <TouchableOpacity
                                                                     onPress={() =>
                                                                         setShowFullScreenImageMessage(
-                                                                            file
+                                                                            file,
                                                                         )
                                                                     }
                                                                     key={index}
@@ -1898,7 +1898,7 @@ function MessageComponent({
                                                                         source={{
                                                                             uri: file.link,
                                                                         }}
-                                                                        resizeMode="contain"
+                                                                        resizeMode='contain'
                                                                         style={[
                                                                             styles.imageInChatHistory,
                                                                             {
@@ -1923,12 +1923,12 @@ function MessageComponent({
                                                                             onPress={() => {
                                                                                 handleDownloadFile(
                                                                                     file.link,
-                                                                                    file.name
+                                                                                    file.name,
                                                                                 );
                                                                             }}
                                                                         >
                                                                             <Image
-                                                                                source={require("../../../assets/download-2-line-icon.png")}
+                                                                                source={require('../../../assets/download-2-line-icon.png')}
                                                                                 style={[
                                                                                     styles.actionWithImageInChatHistoryImg,
                                                                                 ]}
@@ -1937,7 +1937,7 @@ function MessageComponent({
 
                                                                         <TouchableOpacity>
                                                                             <Image
-                                                                                source={require("../../../assets/more-fill-icon.png")}
+                                                                                source={require('../../../assets/more-fill-icon.png')}
                                                                                 style={[
                                                                                     styles.actionWithImageInChatHistoryImg,
                                                                                 ]}
@@ -1948,7 +1948,7 @@ function MessageComponent({
                                                             ) : (
                                                                 <></>
                                                             );
-                                                        }
+                                                        },
                                                     )}
                                                 </View>
                                             )}
@@ -1959,8 +1959,8 @@ function MessageComponent({
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../../assets/time-line-icon.png")}
-                                                    resizeMode="contain"
+                                                    source={require('../../../assets/time-line-icon.png')}
+                                                    resizeMode='contain'
                                                     style={[
                                                         styles.chatDetailMessageFromOpponentTimeInfoClockImg,
                                                     ]}
@@ -1972,8 +1972,8 @@ function MessageComponent({
                                                 >
                                                     {convertDateStrToHourMinute(
                                                         new Date(
-                                                            dataAfter.createdAt
-                                                        ).toISOString()
+                                                            dataAfter.createdAt,
+                                                        ).toISOString(),
                                                     )}
                                                 </Text>
                                             </View>
@@ -1982,7 +1982,7 @@ function MessageComponent({
                                                 <TouchableOpacity
                                                     onPress={() =>
                                                         setIndexShowListReaction(
-                                                            id
+                                                            id,
                                                         )
                                                     }
                                                     style={[
@@ -1993,11 +1993,11 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     {getReactionsNotDuplicateEmoji(
-                                                        dataAfter
+                                                        dataAfter,
                                                     )?.map(
                                                         (
                                                             status,
-                                                            indexReaction
+                                                            indexReaction,
                                                         ) => {
                                                             return (
                                                                 <Image
@@ -2006,29 +2006,29 @@ function MessageComponent({
                                                                     }
                                                                     source={
                                                                         status.react ===
-                                                                        "love"
-                                                                            ? require("../../../assets/heart-reaction.png")
+                                                                        'love'
+                                                                            ? require('../../../assets/heart-reaction.png')
                                                                             : status.react ===
-                                                                              "haha"
-                                                                            ? require("../../../assets/haha-reaction.png")
+                                                                              'haha'
+                                                                            ? require('../../../assets/haha-reaction.png')
                                                                             : status.react ===
-                                                                              "wow"
-                                                                            ? require("../../../assets/surprise-reaction.png")
+                                                                              'wow'
+                                                                            ? require('../../../assets/surprise-reaction.png')
                                                                             : status.react ===
-                                                                              "sad"
-                                                                            ? require("../../../assets/sad-reaction.png")
+                                                                              'sad'
+                                                                            ? require('../../../assets/sad-reaction.png')
                                                                             : status.react ===
-                                                                              "angry"
-                                                                            ? require("../../../assets/aggry-reaction.png")
-                                                                            : require("../../../assets/like-reaction.png")
+                                                                              'angry'
+                                                                            ? require('../../../assets/aggry-reaction.png')
+                                                                            : require('../../../assets/like-reaction.png')
                                                                     }
-                                                                    resizeMode="contain"
+                                                                    resizeMode='contain'
                                                                     style={[
                                                                         styles.chatDetailReactedForMsgImg,
                                                                     ]}
                                                                 />
                                                             );
-                                                        }
+                                                        },
                                                     )}
                                                     {dataAfter.statuses.length >
                                                     1 ? (
@@ -2089,7 +2089,7 @@ function MessageComponent({
                                         styles.chatDetailAnotherActionWrapper,
                                     ]}
                                 >
-                                    {dataAfter.deleted != "2" ? (
+                                    {dataAfter.deleted != '2' ? (
                                         <>
                                             <TouchableOpacity
                                                 onPress={() => {
@@ -2100,8 +2100,8 @@ function MessageComponent({
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../../assets/reply-icon.png")}
-                                                    resizeMode="contain"
+                                                    source={require('../../../assets/reply-icon.png')}
+                                                    resizeMode='contain'
                                                     style={{
                                                         width: 20,
                                                         height: 20,
@@ -2118,15 +2118,15 @@ function MessageComponent({
                                             </TouchableOpacity>
                                             <Tooltip
                                                 onClose={() => {}}
-                                                backgroundColor="transparent"
+                                                backgroundColor='transparent'
                                                 isVisible={showReaction}
                                                 placement={
                                                     placementReaction as
-                                                        | "top"
-                                                        | "left"
-                                                        | "right"
-                                                        | "bottom"
-                                                        | "center"
+                                                        | 'top'
+                                                        | 'left'
+                                                        | 'right'
+                                                        | 'bottom'
+                                                        | 'center'
                                                         | undefined
                                                 }
                                                 arrowSize={
@@ -2145,7 +2145,7 @@ function MessageComponent({
                                                     <OutsidePressHandler
                                                         onOutsidePress={() =>
                                                             setShowReaction(
-                                                                false
+                                                                false,
                                                             )
                                                         }
                                                         style={[
@@ -2158,14 +2158,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "love",
-                                                                    dataAfter
+                                                                    'love',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/heart-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/heart-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2174,14 +2174,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "haha",
-                                                                    dataAfter
+                                                                    'haha',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/haha-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/haha-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2190,14 +2190,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "wow",
-                                                                    dataAfter
+                                                                    'wow',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/surprise-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/surprise-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2206,14 +2206,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "sad",
-                                                                    dataAfter
+                                                                    'sad',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/sad-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/sad-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2222,14 +2222,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "angry",
-                                                                    dataAfter
+                                                                    'angry',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/aggry-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/aggry-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2238,14 +2238,14 @@ function MessageComponent({
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 handleAddReaction(
-                                                                    "like",
-                                                                    dataAfter
+                                                                    'like',
+                                                                    dataAfter,
                                                                 );
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../../assets/like-reaction.png")}
-                                                                resizeMode="contain"
+                                                                source={require('../../../assets/like-reaction.png')}
+                                                                resizeMode='contain'
                                                                 style={[
                                                                     styles.chatDetailReactChooseBoxBtnImg,
                                                                 ]}
@@ -2262,11 +2262,11 @@ function MessageComponent({
                                                             HEIGHT / 2
                                                         ) {
                                                             setPlacementReaction(
-                                                                "top"
+                                                                'top',
                                                             );
                                                         } else {
                                                             setPlacementReaction(
-                                                                "bottom"
+                                                                'bottom',
                                                             );
                                                         }
                                                         setShowReaction(true);
@@ -2276,8 +2276,8 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/emotion-happy-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/emotion-happy-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 20,
                                                             height: 20,
@@ -2308,16 +2308,16 @@ function MessageComponent({
                                                 onClose={() =>
                                                     setShowMoreAction(false)
                                                 }
-                                                backgroundColor="transparent"
+                                                backgroundColor='transparent'
                                                 isVisible={showMoreAction}
                                                 showChildInTooltip={false}
                                                 placement={
                                                     placement as
-                                                        | "top"
-                                                        | "left"
-                                                        | "right"
-                                                        | "bottom"
-                                                        | "center"
+                                                        | 'top'
+                                                        | 'left'
+                                                        | 'right'
+                                                        | 'bottom'
+                                                        | 'center'
                                                         | undefined
                                                 }
                                                 content={
@@ -2359,10 +2359,10 @@ function MessageComponent({
                                                                 .pageY >
                                                             HEIGHT / 2
                                                         ) {
-                                                            setPlacement("top");
+                                                            setPlacement('top');
                                                         } else {
                                                             setPlacement(
-                                                                "bottom"
+                                                                'bottom',
                                                             );
                                                         }
                                                         setShowMoreAction(true);
@@ -2372,8 +2372,8 @@ function MessageComponent({
                                                     ]}
                                                 >
                                                     <Image
-                                                        source={require("../../../assets/more-vertical-line-icon.png")}
-                                                        resizeMode="contain"
+                                                        source={require('../../../assets/more-vertical-line-icon.png')}
+                                                        resizeMode='contain'
                                                         style={{
                                                             width: 20,
                                                             height: 20,
@@ -2420,7 +2420,7 @@ export const AcceptFriendNotificationMessage = ({
 
     function getOtherUser() {
         return conversation.users.find(
-            (user) => user._id !== userInfo.user?._id
+            (user) => user._id !== userInfo.user?._id,
         );
     }
 
@@ -2441,7 +2441,7 @@ export const AcceptFriendNotificationMessage = ({
             >
                 <View style={[styles.acceptFriendNotificationTopBox]}>
                     <Image
-                        source={require("../../../assets/artboard.png")}
+                        source={require('../../../assets/artboard.png')}
                         style={[styles.acceptFriendNotificationBg]}
                     />
                     <View style={[styles.acceptFriendNotificationContentBox]}>
@@ -2469,7 +2469,7 @@ export const AcceptFriendNotificationMessage = ({
                         ]}
                     >
                         {`${getOtherUser()?.name} ${translate(
-                            "acceptFriendNotificationMessageText"
+                            'acceptFriendNotificationMessageText',
                         )}`}
                     </Text>
                 </View>
@@ -2498,11 +2498,14 @@ export const GroupNotificationMessage = ({
         } else {
             return message.notification?.users
                 ?.map((user) => user.name)
-                .join(", ");
+                .join(', ');
         }
     }
 
-    if (notificationType === "ADD_USERS") {
+    if (
+        notificationType === 'ADD_USERS' ||
+        notificationType === 'CREATE_GROUP'
+    ) {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2520,7 +2523,7 @@ export const GroupNotificationMessage = ({
                 >
                     <Image
                         source={{
-                            uri: message.notification?.users[0].avatar || "",
+                            uri: message.notification?.users[0].avatar || '',
                         }}
                         style={[styles.chatGroupAddUserAvatar]}
                     />
@@ -2535,16 +2538,16 @@ export const GroupNotificationMessage = ({
                         {handleGetUsernameList()}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
-                        >{`${translation("addUsersToGroupNotification")} ${
+                        >{`${translation('addUsersToGroupNotification')} ${
                             message.sender._id === userInfo.user?._id
-                                ? translation("you").toLowerCase()
+                                ? translation('you').toLowerCase()
                                 : message.sender.name
                         }`}</Text>
                     </Text>
                 </View>
             </View>
         );
-    } else if (notificationType === "CHANGE_OWNER") {
+    } else if (notificationType === 'CHANGE_OWNER') {
         if (userInfo.user?._id === message.sender._id) {
             return (
                 <View style={[styles.groupNotificationWrapper]}>
@@ -2562,7 +2565,7 @@ export const GroupNotificationMessage = ({
                         ]}
                     >
                         <Image
-                            source={require("../../../assets/chat-primary-key.png")}
+                            source={require('../../../assets/chat-primary-key.png')}
                             style={[styles.chatGroupAddUserKeyImg]}
                         />
                         <Text
@@ -2573,11 +2576,11 @@ export const GroupNotificationMessage = ({
                                     : commonStyles.darkPrimaryText,
                             ]}
                         >
-                            {translation("youAppointedAdminFirstTitle")}
+                            {translation('youAppointedAdminFirstTitle')}
                             <Text style={[styles.groupNotificationContentText]}>
                                 {message.notification?.users?.[0]?.name}
                             </Text>
-                            {translation("youAppointedAdminLastTitle")}
+                            {translation('youAppointedAdminLastTitle')}
                         </Text>
                     </View>
                 </View>
@@ -2599,7 +2602,7 @@ export const GroupNotificationMessage = ({
                         ]}
                     >
                         <Image
-                            source={require("../../../assets/chat-primary-key.png")}
+                            source={require('../../../assets/chat-primary-key.png')}
                             style={[styles.chatGroupAddUserKeyImg]}
                         />
                         <Text
@@ -2615,20 +2618,20 @@ export const GroupNotificationMessage = ({
                                 style={[
                                     styles.groupNotificationContentChildText,
                                 ]}
-                            >{`${translation("appointed")} ${
+                            >{`${translation('appointed')} ${
                                 userInfo.user?._id ==
                                 message.notification?.users[0]?._id
-                                    ? translation("you")
+                                    ? translation('you')
                                     : message.notification?.users[0]?.name
                             } ${translation(
-                                "youAppointedAdminLastTitle"
+                                'youAppointedAdminLastTitle',
                             )}`}</Text>
                         </Text>
                     </View>
                 </View>
             );
         }
-    } else if (notificationType === "ADD_ADMIN") {
+    } else if (notificationType === 'ADD_ADMIN') {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2645,7 +2648,7 @@ export const GroupNotificationMessage = ({
                     ]}
                 >
                     <Image
-                        source={require("../../../assets/chat-tip-icon-key.png")}
+                        source={require('../../../assets/chat-tip-icon-key.png')}
                         style={[styles.chatGroupAddUserKeyImg]}
                     />
                     <Text
@@ -2658,18 +2661,18 @@ export const GroupNotificationMessage = ({
                     >
                         {userInfo.user?._id ===
                         message.notification?.users[0]._id
-                            ? translation("you")
+                            ? translation('you')
                             : message.notification?.users[0].name}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
                         >
-                            {translation("becomeDeputyNotification")}
+                            {translation('becomeDeputyNotification')}
                         </Text>
                     </Text>
                 </View>
             </View>
         );
-    } else if (notificationType === "REMOVE_ADMIN") {
+    } else if (notificationType === 'REMOVE_ADMIN') {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2686,7 +2689,7 @@ export const GroupNotificationMessage = ({
                     ]}
                 >
                     <Image
-                        source={require("../../../assets/chat-tip-icon-key.png")}
+                        source={require('../../../assets/chat-tip-icon-key.png')}
                         style={[styles.chatGroupAddUserKeyImg]}
                     />
                     <Text
@@ -2700,18 +2703,18 @@ export const GroupNotificationMessage = ({
                     >
                         {userInfo.user?._id ===
                         message.notification?.users[0]._id
-                            ? translation("you")
+                            ? translation('you')
                             : message.notification?.users[0].name}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
                         >
-                            {translation("removeDeputyNotification")}
+                            {translation('removeDeputyNotification')}
                         </Text>
                     </Text>
                 </View>
             </View>
         );
-    } else if (notificationType === "REMOVE_USER") {
+    } else if (notificationType === 'REMOVE_USER') {
         return (
             <View style={[styles.groupNotificationWrapper]}>
                 <View
@@ -2729,7 +2732,7 @@ export const GroupNotificationMessage = ({
                 >
                     <Image
                         source={{
-                            uri: message.notification?.users[0].avatar || "",
+                            uri: message.notification?.users[0].avatar || '',
                         }}
                         style={[styles.chatGroupAddUserAvatar]}
                     />
@@ -2744,9 +2747,9 @@ export const GroupNotificationMessage = ({
                         {message.notification?.users[0].name}
                         <Text
                             style={[styles.groupNotificationContentChildText]}
-                        >{`${translation("wasRemovedFromGroupNotification")} ${
+                        >{`${translation('wasRemovedFromGroupNotification')} ${
                             userInfo.user?._id === message.sender._id
-                                ? translation("you")
+                                ? translation('you')
                                 : message.sender.name
                         }`}</Text>
                     </Text>
@@ -2787,7 +2790,7 @@ export const PinNotificationMessage = ({
                 ]}
             >
                 <Image
-                    source={require("../../../assets/ic_pin.png")}
+                    source={require('../../../assets/ic_pin.png')}
                     style={[styles.chatGroupAddUserKeyImg]}
                 />
                 <Text
@@ -2799,12 +2802,12 @@ export const PinNotificationMessage = ({
                     ]}
                 >
                     {userInfo.user?._id === message.sender._id
-                        ? translation("you")
+                        ? translation('you')
                         : message.sender.name}
                     <Text style={[styles.groupNotificationContentChildText]}>
-                        {notificationType === "PIN_MESSAGE"
-                            ? translation("pinnedMessageNotification")
-                            : translation("unpinnedMessageNotification")}
+                        {notificationType === 'PIN_MESSAGE'
+                            ? translation('pinnedMessageNotification')
+                            : translation('unpinnedMessageNotification')}
                     </Text>
                 </Text>
             </View>
@@ -2839,7 +2842,7 @@ export const LeaveGroupNotificationMessage = ({
                 ]}
             >
                 <Image
-                    source={require("../../../assets/ic_pin.png")}
+                    source={require('../../../assets/ic_pin.png')}
                     style={[styles.chatGroupAddUserKeyImg]}
                 />
                 <Text
@@ -2851,10 +2854,10 @@ export const LeaveGroupNotificationMessage = ({
                     ]}
                 >
                     {userInfo.user?._id === message.sender._id
-                        ? translation("you")
+                        ? translation('you')
                         : message.sender.name}
                     <Text style={[styles.groupNotificationContentChildText]}>
-                        {translation("leaveGroupNotification")}
+                        {translation('leaveGroupNotification')}
                     </Text>
                 </Text>
             </View>

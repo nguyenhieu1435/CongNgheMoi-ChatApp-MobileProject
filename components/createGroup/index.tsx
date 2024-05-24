@@ -1,51 +1,44 @@
+import { LINK_GET_MY_FRIENDS, LINK_GROUP } from '@env';
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-    View,
-    Text,
-    StatusBar,
-    SafeAreaView,
-    Image,
-    TouchableOpacity,
-    TextInput,
-    ScrollView,
-    SectionList,
-    Dimensions,
-    Alert,
-    Platform,
     ActivityIndicator,
-} from "react-native";
-import { FlatList } from "react-native-gesture-handler";
-import { useSelector } from "react-redux";
-import { IRootState } from "../../redux_toolkit/store";
-import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-import { styles } from "./styles";
-import { lightMode } from "../../redux_toolkit/slices/theme.slice";
-import commonStyles from "../../CommonStyles/commonStyles";
-import OutsidePressHandler from "react-native-outside-press";
-import { CustomRadioButton } from "../register/stepFourRegister";
-import EmojiPicker from "rn-emoji-keyboard";
-import { useActionSheet } from "@expo/react-native-action-sheet";
-import * as ImagePicker from "expo-image-picker";
-import { LINK_GET_MESSAGE_HISTORY, LINK_GET_MY_FRIENDS, LINK_GROUP, LINK_MESSAGE_NOTIFICATION } from "@env";
+    Alert,
+    Image,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
+import OutsidePressHandler from 'react-native-outside-press';
+import { useSelector } from 'react-redux';
+import EmojiPicker from 'rn-emoji-keyboard';
+import commonStyles from '../../CommonStyles/commonStyles';
 import {
     IGroupConversation,
-    IMessageItem,
-    IUserIsMyFriendsResult,
     IUserResultSearch,
-} from "../../configs/interfaces";
-import { getAccurancyDateVN } from "../../utils/date";
-import { handleNavigateToChatDetail } from "../../utils/handleNavigateToChatDetail";
+} from '../../configs/interfaces';
+import { lightMode } from '../../redux_toolkit/slices/theme.slice';
+import { IRootState } from '../../redux_toolkit/store';
+import { handleNavigateToChatDetail } from '../../utils/handleNavigateToChatDetail';
+import { CustomRadioButton } from '../register/stepFourRegister';
+import { styles } from './styles';
 
 const typeSelectedEnum = {
-    recent: "recent",
-    contact: "contact",
+    recent: 'recent',
+    contact: 'contact',
 };
 interface ICreateGroupProps {
     navigation: any;
     route: any;
 }
-
-const { width: WIDTH } = Dimensions.get("window");
 
 export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
     const theme = useSelector((state: IRootState) => state.theme.theme);
@@ -53,9 +46,8 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
     const [usersSelected, setUsersSelected] = useState<IUserResultSearch[]>([]);
     const [isFocusInputName, setIsFocusInputName] = useState(false);
     const [isKeyboardDefault, setIsKeyBoardDefault] = useState(true);
-    const [textSearch, setTextSearch] = useState("");
-    const [typeSelected, setTypeSelected] = useState(typeSelectedEnum.recent);
-    const [groupName, setGroupName] = useState("");
+    const [textSearch, setTextSearch] = useState('');
+    const [groupName, setGroupName] = useState('');
     const [showEmoji, setShowEmoji] = useState(false);
     const { showActionSheetWithOptions } = useActionSheet();
     const [hasGalleryPermission, setHasGalleryPermission] = useState<
@@ -69,161 +61,11 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
     const [myFriends, setMyFriends] = useState<IUserResultSearch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // const [usersByContact, setUsersByContact] = useState([
-    //     {
-    //         title: "A",
-    //         data: [
-    //             {
-    //                 userName: "User1",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-12T12:00:00Z",
-    //                 userID: "123456789",
-    //                 tel: "0123456789",
-    //             },
-    //             {
-    //                 userName: "User2",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-12T12:00:00Z",
-    //                 userID: "234567890",
-    //                 tel: "1234567890",
-    //             },
-    //             {
-    //                 userName: "User3",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-12T12:00:00Z",
-    //                 userID: "345678901",
-    //                 tel: "2345678901",
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         title: "B",
-    //         data: [
-    //             {
-    //                 userName: "User4",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T14:49:32.995Z",
-    //                 userID: "456789012",
-    //                 tel: "3456789012",
-    //             },
-    //             {
-    //                 userName: "User5",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T14:49:32.995Z",
-    //                 userID: "567890123",
-    //                 tel: "4567890123",
-    //             },
-    //             {
-    //                 userName: "User6",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T14:49:32.995Z",
-    //                 userID: "678901234",
-    //                 tel: "5678901234",
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         title: "C",
-    //         data: [
-    //             {
-    //                 userName: "User7",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T14:49:32.995Z",
-    //                 userID: "789012345",
-    //                 tel: "6789012345",
-    //             },
-    //             {
-    //                 userName: "User8",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T09:49:32.995Z",
-    //                 userID: "890123456",
-    //                 tel: "7890123456",
-    //             },
-    //             {
-    //                 userName: "User9",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-14T09:49:32.995Z",
-    //                 userID: "901234567",
-    //                 tel: "8901234567",
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         title: "D",
-    //         data: [
-    //             {
-    //                 userName: "User10",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-11T12:00:00Z",
-    //                 userID: "012345678",
-    //                 tel: "9012345678",
-    //             },
-    //             {
-    //                 userName: "User11",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-09T12:00:00Z",
-    //                 userID: "112233445",
-    //                 tel: "1122334455",
-    //             },
-    //             {
-    //                 userName: "User12",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-05T12:00:00Z",
-    //                 userID: "223344556",
-    //                 tel: "2233445566",
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         title: "E",
-    //         data: [
-    //             {
-    //                 userName: "User13",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-01T12:00:00Z",
-    //                 userID: "334455667",
-    //                 tel: "3344556677",
-    //             },
-    //             {
-    //                 userName: "User14",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-05T12:00:00Z",
-    //                 userID: "445566778",
-    //                 tel: "4455667788",
-    //             },
-    //             {
-    //                 userName: "User15",
-    //                 avatarURL:
-    //                     "https://i.pinimg.com/originals/e2/05/4b/e2054b0c108f943fa58d98b8a4d37cd5.png",
-    //                 activityTime: "2024-03-12T14:49:32.995Z",
-    //                 userID: "556677889",
-    //                 tel: "5566778899",
-    //             },
-    //         ],
-    //     },
-    // ]);
-    const defaultGroupAvatar =
-        "https://res.zaloapp.com/pc/avt_group/2_family.jpg";
-
     async function handleChooseImageFromLibrary() {
         if (!hasGalleryPermission) {
             const { status } =
                 await ImagePicker.requestMediaLibraryPermissionsAsync();
-            setHasGalleryPermission(status === "granted");
+            setHasGalleryPermission(status === 'granted');
         }
         const newAvatar = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -233,7 +75,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         });
         if (!newAvatar.canceled) {
             const firstElement = newAvatar.assets?.[0];
-            if (firstElement.type === "image") {
+            if (firstElement.type === 'image') {
                 setGroupAvatar(firstElement.uri || null);
             }
         }
@@ -243,7 +85,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         if (!hasCameraPermission) {
             const { status } =
                 await ImagePicker.requestCameraPermissionsAsync();
-            setHasCameraPermission(status === "granted");
+            setHasCameraPermission(status === 'granted');
         }
         let options = {
             allowsEditing: true,
@@ -256,7 +98,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
 
         if (!result.canceled) {
             const firstElement = result.assets?.[0];
-            if (firstElement.type === "image") {
+            if (firstElement.type === 'image') {
                 setGroupAvatar(firstElement.uri || null);
             }
         }
@@ -264,9 +106,9 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
 
     const handleOpenActionSheet = () => {
         const options = [
-            t("registerChooseImageFromLibrary"),
-            t("registerTakePhotoFromCamera"),
-            t("cancel"),
+            t('registerChooseImageFromLibrary'),
+            t('registerTakePhotoFromCamera'),
+            t('cancel'),
         ];
         const cancelButtonIndex = 2;
         showActionSheetWithOptions(
@@ -287,16 +129,16 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                     default:
                         break;
                 }
-            }
+            },
         );
     };
 
     async function getMyFriends() {
         try {
             const response = await fetch(LINK_GET_MY_FRIENDS, {
-                method: "GET",
+                method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${userInfo.accessToken}`,
                 },
             });
@@ -318,11 +160,11 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
 
     function addAndRemoveUserSelected(userSelected: IUserResultSearch) {
         const isExist = usersSelected.find(
-            (user) => user._id === userSelected._id
+            (user) => user._id === userSelected._id,
         );
         if (isExist) {
             setUsersSelected(
-                usersSelected.filter((user) => user._id !== userSelected._id)
+                usersSelected.filter((user) => user._id !== userSelected._id),
             );
         } else {
             setUsersSelected([...usersSelected, userSelected]);
@@ -330,75 +172,51 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
     }
 
     async function handleCreateGroup() {
+        console.log('Create group');
         const formData = new FormData();
-        formData.append("name", groupName.trim());
+        formData.append('name', groupName.trim());
         if (groupAvatar) {
-            let splitPath = groupAvatar.split("/");
-            let extName = splitPath[splitPath.length - 1].split(".").pop();
-            formData.append("avatar", {
+            let splitPath = groupAvatar.split('/');
+            let extName = splitPath[splitPath.length - 1].split('.').pop();
+            formData.append('avatar', {
                 uri:
-                    Platform.OS === "ios"
-                        ? groupAvatar.replace("file://", "")
+                    Platform.OS === 'ios'
+                        ? groupAvatar.replace('file://', '')
                         : groupAvatar,
                 name: splitPath[splitPath.length - 1],
                 type: `image/${extName}`,
             });
         }
         const friendsId = usersSelected.map((user) => user._id);
-        formData.append("users", JSON.stringify(friendsId));
-        
+        formData.append('users', JSON.stringify(friendsId));
+
         try {
-           
             setIsLoading(true);
             const response = await fetch(LINK_GROUP, {
-                method: "POST",
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${userInfo.accessToken}`,
                 },
                 body: formData,
             });
             if (response.ok) {
-                const data = await response.json() as IGroupConversation;
-                console.log("Result create group: ", data)
-                handleCreateAddUsersNotification({conversationId: data._id, userIds: friendsId})
-                handleNavigateToChatDetail(data, setIsLoading, userInfo, navigation)
-                
+                const data = (await response.json()) as IGroupConversation;
+                console.log('Result create group: ', data);
+                handleNavigateToChatDetail(
+                    data,
+                    setIsLoading,
+                    userInfo,
+                    navigation,
+                );
             } else {
                 const data = await response.json();
-                console.log("Error create group: ", data)
+                console.log('Error create group: ', data);
             }
         } catch (error) {
             console.log(error);
         }
         setIsLoading(false);
     }
-
-    async function handleCreateAddUsersNotification({conversationId, userIds} : {
-        conversationId: string,
-        userIds: string[]
-    }){
-        try {
-            const resp = await fetch(LINK_MESSAGE_NOTIFICATION, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${userInfo.accessToken}`,
-                },
-                body: JSON.stringify({
-                    conversationId: conversationId,
-                    userIds: userIds,
-                    type: "ADD_USERS"
-                })
-                
-            })
-            if (resp.ok){
-                console.log("Send add users notification message success")
-            }
-        } catch (error) {
-            console.log("Send add users notification message error")
-        }
-    }
-
 
     function renderUserByRecent(item: IUserResultSearch, index: number) {
         return (
@@ -412,7 +230,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                         addAndRemoveUserSelected(item);
                     }}
                     selected={usersSelected.some(
-                        (user) => user._id === item._id
+                        (user) => user._id === item._id,
                     )}
                     value={item._id}
                 />
@@ -438,14 +256,14 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
         );
     }
     function handleGoToBackScreen() {
-        Alert.alert(t("createGroupGoBackTitle"), t("createGroupGoBackDesc"), [
+        Alert.alert(t('createGroupGoBackTitle'), t('createGroupGoBackDesc'), [
             {
-                text: t("cancel"),
-                style: "cancel",
+                text: t('cancel'),
+                style: 'cancel',
             },
             {
-                text: t("confirm"),
-                onPress: () => navigation.navigate("Contacts"),
+                text: t('confirm'),
+                onPress: () => navigation.navigate('Contacts'),
             },
         ]);
     }
@@ -481,7 +299,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                         onPress={handleGoToBackScreen}
                     >
                         <Image
-                            source={require("../../assets/close-line-icon.png")}
+                            source={require('../../assets/close-line-icon.png')}
                             style={[
                                 styles.createGroupHeaderBtnBackImage,
                                 {
@@ -504,7 +322,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                     : commonStyles.darkPrimaryText,
                             ]}
                         >
-                            {t("createGroupTitle")}
+                            {t('createGroupTitle')}
                         </Text>
                         <Text
                             style={[
@@ -514,7 +332,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                     : commonStyles.darkSecondaryText,
                             ]}
                         >
-                            {t("createGroupSelectedMember")}
+                            {t('createGroupSelectedMember')}
                             <Text>{usersSelected.length}</Text>
                         </Text>
                     </View>
@@ -545,9 +363,9 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                 <Image
                                     source={{ uri: groupAvatar }}
                                     style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        resizeMode: "cover",
+                                        width: '100%',
+                                        height: '100%',
+                                        resizeMode: 'cover',
                                         borderRadius: 50,
                                     }}
                                 />
@@ -566,7 +384,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                                           .color,
                                         },
                                     ]}
-                                    source={require("../../assets/camera-fill-icon.png")}
+                                    source={require('../../assets/camera-fill-icon.png')}
                                 />
                             )}
                         </TouchableOpacity>
@@ -580,7 +398,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                     {
                                         borderBottomColor: isFocusInputName
                                             ? commonStyles.primaryColor.color
-                                            : "transparent",
+                                            : 'transparent',
                                     },
                                 ]}
                             >
@@ -596,7 +414,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                     value={groupName}
                                     onChangeText={setGroupName}
                                     placeholder={t(
-                                        "createGroupInputGroupNamePlaceholder"
+                                        'createGroupInputGroupNamePlaceholder',
                                     )}
                                     style={[
                                         styles.createGroupEnterNameInput,
@@ -626,7 +444,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                                                   .color,
                                                 },
                                             ]}
-                                            source={require("../../assets/emoji-emotions-icon.png")}
+                                            source={require('../../assets/emoji-emotions-icon.png')}
                                         />
                                     </TouchableOpacity>
                                 )}
@@ -642,7 +460,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                         style={[
                                             styles.createGroupEnterNameConfirmBtnImage,
                                         ]}
-                                        source={require("../../assets/check-line-icon.png")}
+                                        source={require('../../assets/check-line-icon.png')}
                                     />
                                 </TouchableOpacity>
                             )}
@@ -727,14 +545,14 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                                   .color,
                                 },
                             ]}
-                            source={require("../../assets/search-line-icon.png")}
+                            source={require('../../assets/search-line-icon.png')}
                         />
                         <TextInput
                             value={textSearch}
                             onChangeText={setTextSearch}
-                            placeholder={t("createGroupSearchPlaceholder")}
+                            placeholder={t('createGroupSearchPlaceholder')}
                             keyboardType={
-                                isKeyboardDefault ? "default" : "number-pad"
+                                isKeyboardDefault ? 'default' : 'number-pad'
                             }
                             placeholderTextColor={
                                 theme === lightMode
@@ -750,7 +568,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                         />
                         {textSearch ? (
                             <TouchableOpacity
-                                onPress={() => setTextSearch("")}
+                                onPress={() => setTextSearch('')}
                                 style={[
                                     styles.createGroupSearchClearInputBtn,
                                     {
@@ -767,7 +585,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                     style={[
                                         styles.createGroupSearchClearInputBtnImage,
                                     ]}
-                                    source={require("../../assets/close-line-icon.png")}
+                                    source={require('../../assets/close-line-icon.png')}
                                     tintColor={
                                         theme === lightMode
                                             ? commonStyles.darkPrimaryText.color
@@ -801,7 +619,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                             : commonStyles.darkSecondaryText,
                                     ]}
                                 >
-                                    {isKeyboardDefault ? "ABC" : "123"}
+                                    {isKeyboardDefault ? 'ABC' : '123'}
                                 </Text>
                             </TouchableOpacity>
                         )}
@@ -809,10 +627,13 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                     {textSearch ? (
                         <View>
                             <FlatList
-                                data={usersSelected.filter((user) =>
-                                    user.name
-                                        .toLowerCase()
-                                        .includes(textSearch.toLowerCase()) || user._id.includes(textSearch)
+                                data={usersSelected.filter(
+                                    (user) =>
+                                        user.name
+                                            .toLowerCase()
+                                            .includes(
+                                                textSearch.toLowerCase(),
+                                            ) || user._id.includes(textSearch),
                                 )}
                                 keyExtractor={(item) => item._id}
                                 renderItem={({ item, index }) =>
@@ -833,8 +654,8 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                         <View
                             style={{
                                 flex: 1,
-                                flexDirection: "column",
-                                justifyContent: "space-between",
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
                             }}
                         >
                             {/* <View
@@ -1094,7 +915,7 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                                                 ]}
                                             >
                                                 <Image
-                                                    source={require("../../assets/close-line-icon.png")}
+                                                    source={require('../../assets/close-line-icon.png')}
                                                     style={[
                                                         styles.createGroupSelectedMemberRemoveBtnImage,
                                                         {
@@ -1135,12 +956,12 @@ export default function CreateGroup({ navigation, route }: ICreateGroupProps) {
                         >
                             {isLoading ? (
                                 <ActivityIndicator
-                                    size={"small"}
+                                    size={'small'}
                                     color={commonStyles.darkPrimaryText.color}
                                 />
                             ) : (
                                 <Image
-                                    source={require("../../assets/arrow-right-line-icon.png")}
+                                    source={require('../../assets/arrow-right-line-icon.png')}
                                     style={[
                                         styles.createGroupUserListNextStepBtnImage,
                                     ]}
