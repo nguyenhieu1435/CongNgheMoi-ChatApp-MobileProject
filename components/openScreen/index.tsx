@@ -105,7 +105,7 @@ export default function OpenScreen({ navigation }: Props) {
                     resizeMode="cover"
                 />
                 <Text style={[styles.logoText, commonStyle.darkPrimaryText]}>
-                    Zalo
+                    Lola
                 </Text>
             </SafeAreaView>
         </View>

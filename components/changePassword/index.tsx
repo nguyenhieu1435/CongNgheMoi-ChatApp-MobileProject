@@ -141,6 +141,11 @@ export default function ChangePassword({
                         <Text
                             style={[
                                 styles.changePasswordLabel,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                             ]}
                         >{t("oldPassword")}</Text>
                         <View
@@ -213,6 +218,12 @@ export default function ChangePassword({
                         <Text
                             style={[
                                 styles.changePasswordLabel,
+                               
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                             ]}
                         >{t("newPassword")}</Text>
                         <View
@@ -274,6 +285,7 @@ export default function ChangePassword({
                                 <Text
                                     style={[
                                         styles.errMsgChangePassword,
+                                        
                                     ]}
                                 >{errors.newPassword.message}</Text>
                             }
@@ -284,6 +296,11 @@ export default function ChangePassword({
                         <Text
                             style={[
                                 styles.changePasswordLabel,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
                             ]}
                         >{t("confirmNewPassword")}</Text>
                         <View

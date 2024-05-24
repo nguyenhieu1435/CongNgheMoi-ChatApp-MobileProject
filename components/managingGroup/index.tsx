@@ -257,13 +257,17 @@ export function ManagingGroup({
                                 }}
                             >
                                 <Text
-                                    style={{
+                                    style={[{
                                         textAlign: "center",
                                         marginTop: 15,
                                         fontSize: 18,
                                         marginBottom: 10,
                                         fontWeight: "600",
-                                    }}
+                                    },
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText
+                                    ]}
                                 >
                                     {conversation.name}
                                 </Text>
@@ -294,16 +298,29 @@ export function ManagingGroup({
                             >
                                 <Image
                                     source={require("../../assets/user-add-line.png")}
-                                    style={{
+                                    style={[{
                                         width: 25,
                                         height: 25,
                                         resizeMode: "contain",
-                                    }}
+                                        tintColor:
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText.color
+                                        :
+                                        commonStyles.darkPrimaryText.color
+                                    }
+                                ]}
                                 />
                                 <Text
-                                    style={{
+                                    style={[{
                                         fontSize: 16,
-                                    }}
+                                        
+                                    },
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText
+                                    
+                                ]}
                                 >
                                     {t("managingGroupAddMember")}
                                 </Text>
@@ -328,12 +345,22 @@ export function ManagingGroup({
                                         width: 25,
                                         height: 25,
                                         resizeMode: "contain",
+                                        tintColor:
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText.color
+                                        :
+                                        commonStyles.darkPrimaryText.color
                                     }}
                                 />
                                 <Text
-                                    style={{
+                                    style={[{
                                         fontSize: 16,
-                                    }}
+                                    },
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText
+                                ]}
                                 >{`${t("managingGroupShowMembers")} (${
                                     conversation.users.length
                                 })`}</Text>
@@ -382,7 +409,12 @@ export function ManagingGroup({
                                 ]}
                             />
                             <Text
-                                style={[styles.categoryIconForAttachmentText]}
+                                style={[styles.categoryIconForAttachmentText,
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText
+                                ]}
+
                             >
                                 {t("chatProfileAttachedFiles")}
                             </Text>
@@ -538,7 +570,11 @@ export function ManagingGroup({
                                 ]}
                             />
                             <Text
-                                style={[styles.categoryIconForAttachmentText]}
+                                style={[styles.categoryIconForAttachmentText,
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText
+                                        : commonStyles.darkPrimaryText
+                                ]}
                             >
                                 {t("image")}
                             </Text>

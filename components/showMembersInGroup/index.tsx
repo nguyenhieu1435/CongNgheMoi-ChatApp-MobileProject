@@ -346,6 +346,14 @@ export default function ShowMembersInGroup({
                         >
                             <Image
                                 source={require("../../assets/more-vertical-line-icon.png")}
+                                style={{
+                                    tintColor:
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText.color
+                                        :
+                                        commonStyles.darkPrimaryText.color
+                                }}
                             />
                         </TouchableOpacity>
                     </Tooltip>
@@ -545,7 +553,15 @@ export default function ShowMembersInGroup({
                                         },
                                     ]}
                                 >
-                                    <Text style={[styles.showMembersItemName]}>
+                                    <Text style={[styles.showMembersItemName,
+                                        theme === lightMode
+                                        ?
+                                        commonStyles.lightPrimaryText
+                                        :
+                                        commonStyles.darkPrimaryText
+                                    ]}
+
+                                    >
                                         {user._id === userInfo.user?._id
                                             ? t("showMemberInGroupYou")
                                             : user.name}

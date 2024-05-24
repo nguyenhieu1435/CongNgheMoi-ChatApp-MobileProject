@@ -221,13 +221,21 @@ export default function ChatOptional({
                                 }}
                             >
                                 <Text
-                                    style={{
+                                    style={[{
                                         textAlign: "center",
                                         marginTop: 15,
                                         fontSize: 18,
                                         marginBottom: 10,
                                         fontWeight: "600",
-                                    }}
+                                    }, 
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightPrimaryText
+                                    :
+                                    commonStyles.darkPrimaryText
+                                    
+                                ]}
+                                    
                                 >
                                     {userNotMe?.name}
                                 </Text>
@@ -275,7 +283,13 @@ export default function ChatOptional({
                                 ]}
                             />
                             <Text
-                                style={[styles.categoryIconForAttachmentText]}
+                                style={[styles.categoryIconForAttachmentText, 
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
+                                ]}
                             >
                                 {t("chatProfileAttachedFiles")}
                             </Text>
@@ -431,7 +445,13 @@ export default function ChatOptional({
                                 ]}
                             />
                             <Text
-                                style={[styles.categoryIconForAttachmentText]}
+                                style={[styles.categoryIconForAttachmentText,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightPrimaryText
+                                    :
+                                    commonStyles.darkPrimaryText
+                                ]}
                             >
                                 {t("image")}
                             </Text>
@@ -552,7 +572,13 @@ export default function ChatOptional({
                                 ]}
                             />
                             <Text
-                                style={[styles.categoryIconForAttachmentText]}
+                                style={[styles.categoryIconForAttachmentText,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightPrimaryText
+                                    :
+                                    commonStyles.darkPrimaryText
+                                ]}
                             >
                                 {t("addFriendInvitationCommonGroup")}
                             </Text>

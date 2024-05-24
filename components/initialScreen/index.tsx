@@ -30,7 +30,7 @@ export default function InitialScreen({navigation} : Props) {
         img2: require("../../assets/groupchat.png"),
         img3: require("../../assets/sharingImage.png"),
         img4: require("../../assets/friendStory.png"),
-        img5: require("../../assets/logo_zalo.png")
+        img5: require("../../assets/lola_logo_no_background.png")
     }
 
     const slideDatas : SlideData[] = [
@@ -101,7 +101,7 @@ export default function InitialScreen({navigation} : Props) {
                     >
                         <View style={styles.boxLogoHeader}>
                             <Image
-                                source={require("../../assets/logo_zalo.png")}
+                                source={require("../../assets/lola_logo.jpg")}
                                 style={styles.imgLogoHeader}
                             />
                         </View> 
