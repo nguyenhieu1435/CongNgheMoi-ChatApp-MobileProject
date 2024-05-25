@@ -78,6 +78,12 @@ export default function ShowMembersInGroup({
                     conversationId: conversation._id,
                     userId: user._id,
                 })
+                socket.emit('addOrUpdateConversation', {
+                    ...conversation,
+                    userIds: conversation.users.map(
+                        (item: IUserInConversation) => item._id,
+                    ),
+                });
                 handleCreateRoleNotification({
                     type: "REMOVE_USER",
                     conversationId: conversation._id,
