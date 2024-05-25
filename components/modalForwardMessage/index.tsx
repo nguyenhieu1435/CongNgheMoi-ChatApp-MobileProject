@@ -308,7 +308,18 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
             return "[File]"
         } else if (message.location){
             return "[Location]"
+        } else if (message.sticker){
+            return "[Sticker]"
+        } else if (message.location){
+            return "[Location]"
+        } else {
+            return ""
         }
+    }
+    function filterGroupByTextSearch() {
+        return myGroups.filter((group) => {
+            return group.name.toLowerCase().includes(textSearch.toLowerCase());
+        });
     }
 
     return (
@@ -336,16 +347,38 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
                         },
                     ]}
                 >
-                    <Image
-                        source={require("../../assets/close-line-icon.png")}
-                        style={[styles.closeBtn]}
-                    />
+                    <TouchableOpacity
+                        onPress={() => setShowForwardModal(null)}
+                    >
+                        <Image
+                            
+                            source={require("../../assets/close-line-icon.png")}
+                            style={[styles.closeBtn, {
+                                tintColor:
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText.color
+                                        : commonStyles.darkPrimaryText.color
+                            }]}
+                        />
+                    </TouchableOpacity>
                     <View>
-                        <Text style={[styles.modalHeaderTitle]}>
+                        <Text style={[styles.modalHeaderTitle,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightPrimaryText
+                            :
+                            commonStyles.darkPrimaryText
+                        ]}>
                             {t("forwardMessageTitle")}
                         </Text>
-                        <Text style={[styles.modalHeaderSelectedNumberText]}>
-                            {t("createGroupSelectedMember")}
+                        <Text style={[styles.modalHeaderSelectedNumberText,
+                            theme === lightMode
+                            ?
+                            commonStyles.lightPrimaryText
+                            :
+                            commonStyles.darkPrimaryText
+                        ]}>
+                            {`${t("createGroupSelectedMember")} ${selectedFriends.length}`}
                         </Text>
                     </View>
                 </View>
@@ -367,13 +400,31 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
                     >
                         <Image
                             source={require("../../assets/search-line-icon.png")}
-                            style={[styles.searchIcon]}
+                            style={[styles.searchIcon,{
+                                tintColor:
+                                    theme === lightMode
+                                        ? commonStyles.lightPrimaryText.color
+                                        : commonStyles.darkPrimaryText.color
+                            }]}
                         />
                         <TextInput
                             placeholder={t(
                                 "registerPhoneInputSearchPlaceholder"
                             )}
-                            style={[styles.searchTextInput]}
+                            placeholderTextColor={
+                                theme === lightMode
+                                ?
+                                commonStyles.lightSecondaryText.color
+                                :
+                                commonStyles.darkSecondaryText.color
+                            }
+                            style={[styles.searchTextInput, 
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
+                            ]}
                             value={textSearch}
                             onChangeText={(text) => setTextSearch(text)}
                         />
@@ -391,11 +442,16 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
                         >
                             <Text
                                 style={[
-                                    styles.titleList
+                                    styles.titleList, 
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightPrimaryText
+                                    :
+                                    commonStyles.darkPrimaryText
                                 ]}
                             >Groups</Text>
                             <FlatList
-                                data={myGroups}
+                                data={textSearch.trim() ? filterGroupByTextSearch() : myGroups}
                                 keyExtractor={(item) => item._id}
                                 renderItem={({ item }) => renderGroupItem(item)}
                             />
@@ -403,7 +459,12 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
                         <View style={{ flex: 1 }}>
                             <Text
                                 style={[
-                                    styles.titleList
+                                    styles.titleList,
+                                    theme === lightMode
+                                    ?
+                                    commonStyles.lightPrimaryText
+                                    :
+                                    commonStyles.darkPrimaryText
                                 ]}
                             >Friends</Text>
                             <SectionList
@@ -444,7 +505,13 @@ export default function ModalForwardMessage({conversation, message, setShowForwa
                         <View
                             style={[styles.modalControlGroupTriggerContainer]}
                         >
-                            <Text style={[styles.messageText]}>
+                            <Text style={[styles.messageText,
+                                theme === lightMode
+                                ?
+                                commonStyles.lightPrimaryText
+                                :
+                                commonStyles.darkPrimaryText
+                            ]}>
                                 Message: {handlePrintMessage()}
                             </Text>
                             <TouchableOpacity style={[styles.sendMessageBtn]}

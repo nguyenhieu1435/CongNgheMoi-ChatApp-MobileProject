@@ -81,7 +81,7 @@ export const insertUserSearched = async (db: SQLite.SQLiteDatabase, _id: string,
 
 export const selectTop5NewestUserSearched = async (db: SQLite.SQLiteDatabase, ownerId: String) =>{
     try {
-        const resultSelect = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE userId = ? ORDER BY createdAt DESC LIMIT 5`, args: [ownerId]}], false)
+        const resultSelect = await db.execAsync([{sql: `SELECT * FROM user_searched WHERE ownerId = ? ORDER BY createdAt DESC LIMIT 5`, args: [ownerId]}], false)
         return resultSelect
     } catch (error) {
         throw new Error("Error when selecting user_searched")

@@ -301,5 +301,6 @@
     "recoverDesc": "Nhập địa chỉ email để lấy lại mật khẩu",
     "confirmPhoneNumberRecoverPassword": "Xác nhận địa chỉ email ",
     "confirmPhoneNumberRecoverPasswordDesc": "Email này sẽ được sử dụng để nhân mã xác thực",
-    "requestError": "Có vài lỗi xảy ra, xin vui lòng thử lại"
+    "requestError": "Có vài lỗi xảy ra, xin vui lòng thử lại",
+    "revocationMessageTitle": "Tin nhắn đã bị thu hồi"
 }

@@ -265,7 +265,7 @@ function MessagePopupAction({
                         ]}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={[styles.itemInMessageFromOpponentPopupAction]}
                 >
                     <Text
@@ -291,7 +291,7 @@ function MessagePopupAction({
                             },
                         ]}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity
                     style={[styles.itemInMessageFromOpponentPopupAction]}
                     onPress={() => {

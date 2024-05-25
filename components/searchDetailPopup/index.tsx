@@ -96,6 +96,7 @@ export default function SearchDetailPopup({
                         translation={t}
                         theme={theme}
                         navigate={navigate}
+                        navigation={navigation}
                     />
                 )}
             </View>
@@ -109,17 +110,21 @@ interface DetailSearchPopUpSearchEmptyProps {
     translation: TFunction<"translation", undefined>;
     theme: string;
     navigate: any;
+    navigation: any;
 }
 
 function DetailSearchPopUpSearchEmpty({
     translation: t,
     theme,
     navigate,
+    navigation,
 }: DetailSearchPopUpSearchEmptyProps) {
     const [userSeached, setUserSearched] = useState<IUserResultSearch[]>([]);
     const userInfo = useSelector((state: IRootState) => state.userInfo);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        console.log("Open search pop up")
         const getUserSearchedFromSQLite = async () => {
             try {
                 const db = getDBConnection();
@@ -129,6 +134,8 @@ function DetailSearchPopUpSearchEmpty({
                     userInfo.user?._id || "0"
                 );
                 const obj = result[0];
+                console.log("result:", JSON.stringify(obj));
+                
                 if ("rows" in obj) {
                     const userSearched: IUserResultSearch[] = [];
                     obj.rows.forEach((element: any) => {
@@ -149,6 +156,40 @@ function DetailSearchPopUpSearchEmpty({
         };
         getUserSearchedFromSQLite();
     }, []);
+
+    async function handleOpenChatDetail(receivedId: string) {
+        // setTextSearch("");
+        
+        try {
+            setIsLoading(true);
+            const conversationResponse = await fetch(
+                LINK_GET_MY_CONVERSATIONS,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userInfo.accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        receiverUserId: receivedId,
+                    }),
+                }
+            );
+            if (conversationResponse.ok) {
+                const conversationData = await conversationResponse.json();
+
+                handleNavigateToChatDetail(
+                    conversationData as IConversation,
+                    setIsLoading,
+                    userInfo,
+                    navigation
+                );
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
+        setIsLoading(false);
+    }
 
     return (
         <View
@@ -198,7 +239,8 @@ function DetailSearchPopUpSearchEmpty({
                                     <TouchableOpacity
                                         key={index}
                                         onPress={() =>
-                                            console.log("Open Chat Detail")
+                                            handleOpenChatDetail(user._id)
+                                            
                                         }
                                         style={[
                                             styles.detailSearchPopUpSearchEmptyUserSearched,

@@ -989,7 +989,7 @@ function MessageComponent({
                                                             },
                                                         ]}
                                                     >
-                                                        Tin nhắn đã bị thu hồi
+                                                        {t("revocationMessageTitle")}
                                                     </Text>
                                                 ))}
                                             {/* {dataAfter.location && (
@@ -1456,7 +1456,7 @@ function MessageComponent({
                                                         : commonStyles.darkPrimaryText,
                                                 ]}
                                             >
-                                                Tin nhắn đã bị thu hồi
+                                                {t("revocationMessageTitle")}
                                             </Text>
                                         </View>
                                     )}
@@ -2068,7 +2068,7 @@ function MessageComponent({
                                                     styles.chatDetailMessageFromOpponentInfoText,
                                                 ]}
                                             >
-                                                Tin nhắn đã bị thu hồi
+                                                {t("revocationMessageTitle")}
                                             </Text>
                                         </View>
                                     )}

@@ -298,5 +298,6 @@
     "recoverDesc": "Enter your email address to recover password",
     "confirmPhoneNumberRecoverPassword": "Confirm email address ",
     "confirmPhoneNumberRecoverPasswordDesc": "This email address will be used to receive the verification",
-    "requestError": "Some errors occurred, please try again"
+    "requestError": "Some errors occurred, please try again",
+    "revocationMessageTitle": "The message has been revoked"
 }
