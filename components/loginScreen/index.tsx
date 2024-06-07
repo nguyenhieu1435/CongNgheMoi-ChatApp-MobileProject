@@ -19,7 +19,7 @@ import { IRootState } from '../../redux_toolkit/store';
 import { styles } from './styles';
 import { useDispatch } from 'react-redux';
 import { setUserInfo } from '../../redux_toolkit/slices/userInfo.slice';
-import { SQLITE_DB_NAME } from '@env';
+import { LINK_LOGIN_POST, SQLITE_DB_NAME } from '@env';
 import {
     createUserInfoTable,
     deleteTableByName,
@@ -113,9 +113,10 @@ export default function Login({ navigation }: Props) {
 
         setShowError(false);
         setIsLoadingLogin(true);
+        console.log(LINK_LOGIN_POST)
         try {
             const response = await fetch(
-                'https://homeless-eadith-vunguyendev.koyeb.app/api/v1/auth/login',
+                LINK_LOGIN_POST,
                 {
                     method: 'POST',
                     headers: {

@@ -154,6 +154,7 @@ export default function AddFriend({ navigation }: AddFriendProps) {
             throw error;
         }
     }
+    
     async function getUserByTextSearch(textSearch: string) {
         try {
             const response = await fetch(LINK_SEARCH_USER + "=" + textSearch, {

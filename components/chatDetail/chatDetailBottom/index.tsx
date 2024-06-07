@@ -230,6 +230,7 @@ function ChatDetailBottom({
                 };
 
                 setMessageHistory([...messageHistory, messageItem]);
+                console.log("Emit message", data.message);
                 socket.emit("sendMessage", data.message);
                 setTextMessage("");
 

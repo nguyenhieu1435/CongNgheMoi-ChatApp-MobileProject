@@ -161,6 +161,7 @@ export default function ChatList({ navigation, route }: Props) {
                     setMyConversations([]);
                 }
             } catch (error) {
+                console.log("error get my conversations", error);
                 console.log("error get my conversations");
                 setMyConversations([]);
             }

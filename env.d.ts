@@ -3,6 +3,7 @@ declare module '@env' {
     export const LINK_USING_TERM: string;
     export const LINK_SOCIAL_TERM: string;
     export const LINK_REGISTER_POST: string;
+    export const LINK_SOCKET: string;
     export const LINK_UPDATE_IMAGE: string;
     export const SQLITE_DB_NAME: string;
     export const LINK_SIGN_IN_ENCRYPT: string;
@@ -41,4 +42,5 @@ declare module '@env' {
     export const LINK_AUTH_METHOD: string;
     export const LINK_SEND_OTP_FORGOT_PASSWORD: string;
     export const LINK_FORGOT_PASSWORD: string;
+    export const LINK_LOGIN_POST: string;
 }
